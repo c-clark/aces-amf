@@ -140,14 +140,14 @@ def from_amf_data(amf_data: bytes) -> tuple[amf_v2.AcesMetadataFile, dict[str, s
     return _read_amf(amf_data, parser.from_bytes)
 
 
-def from_amf_file(amf_path: Path) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
+def from_amf_file(amf_path: Path | str) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
     """
     Read the provided AMF data and return the parsed data and the namespace map.
 
     Note: Uses UriXmlParser to automatically decode URL-encoded xs:anyURI values.
     """
     parser = UriXmlParser()
-    return _read_amf(amf_path, parser.from_path)
+    return _read_amf(Path(amf_path), parser.from_path)
 
 
 def _read_amf(amf_source: Path | bytes, parse_method: callable) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:

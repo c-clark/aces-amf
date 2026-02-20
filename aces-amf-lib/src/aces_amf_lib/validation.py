@@ -30,7 +30,8 @@ class ValidationMessage:
     validation_message: str
 
 
-def validate_amf(amf_path: Path) -> list[ValidationMessage]:
+def validate_amf(amf_path: Path | str) -> list[ValidationMessage]:
+    amf_path = Path(amf_path)
     validation_messages: list[ValidationMessage] = []
 
     # Peek the file to find the AMF version from the XML namespace

@@ -137,7 +137,7 @@ class SemanticValidator:
 
     def validate(
         self,
-        amf_path: Path,
+        amf_path: Path | str,
         check_dates: bool = True,
         check_uuids: bool = True,
         check_cdl: bool = True,
@@ -166,6 +166,7 @@ class SemanticValidator:
         Returns:
             List of validation messages
         """
+        amf_path = Path(amf_path)
         messages: list[SemanticValidationMessage] = []
 
         try:
@@ -773,7 +774,7 @@ class SemanticValidator:
         return messages
 
 
-def validate_semantic(amf_path: Path, base_path: Optional[Path] = None, **kwargs) -> list[SemanticValidationMessage]:
+def validate_semantic(amf_path: Path | str, base_path: Optional[Path] = None, **kwargs) -> list[SemanticValidationMessage]:
     """
     Perform semantic validation on an AMF file (convenience function).
 

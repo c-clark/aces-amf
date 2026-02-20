@@ -33,11 +33,11 @@ class ACESAMF:
         self._has_modifications = False
 
     @classmethod
-    def from_file(cls, amf_path: Path) -> "ACESAMF":
+    def from_file(cls, amf_path: Path | str) -> "ACESAMF":
         """
         Read the provided AMF file and return the parsed data.
         """
-        amf, ns_map = amf_utilities.from_amf_file(amf_path)
+        amf, ns_map = amf_utilities.from_amf_file(Path(amf_path))
         obj = cls()
         obj.amf = amf
         obj.ns_map = ns_map
@@ -61,12 +61,12 @@ class ACESAMF:
         self.rev_up()
         return amf_utilities.dump_amf(self.amf, self.ns_map)
 
-    def write(self, out: Path) -> None:
+    def write(self, out: Path | str) -> None:
         """
         Write the AMF data to a file.
         """
         self.rev_up()
-        with open(out, "w") as file:
+        with open(Path(out), "w") as file:
             amf_utilities.write_amf(file, self.amf, self.ns_map)
 
     def _ensure_minimal_amf_structure(self):
