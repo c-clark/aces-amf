@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aces-amf-utils"
+version = "0.1.0"
+description = "CLI, builder, and utilities for ACES Metadata Files (AMF)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = [
+    "aces-amf-lib>=0.1.0",
+    "aces-amf-transforms>=0.1.0",
+    "click>=8.0.0",
+]
+
+[project.scripts]
+amf = "aces_amf_utils.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+aces-amf-lib = { workspace = true }
+aces-amf-transforms = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

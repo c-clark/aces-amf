@@ -1,0 +1,722 @@
+version = 1
+revision = 3
+requires-python = ">=3.10"
+
+[manifest]
+members = [
+    "aces-amf",
+    "aces-amf-lib",
+    "aces-amf-transforms",
+    "aces-amf-utils",
+]
+
+[[package]]
+name = "aces-amf"
+version = "0.1.0"
+source = { virtual = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.0" },
+    { name = "pytest", specifier = ">=7.0" },
+    { name = "ruff", specifier = ">=0.1.0" },
+]
+
+[[package]]
+name = "aces-amf-lib"
+version = "0.1.0"
+source = { editable = "packages/aces-amf-lib" }
+dependencies = [
+    { name = "lxml" },
+    { name = "pydantic" },
+    { name = "xsdata", extra = ["lxml"] },
+    { name = "xsdata-pydantic" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lxml", specifier = ">=4.9.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "xsdata", extras = ["lxml"], specifier = ">=24.0.0" },
+    { name = "xsdata-pydantic", specifier = ">=24.5" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "aces-amf-transforms"
+version = "0.1.0"
+source = { editable = "packages/aces-amf-transforms" }
+dependencies = [
+    { name = "aces-amf-lib" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "aces-amf-lib", editable = "packages/aces-amf-lib" }]
+
+[[package]]
+name = "aces-amf-utils"
+version = "0.1.0"
+source = { editable = "packages/aces-amf-utils" }
+dependencies = [
+    { name = "aces-amf-lib" },
+    { name = "aces-amf-transforms" },
+    { name = "click" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aces-amf-lib", editable = "packages/aces-amf-lib" },
+    { name = "aces-amf-transforms", editable = "packages/aces-amf-transforms" },
+    { name = "click", specifier = ">=8.0.0" },
+]
+
+[[package]]
+name = "annotated-types"
+version = "0.7.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/14505990414/annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89", size = 16081, upload-time = "2024-05-20T21:33:25.928Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/14505990413/annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53", size = 13643, upload-time = "2024-05-20T21:33:24.1Z" },
+]
+
+[[package]]
+name = "click"
+version = "8.3.1"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19343417910/click-8.3.1.tar.gz", hash = "sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a", size = 295065, upload-time = "2025-11-15T20:45:42.706Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19343417909/click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6", size = 108274, upload-time = "2025-11-15T20:45:41.139Z" },
+]
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/988988/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697, upload-time = "2022-10-25T02:36:22.414Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/988987/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
+]
+
+[[package]]
+name = "exceptiongroup"
+version = "1.3.1"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19374036393/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19374036392/exceptiongroup-1.3.1-py3-none-any.whl", hash = "sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598", size = 16740, upload-time = "2025-11-21T23:01:53.443Z" },
+]
+
+[[package]]
+name = "iniconfig"
+version = "2.3.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19216517185/iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730", size = 20503, upload-time = "2025-10-18T21:55:43.219Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19216517184/iniconfig-2.3.0-py3-none-any.whl", hash = "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12", size = 7484, upload-time = "2025-10-18T21:55:41.639Z" },
+]
+
+[[package]]
+name = "librt"
+version = "0.8.1"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19864261260/librt-0.8.1.tar.gz", hash = "sha256:be46a14693955b3bd96014ccbdb8339ee8c9346fbe11c1b78901b55125f14c73", size = 177471, upload-time = "2026-02-17T16:13:06.101Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19864232568/librt-0.8.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:81fd938344fecb9373ba1b155968c8a329491d2ce38e7ddb76f30ffb938f12dc", size = 65697, upload-time = "2026-02-17T16:11:06.903Z" },
+    { url = "https://pypi.netflix.net/packages/19864232569/librt-0.8.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5db05697c82b3a2ec53f6e72b2ed373132b0c2e05135f0696784e97d7f5d48e7", size = 68376, upload-time = "2026-02-17T16:11:08.395Z" },
+    { url = "https://pypi.netflix.net/packages/19864232570/librt-0.8.1-cp310-cp310-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:d56bc4011975f7460bea7b33e1ff425d2f1adf419935ff6707273c77f8a4ada6", size = 197084, upload-time = "2026-02-17T16:11:09.774Z" },
+    { url = "https://pypi.netflix.net/packages/19864232571/librt-0.8.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:5cdc0f588ff4b663ea96c26d2a230c525c6fc62b28314edaaaca8ed5af931ad0", size = 207337, upload-time = "2026-02-17T16:11:11.311Z" },
+    { url = "https://pypi.netflix.net/packages/19864232572/librt-0.8.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:97c2b54ff6717a7a563b72627990bec60d8029df17df423f0ed37d56a17a176b", size = 219980, upload-time = "2026-02-17T16:11:12.499Z" },
+    { url = "https://pypi.netflix.net/packages/19864232573/librt-0.8.1-cp310-cp310-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:8f1125e6bbf2f1657d9a2f3ccc4a2c9b0c8b176965bb565dd4d86be67eddb4b6", size = 212921, upload-time = "2026-02-17T16:11:14.484Z" },
+    { url = "https://pypi.netflix.net/packages/19864232574/librt-0.8.1-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:8f4bb453f408137d7581be309b2fbc6868a80e7ef60c88e689078ee3a296ae71", size = 221381, upload-time = "2026-02-17T16:11:17.459Z" },
+    { url = "https://pypi.netflix.net/packages/19864232575/librt-0.8.1-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:c336d61d2fe74a3195edc1646d53ff1cddd3a9600b09fa6ab75e5514ba4862a7", size = 216714, upload-time = "2026-02-17T16:11:19.197Z" },
+    { url = "https://pypi.netflix.net/packages/19864232576/librt-0.8.1-cp310-cp310-musllinux_1_2_riscv64.whl", hash = "sha256:eb5656019db7c4deacf0c1a55a898c5bb8f989be904597fcb5232a2f4828fa05", size = 214777, upload-time = "2026-02-17T16:11:20.443Z" },
+    { url = "https://pypi.netflix.net/packages/19864232577/librt-0.8.1-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:c25d9e338d5bed46c1632f851babf3d13c78f49a225462017cf5e11e845c5891", size = 237398, upload-time = "2026-02-17T16:11:22.083Z" },
+    { url = "https://pypi.netflix.net/packages/19864232578/librt-0.8.1-cp310-cp310-win32.whl", hash = "sha256:aaab0e307e344cb28d800957ef3ec16605146ef0e59e059a60a176d19543d1b7", size = 54285, upload-time = "2026-02-17T16:11:23.27Z" },
+    { url = "https://pypi.netflix.net/packages/19864232579/librt-0.8.1-cp310-cp310-win_amd64.whl", hash = "sha256:56e04c14b696300d47b3bc5f1d10a00e86ae978886d0cee14e5714fafb5df5d2", size = 61352, upload-time = "2026-02-17T16:11:24.207Z" },
+    { url = "https://pypi.netflix.net/packages/19864234355/librt-0.8.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:681dc2451d6d846794a828c16c22dc452d924e9f700a485b7ecb887a30aad1fd", size = 65315, upload-time = "2026-02-17T16:11:25.152Z" },
+    { url = "https://pypi.netflix.net/packages/19864234356/librt-0.8.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:a3b4350b13cc0e6f5bec8fa7caf29a8fb8cdc051a3bae45cfbfd7ce64f009965", size = 68021, upload-time = "2026-02-17T16:11:26.129Z" },
+    { url = "https://pypi.netflix.net/packages/19864234357/librt-0.8.1-cp311-cp311-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:ac1e7817fd0ed3d14fd7c5df91daed84c48e4c2a11ee99c0547f9f62fdae13da", size = 194500, upload-time = "2026-02-17T16:11:27.177Z" },
+    { url = "https://pypi.netflix.net/packages/19864234358/librt-0.8.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:747328be0c5b7075cde86a0e09d7a9196029800ba75a1689332348e998fb85c0", size = 205622, upload-time = "2026-02-17T16:11:28.242Z" },
+    { url = "https://pypi.netflix.net/packages/19864234359/librt-0.8.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f0af2bd2bc204fa27f3d6711d0f360e6b8c684a035206257a81673ab924aa11e", size = 218304, upload-time = "2026-02-17T16:11:29.344Z" },
+    { url = "https://pypi.netflix.net/packages/19864234360/librt-0.8.1-cp311-cp311-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:d480de377f5b687b6b1bc0c0407426da556e2a757633cc7e4d2e1a057aa688f3", size = 211493, upload-time = "2026-02-17T16:11:30.445Z" },
+    { url = "https://pypi.netflix.net/packages/19864234361/librt-0.8.1-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:d0ee06b5b5291f609ddb37b9750985b27bc567791bc87c76a569b3feed8481ac", size = 219129, upload-time = "2026-02-17T16:11:32.021Z" },
+    { url = "https://pypi.netflix.net/packages/19864234362/librt-0.8.1-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:9e2c6f77b9ad48ce5603b83b7da9ee3e36b3ab425353f695cba13200c5d96596", size = 213113, upload-time = "2026-02-17T16:11:33.192Z" },
+    { url = "https://pypi.netflix.net/packages/19864234363/librt-0.8.1-cp311-cp311-musllinux_1_2_riscv64.whl", hash = "sha256:439352ba9373f11cb8e1933da194dcc6206daf779ff8df0ed69c5e39113e6a99", size = 212269, upload-time = "2026-02-17T16:11:34.373Z" },
+    { url = "https://pypi.netflix.net/packages/19864234364/librt-0.8.1-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:82210adabbc331dbb65d7868b105185464ef13f56f7f76688565ad79f648b0fe", size = 234673, upload-time = "2026-02-17T16:11:36.063Z" },
+    { url = "https://pypi.netflix.net/packages/19864234365/librt-0.8.1-cp311-cp311-win32.whl", hash = "sha256:52c224e14614b750c0a6d97368e16804a98c684657c7518752c356834fff83bb", size = 54597, upload-time = "2026-02-17T16:11:37.544Z" },
+    { url = "https://pypi.netflix.net/packages/19864234366/librt-0.8.1-cp311-cp311-win_amd64.whl", hash = "sha256:c00e5c884f528c9932d278d5c9cbbea38a6b81eb62c02e06ae53751a83a4d52b", size = 61733, upload-time = "2026-02-17T16:11:38.691Z" },
+    { url = "https://pypi.netflix.net/packages/19864236154/librt-0.8.1-cp311-cp311-win_arm64.whl", hash = "sha256:f7cdf7f26c2286ffb02e46d7bac56c94655540b26347673bea15fa52a6af17e9", size = 52273, upload-time = "2026-02-17T16:11:40.308Z" },
+    { url = "https://pypi.netflix.net/packages/19864236155/librt-0.8.1-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:a28f2612ab566b17f3698b0da021ff9960610301607c9a5e8eaca62f5e1c350a", size = 66516, upload-time = "2026-02-17T16:11:41.604Z" },
+    { url = "https://pypi.netflix.net/packages/19864236156/librt-0.8.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:60a78b694c9aee2a0f1aaeaa7d101cf713e92e8423a941d2897f4fa37908dab9", size = 68634, upload-time = "2026-02-17T16:11:43.268Z" },
+    { url = "https://pypi.netflix.net/packages/19864236157/librt-0.8.1-cp312-cp312-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:758509ea3f1eba2a57558e7e98f4659d0ea7670bff49673b0dde18a3c7e6c0eb", size = 198941, upload-time = "2026-02-17T16:11:44.28Z" },
+    { url = "https://pypi.netflix.net/packages/19864236158/librt-0.8.1-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:039b9f2c506bd0ab0f8725aa5ba339c6f0cd19d3b514b50d134789809c24285d", size = 209991, upload-time = "2026-02-17T16:11:45.462Z" },
+    { url = "https://pypi.netflix.net/packages/19864236159/librt-0.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5bb54f1205a3a6ab41a6fd71dfcdcbd278670d3a90ca502a30d9da583105b6f7", size = 224476, upload-time = "2026-02-17T16:11:46.542Z" },
+    { url = "https://pypi.netflix.net/packages/19864236160/librt-0.8.1-cp312-cp312-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:05bd41cdee35b0c59c259f870f6da532a2c5ca57db95b5f23689fcb5c9e42440", size = 217518, upload-time = "2026-02-17T16:11:47.746Z" },
+    { url = "https://pypi.netflix.net/packages/19864236161/librt-0.8.1-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:adfab487facf03f0d0857b8710cf82d0704a309d8ffc33b03d9302b4c64e91a9", size = 225116, upload-time = "2026-02-17T16:11:49.298Z" },
+    { url = "https://pypi.netflix.net/packages/19864236162/librt-0.8.1-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:153188fe98a72f206042be10a2c6026139852805215ed9539186312d50a8e972", size = 217751, upload-time = "2026-02-17T16:11:50.49Z" },
+    { url = "https://pypi.netflix.net/packages/19864236163/librt-0.8.1-cp312-cp312-musllinux_1_2_riscv64.whl", hash = "sha256:dd3c41254ee98604b08bd5b3af5bf0a89740d4ee0711de95b65166bf44091921", size = 218378, upload-time = "2026-02-17T16:11:51.783Z" },
+    { url = "https://pypi.netflix.net/packages/19864236164/librt-0.8.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:e0d138c7ae532908cbb342162b2611dbd4d90c941cd25ab82084aaf71d2c0bd0", size = 241199, upload-time = "2026-02-17T16:11:53.561Z" },
+    { url = "https://pypi.netflix.net/packages/19864236165/librt-0.8.1-cp312-cp312-win32.whl", hash = "sha256:43353b943613c5d9c49a25aaffdba46f888ec354e71e3529a00cca3f04d66a7a", size = 54917, upload-time = "2026-02-17T16:11:54.758Z" },
+    { url = "https://pypi.netflix.net/packages/19864237965/librt-0.8.1-cp312-cp312-win_amd64.whl", hash = "sha256:ff8baf1f8d3f4b6b7257fcb75a501f2a5499d0dda57645baa09d4d0d34b19444", size = 62017, upload-time = "2026-02-17T16:11:55.748Z" },
+    { url = "https://pypi.netflix.net/packages/19864237966/librt-0.8.1-cp312-cp312-win_arm64.whl", hash = "sha256:0f2ae3725904f7377e11cc37722d5d401e8b3d5851fb9273d7f4fe04f6b3d37d", size = 52441, upload-time = "2026-02-17T16:11:56.801Z" },
+    { url = "https://pypi.netflix.net/packages/19864237967/librt-0.8.1-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:7e6bad1cd94f6764e1e21950542f818a09316645337fd5ab9a7acc45d99a8f35", size = 66529, upload-time = "2026-02-17T16:11:57.809Z" },
+    { url = "https://pypi.netflix.net/packages/19864237968/librt-0.8.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:cf450f498c30af55551ba4f66b9123b7185362ec8b625a773b3d39aa1a717583", size = 68669, upload-time = "2026-02-17T16:11:58.843Z" },
+    { url = "https://pypi.netflix.net/packages/19864237969/librt-0.8.1-cp313-cp313-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:eca45e982fa074090057132e30585a7e8674e9e885d402eae85633e9f449ce6c", size = 199279, upload-time = "2026-02-17T16:11:59.862Z" },
+    { url = "https://pypi.netflix.net/packages/19864237970/librt-0.8.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0c3811485fccfda840861905b8c70bba5ec094e02825598bb9d4ca3936857a04", size = 210288, upload-time = "2026-02-17T16:12:00.954Z" },
+    { url = "https://pypi.netflix.net/packages/19864237971/librt-0.8.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5e4af413908f77294605e28cfd98063f54b2c790561383971d2f52d113d9c363", size = 224809, upload-time = "2026-02-17T16:12:02.108Z" },
+    { url = "https://pypi.netflix.net/packages/19864237972/librt-0.8.1-cp313-cp313-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:5212a5bd7fae98dae95710032902edcd2ec4dc994e883294f75c857b83f9aba0", size = 218075, upload-time = "2026-02-17T16:12:03.631Z" },
+    { url = "https://pypi.netflix.net/packages/19864237973/librt-0.8.1-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:e692aa2d1d604e6ca12d35e51fdc36f4cda6345e28e36374579f7ef3611b3012", size = 225486, upload-time = "2026-02-17T16:12:04.725Z" },
+    { url = "https://pypi.netflix.net/packages/19864237974/librt-0.8.1-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:4be2a5c926b9770c9e08e717f05737a269b9d0ebc5d2f0060f0fe3fe9ce47acb", size = 218219, upload-time = "2026-02-17T16:12:05.828Z" },
+    { url = "https://pypi.netflix.net/packages/19864237975/librt-0.8.1-cp313-cp313-musllinux_1_2_riscv64.whl", hash = "sha256:fd1a720332ea335ceb544cf0a03f81df92abd4bb887679fd1e460976b0e6214b", size = 218750, upload-time = "2026-02-17T16:12:07.09Z" },
+    { url = "https://pypi.netflix.net/packages/19864237976/librt-0.8.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:93c2af9e01e0ef80d95ae3c720be101227edae5f2fe7e3dc63d8857fadfc5a1d", size = 241624, upload-time = "2026-02-17T16:12:08.43Z" },
+    { url = "https://pypi.netflix.net/packages/19864237977/librt-0.8.1-cp313-cp313-win32.whl", hash = "sha256:086a32dbb71336627e78cc1d6ee305a68d038ef7d4c39aaff41ae8c9aa46e91a", size = 54969, upload-time = "2026-02-17T16:12:09.633Z" },
+    { url = "https://pypi.netflix.net/packages/19864239790/librt-0.8.1-cp313-cp313-win_amd64.whl", hash = "sha256:e11769a1dbda4da7b00a76cfffa67aa47cfa66921d2724539eee4b9ede780b79", size = 62000, upload-time = "2026-02-17T16:12:10.632Z" },
+    { url = "https://pypi.netflix.net/packages/19864239791/librt-0.8.1-cp313-cp313-win_arm64.whl", hash = "sha256:924817ab3141aca17893386ee13261f1d100d1ef410d70afe4389f2359fea4f0", size = 52495, upload-time = "2026-02-17T16:12:11.633Z" },
+    { url = "https://pypi.netflix.net/packages/19864239792/librt-0.8.1-cp314-cp314-macosx_10_13_x86_64.whl", hash = "sha256:6cfa7fe54fd4d1f47130017351a959fe5804bda7a0bc7e07a2cdbc3fdd28d34f", size = 66081, upload-time = "2026-02-17T16:12:12.766Z" },
+    { url = "https://pypi.netflix.net/packages/19864239793/librt-0.8.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:228c2409c079f8c11fb2e5d7b277077f694cb93443eb760e00b3b83cb8b3176c", size = 68309, upload-time = "2026-02-17T16:12:13.756Z" },
+    { url = "https://pypi.netflix.net/packages/19864239794/librt-0.8.1-cp314-cp314-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:7aae78ab5e3206181780e56912d1b9bb9f90a7249ce12f0e8bf531d0462dd0fc", size = 196804, upload-time = "2026-02-17T16:12:14.818Z" },
+    { url = "https://pypi.netflix.net/packages/19864239795/librt-0.8.1-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:172d57ec04346b047ca6af181e1ea4858086c80bdf455f61994c4aa6fc3f866c", size = 206907, upload-time = "2026-02-17T16:12:16.513Z" },
+    { url = "https://pypi.netflix.net/packages/19864239796/librt-0.8.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6b1977c4ea97ce5eb7755a78fae68d87e4102e4aaf54985e8b56806849cc06a3", size = 221217, upload-time = "2026-02-17T16:12:17.906Z" },
+    { url = "https://pypi.netflix.net/packages/19864239797/librt-0.8.1-cp314-cp314-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:10c42e1f6fd06733ef65ae7bebce2872bcafd8d6e6b0a08fe0a05a23b044fb14", size = 214622, upload-time = "2026-02-17T16:12:19.108Z" },
+    { url = "https://pypi.netflix.net/packages/19864239798/librt-0.8.1-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:4c8dfa264b9193c4ee19113c985c95f876fae5e51f731494fc4e0cf594990ba7", size = 221987, upload-time = "2026-02-17T16:12:20.331Z" },
+    { url = "https://pypi.netflix.net/packages/19864239799/librt-0.8.1-cp314-cp314-musllinux_1_2_i686.whl", hash = "sha256:01170b6729a438f0dedc4a26ed342e3dc4f02d1000b4b19f980e1877f0c297e6", size = 215132, upload-time = "2026-02-17T16:12:21.54Z" },
+    { url = "https://pypi.netflix.net/packages/19864257554/librt-0.8.1-cp314-cp314-musllinux_1_2_riscv64.whl", hash = "sha256:7b02679a0d783bdae30d443025b94465d8c3dc512f32f5b5031f93f57ac32071", size = 215195, upload-time = "2026-02-17T16:12:23.073Z" },
+    { url = "https://pypi.netflix.net/packages/19864257555/librt-0.8.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:190b109bb69592a3401fe1ffdea41a2e73370ace2ffdc4a0e8e2b39cdea81b78", size = 237946, upload-time = "2026-02-17T16:12:24.275Z" },
+    { url = "https://pypi.netflix.net/packages/19864257556/librt-0.8.1-cp314-cp314-win32.whl", hash = "sha256:e70a57ecf89a0f64c24e37f38d3fe217a58169d2fe6ed6d70554964042474023", size = 50689, upload-time = "2026-02-17T16:12:25.766Z" },
+    { url = "https://pypi.netflix.net/packages/19864257557/librt-0.8.1-cp314-cp314-win_amd64.whl", hash = "sha256:7e2f3edca35664499fbb36e4770650c4bd4a08abc1f4458eab9df4ec56389730", size = 57875, upload-time = "2026-02-17T16:12:27.465Z" },
+    { url = "https://pypi.netflix.net/packages/19864257558/librt-0.8.1-cp314-cp314-win_arm64.whl", hash = "sha256:0d2f82168e55ddefd27c01c654ce52379c0750ddc31ee86b4b266bcf4d65f2a3", size = 48058, upload-time = "2026-02-17T16:12:28.556Z" },
+    { url = "https://pypi.netflix.net/packages/19864257559/librt-0.8.1-cp314-cp314t-macosx_10_13_x86_64.whl", hash = "sha256:2c74a2da57a094bd48d03fa5d196da83d2815678385d2978657499063709abe1", size = 68313, upload-time = "2026-02-17T16:12:29.659Z" },
+    { url = "https://pypi.netflix.net/packages/19864257560/librt-0.8.1-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:a355d99c4c0d8e5b770313b8b247411ed40949ca44e33e46a4789b9293a907ee", size = 70994, upload-time = "2026-02-17T16:12:31.516Z" },
+    { url = "https://pypi.netflix.net/packages/19864257561/librt-0.8.1-cp314-cp314t-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:2eb345e8b33fb748227409c9f1233d4df354d6e54091f0e8fc53acdb2ffedeb7", size = 220770, upload-time = "2026-02-17T16:12:33.294Z" },
+    { url = "https://pypi.netflix.net/packages/19864257562/librt-0.8.1-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9be2f15e53ce4e83cc08adc29b26fb5978db62ef2a366fbdf716c8a6c8901040", size = 235409, upload-time = "2026-02-17T16:12:35.443Z" },
+    { url = "https://pypi.netflix.net/packages/19864257563/librt-0.8.1-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:785ae29c1f5c6e7c2cde2c7c0e148147f4503da3abc5d44d482068da5322fd9e", size = 246473, upload-time = "2026-02-17T16:12:36.656Z" },
+    { url = "https://pypi.netflix.net/packages/19864257564/librt-0.8.1-cp314-cp314t-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:1d3a7da44baf692f0c6aeb5b2a09c5e6fc7a703bca9ffa337ddd2e2da53f7732", size = 238866, upload-time = "2026-02-17T16:12:37.849Z" },
+    { url = "https://pypi.netflix.net/packages/19864259398/librt-0.8.1-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:5fc48998000cbc39ec0d5311312dda93ecf92b39aaf184c5e817d5d440b29624", size = 250248, upload-time = "2026-02-17T16:12:39.445Z" },
+    { url = "https://pypi.netflix.net/packages/19864259399/librt-0.8.1-cp314-cp314t-musllinux_1_2_i686.whl", hash = "sha256:e96baa6820280077a78244b2e06e416480ed859bbd8e5d641cf5742919d8beb4", size = 240629, upload-time = "2026-02-17T16:12:40.889Z" },
+    { url = "https://pypi.netflix.net/packages/19864259400/librt-0.8.1-cp314-cp314t-musllinux_1_2_riscv64.whl", hash = "sha256:31362dbfe297b23590530007062c32c6f6176f6099646bb2c95ab1b00a57c382", size = 239615, upload-time = "2026-02-17T16:12:42.446Z" },
+    { url = "https://pypi.netflix.net/packages/19864259401/librt-0.8.1-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:cc3656283d11540ab0ea01978378e73e10002145117055e03722417aeab30994", size = 263001, upload-time = "2026-02-17T16:12:43.627Z" },
+    { url = "https://pypi.netflix.net/packages/19864259402/librt-0.8.1-cp314-cp314t-win32.whl", hash = "sha256:738f08021b3142c2918c03692608baed43bc51144c29e35807682f8070ee2a3a", size = 51328, upload-time = "2026-02-17T16:12:45.148Z" },
+    { url = "https://pypi.netflix.net/packages/19864259403/librt-0.8.1-cp314-cp314t-win_amd64.whl", hash = "sha256:89815a22daf9c51884fb5dbe4f1ef65ee6a146e0b6a8df05f753e2e4a9359bf4", size = 58722, upload-time = "2026-02-17T16:12:46.85Z" },
+    { url = "https://pypi.netflix.net/packages/19864259404/librt-0.8.1-cp314-cp314t-win_arm64.whl", hash = "sha256:bf512a71a23504ed08103a13c941f763db13fb11177beb3d9244c98c29fb4a61", size = 48755, upload-time = "2026-02-17T16:12:47.943Z" },
+]
+
+[[package]]
+name = "lxml"
+version = "6.0.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19113359932/lxml-6.0.2.tar.gz", hash = "sha256:cd79f3367bd74b317dda655dc8fcfa304d9eb6e4fb06b7168c5cf27f96e0cd62", size = 4073426, upload-time = "2025-09-22T04:04:59.287Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19113273650/lxml-6.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:e77dd455b9a16bbd2a5036a63ddbd479c19572af81b624e79ef422f929eef388", size = 8590589, upload-time = "2025-09-22T04:00:10.51Z" },
+    { url = "https://pypi.netflix.net/packages/19113273651/lxml-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:5d444858b9f07cefff6455b983aea9a67f7462ba1f6cbe4a21e8bf6791bf2153", size = 4629671, upload-time = "2025-09-22T04:00:15.411Z" },
+    { url = "https://pypi.netflix.net/packages/19113273652/lxml-6.0.2-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f952dacaa552f3bb8834908dddd500ba7d508e6ea6eb8c52eb2d28f48ca06a31", size = 4999961, upload-time = "2025-09-22T04:00:17.619Z" },
+    { url = "https://pypi.netflix.net/packages/19113273653/lxml-6.0.2-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:71695772df6acea9f3c0e59e44ba8ac50c4f125217e84aab21074a1a55e7e5c9", size = 5157087, upload-time = "2025-09-22T04:00:19.868Z" },
+    { url = "https://pypi.netflix.net/packages/19113277301/lxml-6.0.2-cp310-cp310-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:17f68764f35fd78d7c4cc4ef209a184c38b65440378013d24b8aecd327c3e0c8", size = 5067620, upload-time = "2025-09-22T04:00:21.877Z" },
+    { url = "https://pypi.netflix.net/packages/19113277302/lxml-6.0.2-cp310-cp310-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:058027e261afed589eddcfe530fcc6f3402d7fd7e89bfd0532df82ebc1563dba", size = 5406664, upload-time = "2025-09-22T04:00:23.714Z" },
+    { url = "https://pypi.netflix.net/packages/19113277303/lxml-6.0.2-cp310-cp310-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a8ffaeec5dfea5881d4c9d8913a32d10cfe3923495386106e4a24d45300ef79c", size = 5289397, upload-time = "2025-09-22T04:00:25.544Z" },
+    { url = "https://pypi.netflix.net/packages/19113277304/lxml-6.0.2-cp310-cp310-manylinux_2_31_armv7l.whl", hash = "sha256:f2e3b1a6bb38de0bc713edd4d612969dd250ca8b724be8d460001a387507021c", size = 4772178, upload-time = "2025-09-22T04:00:27.602Z" },
+    { url = "https://pypi.netflix.net/packages/19113277305/lxml-6.0.2-cp310-cp310-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:d6690ec5ec1cce0385cb20896b16be35247ac8c2046e493d03232f1c2414d321", size = 5358148, upload-time = "2025-09-22T04:00:29.323Z" },
+    { url = "https://pypi.netflix.net/packages/19113277306/lxml-6.0.2-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:f2a50c3c1d11cad0ebebbac357a97b26aa79d2bcaf46f256551152aa85d3a4d1", size = 5112035, upload-time = "2025-09-22T04:00:31.061Z" },
+    { url = "https://pypi.netflix.net/packages/19113277307/lxml-6.0.2-cp310-cp310-musllinux_1_2_armv7l.whl", hash = "sha256:3efe1b21c7801ffa29a1112fab3b0f643628c30472d507f39544fd48e9549e34", size = 4799111, upload-time = "2025-09-22T04:00:33.11Z" },
+    { url = "https://pypi.netflix.net/packages/19113277308/lxml-6.0.2-cp310-cp310-musllinux_1_2_riscv64.whl", hash = "sha256:59c45e125140b2c4b33920d21d83681940ca29f0b83f8629ea1a2196dc8cfe6a", size = 5351662, upload-time = "2025-09-22T04:00:35.237Z" },
+    { url = "https://pypi.netflix.net/packages/19113277309/lxml-6.0.2-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:452b899faa64f1805943ec1c0c9ebeaece01a1af83e130b69cdefeda180bb42c", size = 5314973, upload-time = "2025-09-22T04:00:37.086Z" },
+    { url = "https://pypi.netflix.net/packages/19113280966/lxml-6.0.2-cp310-cp310-win32.whl", hash = "sha256:1e786a464c191ca43b133906c6903a7e4d56bef376b75d97ccbb8ec5cf1f0a4b", size = 3611953, upload-time = "2025-09-22T04:00:39.224Z" },
+    { url = "https://pypi.netflix.net/packages/19113280967/lxml-6.0.2-cp310-cp310-win_amd64.whl", hash = "sha256:dacf3c64ef3f7440e3167aa4b49aa9e0fb99e0aa4f9ff03795640bf94531bcb0", size = 4032695, upload-time = "2025-09-22T04:00:41.402Z" },
+    { url = "https://pypi.netflix.net/packages/19113280968/lxml-6.0.2-cp310-cp310-win_arm64.whl", hash = "sha256:45f93e6f75123f88d7f0cfd90f2d05f441b808562bf0bc01070a00f53f5028b5", size = 3680051, upload-time = "2025-09-22T04:00:43.525Z" },
+    { url = "https://pypi.netflix.net/packages/19113280969/lxml-6.0.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:13e35cbc684aadf05d8711a5d1b5857c92e5e580efa9a0d2be197199c8def607", size = 8634365, upload-time = "2025-09-22T04:00:45.672Z" },
+    { url = "https://pypi.netflix.net/packages/19113280970/lxml-6.0.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:3b1675e096e17c6fe9c0e8c81434f5736c0739ff9ac6123c87c2d452f48fc938", size = 4650793, upload-time = "2025-09-22T04:00:47.783Z" },
+    { url = "https://pypi.netflix.net/packages/19113280971/lxml-6.0.2-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:8ac6e5811ae2870953390452e3476694196f98d447573234592d30488147404d", size = 4944362, upload-time = "2025-09-22T04:00:49.845Z" },
+    { url = "https://pypi.netflix.net/packages/19113280972/lxml-6.0.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5aa0fc67ae19d7a64c3fe725dc9a1bb11f80e01f78289d05c6f62545affec438", size = 5083152, upload-time = "2025-09-22T04:00:51.709Z" },
+    { url = "https://pypi.netflix.net/packages/19113284636/lxml-6.0.2-cp311-cp311-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:de496365750cc472b4e7902a485d3f152ecf57bd3ba03ddd5578ed8ceb4c5964", size = 5023539, upload-time = "2025-09-22T04:00:53.593Z" },
+    { url = "https://pypi.netflix.net/packages/19113284637/lxml-6.0.2-cp311-cp311-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:200069a593c5e40b8f6fc0d84d86d970ba43138c3e68619ffa234bc9bb806a4d", size = 5344853, upload-time = "2025-09-22T04:00:55.524Z" },
+    { url = "https://pypi.netflix.net/packages/19113284638/lxml-6.0.2-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7d2de809c2ee3b888b59f995625385f74629707c9355e0ff856445cdcae682b7", size = 5225133, upload-time = "2025-09-22T04:00:57.269Z" },
+    { url = "https://pypi.netflix.net/packages/19113284639/lxml-6.0.2-cp311-cp311-manylinux_2_31_armv7l.whl", hash = "sha256:b2c3da8d93cf5db60e8858c17684c47d01fee6405e554fb55018dd85fc23b178", size = 4677944, upload-time = "2025-09-22T04:00:59.052Z" },
+    { url = "https://pypi.netflix.net/packages/19113284640/lxml-6.0.2-cp311-cp311-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:442de7530296ef5e188373a1ea5789a46ce90c4847e597856570439621d9c553", size = 5284535, upload-time = "2025-09-22T04:01:01.335Z" },
+    { url = "https://pypi.netflix.net/packages/19113284641/lxml-6.0.2-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:2593c77efde7bfea7f6389f1ab249b15ed4aa5bc5cb5131faa3b843c429fbedb", size = 5067343, upload-time = "2025-09-22T04:01:03.13Z" },
+    { url = "https://pypi.netflix.net/packages/19113284642/lxml-6.0.2-cp311-cp311-musllinux_1_2_armv7l.whl", hash = "sha256:3e3cb08855967a20f553ff32d147e14329b3ae70ced6edc2f282b94afbc74b2a", size = 4725419, upload-time = "2025-09-22T04:01:05.013Z" },
+    { url = "https://pypi.netflix.net/packages/19113284643/lxml-6.0.2-cp311-cp311-musllinux_1_2_riscv64.whl", hash = "sha256:2ed6c667fcbb8c19c6791bbf40b7268ef8ddf5a96940ba9404b9f9a304832f6c", size = 5275008, upload-time = "2025-09-22T04:01:07.327Z" },
+    { url = "https://pypi.netflix.net/packages/19113288315/lxml-6.0.2-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:b8f18914faec94132e5b91e69d76a5c1d7b0c73e2489ea8929c4aaa10b76bbf7", size = 5248906, upload-time = "2025-09-22T04:01:09.452Z" },
+    { url = "https://pypi.netflix.net/packages/19113288316/lxml-6.0.2-cp311-cp311-win32.whl", hash = "sha256:6605c604e6daa9e0d7f0a2137bdc47a2e93b59c60a65466353e37f8272f47c46", size = 3610357, upload-time = "2025-09-22T04:01:11.102Z" },
+    { url = "https://pypi.netflix.net/packages/19113288317/lxml-6.0.2-cp311-cp311-win_amd64.whl", hash = "sha256:e5867f2651016a3afd8dd2c8238baa66f1e2802f44bc17e236f547ace6647078", size = 4036583, upload-time = "2025-09-22T04:01:12.766Z" },
+    { url = "https://pypi.netflix.net/packages/19113288318/lxml-6.0.2-cp311-cp311-win_arm64.whl", hash = "sha256:4197fb2534ee05fd3e7afaab5d8bfd6c2e186f65ea7f9cd6a82809c887bd1285", size = 3680591, upload-time = "2025-09-22T04:01:14.874Z" },
+    { url = "https://pypi.netflix.net/packages/19113288319/lxml-6.0.2-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:a59f5448ba2ceccd06995c95ea59a7674a10de0810f2ce90c9006f3cbc044456", size = 8661887, upload-time = "2025-09-22T04:01:17.265Z" },
+    { url = "https://pypi.netflix.net/packages/19113288320/lxml-6.0.2-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:e8113639f3296706fbac34a30813929e29247718e88173ad849f57ca59754924", size = 4667818, upload-time = "2025-09-22T04:01:19.688Z" },
+    { url = "https://pypi.netflix.net/packages/19113288321/lxml-6.0.2-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:a8bef9b9825fa8bc816a6e641bb67219489229ebc648be422af695f6e7a4fa7f", size = 4950807, upload-time = "2025-09-22T04:01:21.487Z" },
+    { url = "https://pypi.netflix.net/packages/19113288322/lxml-6.0.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:65ea18d710fd14e0186c2f973dc60bb52039a275f82d3c44a0e42b43440ea534", size = 5109179, upload-time = "2025-09-22T04:01:23.32Z" },
+    { url = "https://pypi.netflix.net/packages/19113292002/lxml-6.0.2-cp312-cp312-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c371aa98126a0d4c739ca93ceffa0fd7a5d732e3ac66a46e74339acd4d334564", size = 5023044, upload-time = "2025-09-22T04:01:25.118Z" },
+    { url = "https://pypi.netflix.net/packages/19113292003/lxml-6.0.2-cp312-cp312-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:700efd30c0fa1a3581d80a748157397559396090a51d306ea59a70020223d16f", size = 5359685, upload-time = "2025-09-22T04:01:27.398Z" },
+    { url = "https://pypi.netflix.net/packages/19113292004/lxml-6.0.2-cp312-cp312-manylinux_2_26_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:c33e66d44fe60e72397b487ee92e01da0d09ba2d66df8eae42d77b6d06e5eba0", size = 5654127, upload-time = "2025-09-22T04:01:29.629Z" },
+    { url = "https://pypi.netflix.net/packages/19113292005/lxml-6.0.2-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:90a345bbeaf9d0587a3aaffb7006aa39ccb6ff0e96a57286c0cb2fd1520ea192", size = 5253958, upload-time = "2025-09-22T04:01:31.535Z" },
+    { url = "https://pypi.netflix.net/packages/19113292006/lxml-6.0.2-cp312-cp312-manylinux_2_31_armv7l.whl", hash = "sha256:064fdadaf7a21af3ed1dcaa106b854077fbeada827c18f72aec9346847cd65d0", size = 4711541, upload-time = "2025-09-22T04:01:33.801Z" },
+    { url = "https://pypi.netflix.net/packages/19113292007/lxml-6.0.2-cp312-cp312-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:fbc74f42c3525ac4ffa4b89cbdd00057b6196bcefe8bce794abd42d33a018092", size = 5267426, upload-time = "2025-09-22T04:01:35.639Z" },
+    { url = "https://pypi.netflix.net/packages/19113292008/lxml-6.0.2-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:6ddff43f702905a4e32bc24f3f2e2edfe0f8fde3277d481bffb709a4cced7a1f", size = 5064917, upload-time = "2025-09-22T04:01:37.448Z" },
+    { url = "https://pypi.netflix.net/packages/19113292009/lxml-6.0.2-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:6da5185951d72e6f5352166e3da7b0dc27aa70bd1090b0eb3f7f7212b53f1bb8", size = 4788795, upload-time = "2025-09-22T04:01:39.165Z" },
+    { url = "https://pypi.netflix.net/packages/19113295697/lxml-6.0.2-cp312-cp312-musllinux_1_2_ppc64le.whl", hash = "sha256:57a86e1ebb4020a38d295c04fc79603c7899e0df71588043eb218722dabc087f", size = 5676759, upload-time = "2025-09-22T04:01:41.506Z" },
+    { url = "https://pypi.netflix.net/packages/19113295698/lxml-6.0.2-cp312-cp312-musllinux_1_2_riscv64.whl", hash = "sha256:2047d8234fe735ab77802ce5f2297e410ff40f5238aec569ad7c8e163d7b19a6", size = 5255666, upload-time = "2025-09-22T04:01:43.363Z" },
+    { url = "https://pypi.netflix.net/packages/19113295699/lxml-6.0.2-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:6f91fd2b2ea15a6800c8e24418c0775a1694eefc011392da73bc6cef2623b322", size = 5277989, upload-time = "2025-09-22T04:01:45.215Z" },
+    { url = "https://pypi.netflix.net/packages/19113295700/lxml-6.0.2-cp312-cp312-win32.whl", hash = "sha256:3ae2ce7d6fedfb3414a2b6c5e20b249c4c607f72cb8d2bb7cc9c6ec7c6f4e849", size = 3611456, upload-time = "2025-09-22T04:01:48.243Z" },
+    { url = "https://pypi.netflix.net/packages/19113295701/lxml-6.0.2-cp312-cp312-win_amd64.whl", hash = "sha256:72c87e5ee4e58a8354fb9c7c84cbf95a1c8236c127a5d1b7683f04bed8361e1f", size = 4011793, upload-time = "2025-09-22T04:01:50.042Z" },
+    { url = "https://pypi.netflix.net/packages/19113295702/lxml-6.0.2-cp312-cp312-win_arm64.whl", hash = "sha256:61cb10eeb95570153e0c0e554f58df92ecf5109f75eacad4a95baa709e26c3d6", size = 3672836, upload-time = "2025-09-22T04:01:52.145Z" },
+    { url = "https://pypi.netflix.net/packages/19113299396/lxml-6.0.2-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:9b33d21594afab46f37ae58dfadd06636f154923c4e8a4d754b0127554eb2e77", size = 8648494, upload-time = "2025-09-22T04:01:54.242Z" },
+    { url = "https://pypi.netflix.net/packages/19113299397/lxml-6.0.2-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:6c8963287d7a4c5c9a432ff487c52e9c5618667179c18a204bdedb27310f022f", size = 4661146, upload-time = "2025-09-22T04:01:56.282Z" },
+    { url = "https://pypi.netflix.net/packages/19113299398/lxml-6.0.2-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:1941354d92699fb5ffe6ed7b32f9649e43c2feb4b97205f75866f7d21aa91452", size = 4946932, upload-time = "2025-09-22T04:01:58.989Z" },
+    { url = "https://pypi.netflix.net/packages/19113299399/lxml-6.0.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:bb2f6ca0ae2d983ded09357b84af659c954722bbf04dea98030064996d156048", size = 5100060, upload-time = "2025-09-22T04:02:00.812Z" },
+    { url = "https://pypi.netflix.net/packages/19113299400/lxml-6.0.2-cp313-cp313-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:eb2a12d704f180a902d7fa778c6d71f36ceb7b0d317f34cdc76a5d05aa1dd1df", size = 5019000, upload-time = "2025-09-22T04:02:02.671Z" },
+    { url = "https://pypi.netflix.net/packages/19113299401/lxml-6.0.2-cp313-cp313-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:6ec0e3f745021bfed19c456647f0298d60a24c9ff86d9d051f52b509663feeb1", size = 5348496, upload-time = "2025-09-22T04:02:04.904Z" },
+    { url = "https://pypi.netflix.net/packages/19113299402/lxml-6.0.2-cp313-cp313-manylinux_2_26_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:846ae9a12d54e368933b9759052d6206a9e8b250291109c48e350c1f1f49d916", size = 5643779, upload-time = "2025-09-22T04:02:06.689Z" },
+    { url = "https://pypi.netflix.net/packages/19113299403/lxml-6.0.2-cp313-cp313-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ef9266d2aa545d7374938fb5c484531ef5a2ec7f2d573e62f8ce722c735685fd", size = 5244072, upload-time = "2025-09-22T04:02:08.587Z" },
+    { url = "https://pypi.netflix.net/packages/19113303105/lxml-6.0.2-cp313-cp313-manylinux_2_31_armv7l.whl", hash = "sha256:4077b7c79f31755df33b795dc12119cb557a0106bfdab0d2c2d97bd3cf3dffa6", size = 4718675, upload-time = "2025-09-22T04:02:10.783Z" },
+    { url = "https://pypi.netflix.net/packages/19113303106/lxml-6.0.2-cp313-cp313-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:a7c5d5e5f1081955358533be077166ee97ed2571d6a66bdba6ec2f609a715d1a", size = 5255171, upload-time = "2025-09-22T04:02:12.631Z" },
+    { url = "https://pypi.netflix.net/packages/19113303107/lxml-6.0.2-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:8f8d0cbd0674ee89863a523e6994ac25fd5be9c8486acfc3e5ccea679bad2679", size = 5057175, upload-time = "2025-09-22T04:02:14.718Z" },
+    { url = "https://pypi.netflix.net/packages/19113303108/lxml-6.0.2-cp313-cp313-musllinux_1_2_armv7l.whl", hash = "sha256:2cbcbf6d6e924c28f04a43f3b6f6e272312a090f269eff68a2982e13e5d57659", size = 4785688, upload-time = "2025-09-22T04:02:16.957Z" },
+    { url = "https://pypi.netflix.net/packages/19113303109/lxml-6.0.2-cp313-cp313-musllinux_1_2_ppc64le.whl", hash = "sha256:dfb874cfa53340009af6bdd7e54ebc0d21012a60a4e65d927c2e477112e63484", size = 5660655, upload-time = "2025-09-22T04:02:18.815Z" },
+    { url = "https://pypi.netflix.net/packages/19113303110/lxml-6.0.2-cp313-cp313-musllinux_1_2_riscv64.whl", hash = "sha256:fb8dae0b6b8b7f9e96c26fdd8121522ce5de9bb5538010870bd538683d30e9a2", size = 5247695, upload-time = "2025-09-22T04:02:20.593Z" },
+    { url = "https://pypi.netflix.net/packages/19113303111/lxml-6.0.2-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:358d9adae670b63e95bc59747c72f4dc97c9ec58881d4627fe0120da0f90d314", size = 5269841, upload-time = "2025-09-22T04:02:22.489Z" },
+    { url = "https://pypi.netflix.net/packages/19113303112/lxml-6.0.2-cp313-cp313-win32.whl", hash = "sha256:e8cd2415f372e7e5a789d743d133ae474290a90b9023197fd78f32e2dc6873e2", size = 3610700, upload-time = "2025-09-22T04:02:24.465Z" },
+    { url = "https://pypi.netflix.net/packages/19113306822/lxml-6.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:b30d46379644fbfc3ab81f8f82ae4de55179414651f110a1514f0b1f8f6cb2d7", size = 4010347, upload-time = "2025-09-22T04:02:26.286Z" },
+    { url = "https://pypi.netflix.net/packages/19113306823/lxml-6.0.2-cp313-cp313-win_arm64.whl", hash = "sha256:13dcecc9946dca97b11b7c40d29fba63b55ab4170d3c0cf8c0c164343b9bfdcf", size = 3671248, upload-time = "2025-09-22T04:02:27.918Z" },
+    { url = "https://pypi.netflix.net/packages/19113306824/lxml-6.0.2-cp314-cp314-macosx_10_13_universal2.whl", hash = "sha256:b0c732aa23de8f8aec23f4b580d1e52905ef468afb4abeafd3fec77042abb6fe", size = 8659801, upload-time = "2025-09-22T04:02:30.113Z" },
+    { url = "https://pypi.netflix.net/packages/19113306825/lxml-6.0.2-cp314-cp314-macosx_10_13_x86_64.whl", hash = "sha256:4468e3b83e10e0317a89a33d28f7aeba1caa4d1a6fd457d115dd4ffe90c5931d", size = 4659403, upload-time = "2025-09-22T04:02:32.119Z" },
+    { url = "https://pypi.netflix.net/packages/19113306826/lxml-6.0.2-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:abd44571493973bad4598a3be7e1d807ed45aa2adaf7ab92ab7c62609569b17d", size = 4966974, upload-time = "2025-09-22T04:02:34.155Z" },
+    { url = "https://pypi.netflix.net/packages/19113306827/lxml-6.0.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:370cd78d5855cfbffd57c422851f7d3864e6ae72d0da615fca4dad8c45d375a5", size = 5102953, upload-time = "2025-09-22T04:02:36.054Z" },
+    { url = "https://pypi.netflix.net/packages/19113306828/lxml-6.0.2-cp314-cp314-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:901e3b4219fa04ef766885fb40fa516a71662a4c61b80c94d25336b4934b71c0", size = 5055054, upload-time = "2025-09-22T04:02:38.154Z" },
+    { url = "https://pypi.netflix.net/packages/19113310545/lxml-6.0.2-cp314-cp314-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:a4bf42d2e4cf52c28cc1812d62426b9503cdb0c87a6de81442626aa7d69707ba", size = 5352421, upload-time = "2025-09-22T04:02:40.413Z" },
+    { url = "https://pypi.netflix.net/packages/19113310546/lxml-6.0.2-cp314-cp314-manylinux_2_26_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:b2c7fdaa4d7c3d886a42534adec7cfac73860b89b4e5298752f60aa5984641a0", size = 5673684, upload-time = "2025-09-22T04:02:42.288Z" },
+    { url = "https://pypi.netflix.net/packages/19113310547/lxml-6.0.2-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:98a5e1660dc7de2200b00d53fa00bcd3c35a3608c305d45a7bbcaf29fa16e83d", size = 5252463, upload-time = "2025-09-22T04:02:44.165Z" },
+    { url = "https://pypi.netflix.net/packages/19113310548/lxml-6.0.2-cp314-cp314-manylinux_2_31_armv7l.whl", hash = "sha256:dc051506c30b609238d79eda75ee9cab3e520570ec8219844a72a46020901e37", size = 4698437, upload-time = "2025-09-22T04:02:46.524Z" },
+    { url = "https://pypi.netflix.net/packages/19113310549/lxml-6.0.2-cp314-cp314-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:8799481bbdd212470d17513a54d568f44416db01250f49449647b5ab5b5dccb9", size = 5269890, upload-time = "2025-09-22T04:02:48.812Z" },
+    { url = "https://pypi.netflix.net/packages/19113310550/lxml-6.0.2-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:9261bb77c2dab42f3ecd9103951aeca2c40277701eb7e912c545c1b16e0e4917", size = 5097185, upload-time = "2025-09-22T04:02:50.746Z" },
+    { url = "https://pypi.netflix.net/packages/19113310551/lxml-6.0.2-cp314-cp314-musllinux_1_2_armv7l.whl", hash = "sha256:65ac4a01aba353cfa6d5725b95d7aed6356ddc0a3cd734de00124d285b04b64f", size = 4745895, upload-time = "2025-09-22T04:02:52.968Z" },
+    { url = "https://pypi.netflix.net/packages/19113314275/lxml-6.0.2-cp314-cp314-musllinux_1_2_ppc64le.whl", hash = "sha256:b22a07cbb82fea98f8a2fd814f3d1811ff9ed76d0fc6abc84eb21527596e7cc8", size = 5695246, upload-time = "2025-09-22T04:02:54.798Z" },
+    { url = "https://pypi.netflix.net/packages/19113314276/lxml-6.0.2-cp314-cp314-musllinux_1_2_riscv64.whl", hash = "sha256:d759cdd7f3e055d6bc8d9bec3ad905227b2e4c785dc16c372eb5b5e83123f48a", size = 5260797, upload-time = "2025-09-22T04:02:57.058Z" },
+    { url = "https://pypi.netflix.net/packages/19113314277/lxml-6.0.2-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:945da35a48d193d27c188037a05fec5492937f66fb1958c24fc761fb9d40d43c", size = 5277404, upload-time = "2025-09-22T04:02:58.966Z" },
+    { url = "https://pypi.netflix.net/packages/19113321747/lxml-6.0.2-cp314-cp314-win32.whl", hash = "sha256:be3aaa60da67e6153eb15715cc2e19091af5dc75faef8b8a585aea372507384b", size = 3670072, upload-time = "2025-09-22T04:03:38.05Z" },
+    { url = "https://pypi.netflix.net/packages/19113329872/lxml-6.0.2-cp314-cp314-win_amd64.whl", hash = "sha256:fa25afbadead523f7001caf0c2382afd272c315a033a7b06336da2637d92d6ed", size = 4080617, upload-time = "2025-09-22T04:03:39.835Z" },
+    { url = "https://pypi.netflix.net/packages/19113329873/lxml-6.0.2-cp314-cp314-win_arm64.whl", hash = "sha256:063eccf89df5b24e361b123e257e437f9e9878f425ee9aae3144c77faf6da6d8", size = 3754930, upload-time = "2025-09-22T04:03:41.565Z" },
+    { url = "https://pypi.netflix.net/packages/19113314278/lxml-6.0.2-cp314-cp314t-macosx_10_13_universal2.whl", hash = "sha256:6162a86d86893d63084faaf4ff937b3daea233e3682fb4474db07395794fa80d", size = 8910380, upload-time = "2025-09-22T04:03:01.645Z" },
+    { url = "https://pypi.netflix.net/packages/19113314279/lxml-6.0.2-cp314-cp314t-macosx_10_13_x86_64.whl", hash = "sha256:414aaa94e974e23a3e92e7ca5b97d10c0cf37b6481f50911032c69eeb3991bba", size = 4775632, upload-time = "2025-09-22T04:03:03.814Z" },
+    { url = "https://pypi.netflix.net/packages/19113314280/lxml-6.0.2-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:48461bd21625458dd01e14e2c38dd0aea69addc3c4f960c30d9f59d7f93be601", size = 4975171, upload-time = "2025-09-22T04:03:05.651Z" },
+    { url = "https://pypi.netflix.net/packages/19113314281/lxml-6.0.2-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:25fcc59afc57d527cfc78a58f40ab4c9b8fd096a9a3f964d2781ffb6eb33f4ed", size = 5110109, upload-time = "2025-09-22T04:03:07.452Z" },
+    { url = "https://pypi.netflix.net/packages/19113314282/lxml-6.0.2-cp314-cp314t-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:5179c60288204e6ddde3f774a93350177e08876eaf3ab78aa3a3649d43eb7d37", size = 5041061, upload-time = "2025-09-22T04:03:09.297Z" },
+    { url = "https://pypi.netflix.net/packages/19113318014/lxml-6.0.2-cp314-cp314t-manylinux_2_26_i686.manylinux_2_28_i686.whl", hash = "sha256:967aab75434de148ec80597b75062d8123cadf2943fb4281f385141e18b21338", size = 5306233, upload-time = "2025-09-22T04:03:11.651Z" },
+    { url = "https://pypi.netflix.net/packages/19113318015/lxml-6.0.2-cp314-cp314t-manylinux_2_26_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:d100fcc8930d697c6561156c6810ab4a508fb264c8b6779e6e61e2ed5e7558f9", size = 5604739, upload-time = "2025-09-22T04:03:13.592Z" },
+    { url = "https://pypi.netflix.net/packages/19113318016/lxml-6.0.2-cp314-cp314t-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2ca59e7e13e5981175b8b3e4ab84d7da57993eeff53c07764dcebda0d0e64ecd", size = 5225119, upload-time = "2025-09-22T04:03:15.408Z" },
+    { url = "https://pypi.netflix.net/packages/19113318017/lxml-6.0.2-cp314-cp314t-manylinux_2_31_armv7l.whl", hash = "sha256:957448ac63a42e2e49531b9d6c0fa449a1970dbc32467aaad46f11545be9af1d", size = 4633665, upload-time = "2025-09-22T04:03:17.262Z" },
+    { url = "https://pypi.netflix.net/packages/19113318018/lxml-6.0.2-cp314-cp314t-manylinux_2_38_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:b7fc49c37f1786284b12af63152fe1d0990722497e2d5817acfe7a877522f9a9", size = 5234997, upload-time = "2025-09-22T04:03:19.14Z" },
+    { url = "https://pypi.netflix.net/packages/19113318019/lxml-6.0.2-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:e19e0643cc936a22e837f79d01a550678da8377d7d801a14487c10c34ee49c7e", size = 5090957, upload-time = "2025-09-22T04:03:21.436Z" },
+    { url = "https://pypi.netflix.net/packages/19113318020/lxml-6.0.2-cp314-cp314t-musllinux_1_2_armv7l.whl", hash = "sha256:1db01e5cf14345628e0cbe71067204db658e2fb8e51e7f33631f5f4735fefd8d", size = 4764372, upload-time = "2025-09-22T04:03:23.27Z" },
+    { url = "https://pypi.netflix.net/packages/19113321760/lxml-6.0.2-cp314-cp314t-musllinux_1_2_ppc64le.whl", hash = "sha256:875c6b5ab39ad5291588aed6925fac99d0097af0dd62f33c7b43736043d4a2ec", size = 5634653, upload-time = "2025-09-22T04:03:25.767Z" },
+    { url = "https://pypi.netflix.net/packages/19113321761/lxml-6.0.2-cp314-cp314t-musllinux_1_2_riscv64.whl", hash = "sha256:cdcbed9ad19da81c480dfd6dd161886db6096083c9938ead313d94b30aadf272", size = 5233795, upload-time = "2025-09-22T04:03:27.62Z" },
+    { url = "https://pypi.netflix.net/packages/19113321762/lxml-6.0.2-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:80dadc234ebc532e09be1975ff538d154a7fa61ea5031c03d25178855544728f", size = 5257023, upload-time = "2025-09-22T04:03:30.056Z" },
+    { url = "https://pypi.netflix.net/packages/19113321763/lxml-6.0.2-cp314-cp314t-win32.whl", hash = "sha256:da08e7bb297b04e893d91087df19638dc7a6bb858a954b0cc2b9f5053c922312", size = 3911420, upload-time = "2025-09-22T04:03:32.198Z" },
+    { url = "https://pypi.netflix.net/packages/19113321764/lxml-6.0.2-cp314-cp314t-win_amd64.whl", hash = "sha256:252a22982dca42f6155125ac76d3432e548a7625d56f5a273ee78a5057216eca", size = 4406837, upload-time = "2025-09-22T04:03:34.027Z" },
+    { url = "https://pypi.netflix.net/packages/19113321765/lxml-6.0.2-cp314-cp314t-win_arm64.whl", hash = "sha256:bb4c1847b303835d89d785a18801a883436cdfd5dc3d62947f9c49e24f0f5a2c", size = 3822205, upload-time = "2025-09-22T04:03:36.249Z" },
+    { url = "https://pypi.netflix.net/packages/19113347121/lxml-6.0.2-pp310-pypy310_pp73-macosx_10_15_x86_64.whl", hash = "sha256:e748d4cf8fef2526bb2a589a417eba0c8674e29ffcb570ce2ceca44f1e567bf6", size = 3939264, upload-time = "2025-09-22T04:04:32.892Z" },
+    { url = "https://pypi.netflix.net/packages/19113347122/lxml-6.0.2-pp310-pypy310_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:4ddb1049fa0579d0cbd00503ad8c58b9ab34d1254c77bc6a5576d96ec7853dba", size = 4216435, upload-time = "2025-09-22T04:04:34.907Z" },
+    { url = "https://pypi.netflix.net/packages/19113347123/lxml-6.0.2-pp310-pypy310_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:cb233f9c95f83707dae461b12b720c1af9c28c2d19208e1be03387222151daf5", size = 4325913, upload-time = "2025-09-22T04:04:37.205Z" },
+    { url = "https://pypi.netflix.net/packages/19113347124/lxml-6.0.2-pp310-pypy310_pp73-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:bc456d04db0515ce3320d714a1eac7a97774ff0849e7718b492d957da4631dd4", size = 4269357, upload-time = "2025-09-22T04:04:39.322Z" },
+    { url = "https://pypi.netflix.net/packages/19113354881/lxml-6.0.2-pp310-pypy310_pp73-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2613e67de13d619fd283d58bda40bff0ee07739f624ffee8b13b631abf33083d", size = 4412295, upload-time = "2025-09-22T04:04:41.647Z" },
+    { url = "https://pypi.netflix.net/packages/19113354882/lxml-6.0.2-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:24a8e756c982c001ca8d59e87c80c4d9dcd4d9b44a4cbeb8d9be4482c514d41d", size = 3516913, upload-time = "2025-09-22T04:04:43.602Z" },
+    { url = "https://pypi.netflix.net/packages/19113354883/lxml-6.0.2-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:1c06035eafa8404b5cf475bb37a9f6088b0aca288d4ccc9d69389750d5543700", size = 3949829, upload-time = "2025-09-22T04:04:45.608Z" },
+    { url = "https://pypi.netflix.net/packages/19113354884/lxml-6.0.2-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:c7d13103045de1bdd6fe5d61802565f1a3537d70cd3abf596aa0af62761921ee", size = 4226277, upload-time = "2025-09-22T04:04:47.754Z" },
+    { url = "https://pypi.netflix.net/packages/19113354885/lxml-6.0.2-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0a3c150a95fbe5ac91de323aa756219ef9cf7fde5a3f00e2281e30f33fa5fa4f", size = 4330433, upload-time = "2025-09-22T04:04:49.907Z" },
+    { url = "https://pypi.netflix.net/packages/19113354886/lxml-6.0.2-pp311-pypy311_pp73-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:60fa43be34f78bebb27812ed90f1925ec99560b0fa1decdb7d12b84d857d31e9", size = 4272119, upload-time = "2025-09-22T04:04:51.801Z" },
+    { url = "https://pypi.netflix.net/packages/19113359930/lxml-6.0.2-pp311-pypy311_pp73-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:21c73b476d3cfe836be731225ec3421fa2f048d84f6df6a8e70433dff1376d5a", size = 4417314, upload-time = "2025-09-22T04:04:55.024Z" },
+    { url = "https://pypi.netflix.net/packages/19113359931/lxml-6.0.2-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:27220da5be049e936c3aca06f174e8827ca6445a4353a1995584311487fc4e3e", size = 3518768, upload-time = "2025-09-22T04:04:57.097Z" },
+]
+
+[[package]]
+name = "mypy"
+version = "1.19.1"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "librt", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "mypy-extensions" },
+    { name = "pathspec" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19479007228/mypy-1.19.1.tar.gz", hash = "sha256:19d88bb05303fe63f71dd2c6270daca27cb9401c4ca8255fe50d1d920e0eb9ba", size = 3582404, upload-time = "2025-12-15T05:03:48.42Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19479001851/mypy-1.19.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:5f05aa3d375b385734388e844bc01733bd33c644ab48e9684faa54e5389775ec", size = 13101333, upload-time = "2025-12-15T05:03:03.28Z" },
+    { url = "https://pypi.netflix.net/packages/19478998168/mypy-1.19.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:022ea7279374af1a5d78dfcab853fe6a536eebfda4b59deab53cd21f6cd9f00b", size = 12164102, upload-time = "2025-12-15T05:02:33.611Z" },
+    { url = "https://pypi.netflix.net/packages/19479005390/mypy-1.19.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:ee4c11e460685c3e0c64a4c5de82ae143622410950d6be863303a1c4ba0e36d6", size = 12765799, upload-time = "2025-12-15T05:03:28.44Z" },
+    { url = "https://pypi.netflix.net/packages/19478998169/mypy-1.19.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:de759aafbae8763283b2ee5869c7255391fbc4de3ff171f8f030b5ec48381b74", size = 13522149, upload-time = "2025-12-15T05:02:36.011Z" },
+    { url = "https://pypi.netflix.net/packages/19478999921/mypy-1.19.1-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:ab43590f9cd5108f41aacf9fca31841142c786827a74ab7cc8a2eacb634e09a1", size = 13810105, upload-time = "2025-12-15T05:02:40.327Z" },
+    { url = "https://pypi.netflix.net/packages/19478999922/mypy-1.19.1-cp310-cp310-win_amd64.whl", hash = "sha256:2899753e2f61e571b3971747e302d5f420c3fd09650e1951e99f823bc3089dac", size = 10057200, upload-time = "2025-12-15T05:02:51.012Z" },
+    { url = "https://pypi.netflix.net/packages/19479007197/mypy-1.19.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:d8dfc6ab58ca7dda47d9237349157500468e404b17213d44fc1cb77bce532288", size = 13028539, upload-time = "2025-12-15T05:03:44.129Z" },
+    { url = "https://pypi.netflix.net/packages/19479005394/mypy-1.19.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e3f276d8493c3c97930e354b2595a44a21348b320d859fb4a2b9f66da9ed27ab", size = 12083163, upload-time = "2025-12-15T05:03:37.679Z" },
+    { url = "https://pypi.netflix.net/packages/19478998170/mypy-1.19.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2abb24cf3f17864770d18d673c85235ba52456b36a06b6afc1e07c1fdcd3d0e6", size = 12687629, upload-time = "2025-12-15T05:02:31.526Z" },
+    { url = "https://pypi.netflix.net/packages/19479003622/mypy-1.19.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a009ffa5a621762d0c926a078c2d639104becab69e79538a494bcccb62cc0331", size = 13436933, upload-time = "2025-12-15T05:03:15.606Z" },
+    { url = "https://pypi.netflix.net/packages/19478998171/mypy-1.19.1-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:f7cee03c9a2e2ee26ec07479f38ea9c884e301d42c6d43a19d20fb014e3ba925", size = 13661754, upload-time = "2025-12-15T05:02:26.731Z" },
+    { url = "https://pypi.netflix.net/packages/19479005398/mypy-1.19.1-cp311-cp311-win_amd64.whl", hash = "sha256:4b84a7a18f41e167f7995200a1d07a4a6810e89d29859df936f1c3923d263042", size = 10055772, upload-time = "2025-12-15T05:03:26.179Z" },
+    { url = "https://pypi.netflix.net/packages/19479007203/mypy-1.19.1-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:a8174a03289288c1f6c46d55cef02379b478bfbc8e358e02047487cad44c6ca1", size = 13206053, upload-time = "2025-12-15T05:03:46.622Z" },
+    { url = "https://pypi.netflix.net/packages/19479005399/mypy-1.19.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:ffcebe56eb09ff0c0885e750036a095e23793ba6c2e894e7e63f6d89ad51f22e", size = 12219134, upload-time = "2025-12-15T05:03:24.367Z" },
+    { url = "https://pypi.netflix.net/packages/19478999925/mypy-1.19.1-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b64d987153888790bcdb03a6473d321820597ab8dd9243b27a92153c4fa50fd2", size = 12731616, upload-time = "2025-12-15T05:02:44.725Z" },
+    { url = "https://pypi.netflix.net/packages/19479007206/mypy-1.19.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c35d298c2c4bba75feb2195655dfea8124d855dfd7343bf8b8c055421eaf0cf8", size = 13620847, upload-time = "2025-12-15T05:03:39.633Z" },
+    { url = "https://pypi.netflix.net/packages/19479003625/mypy-1.19.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:34c81968774648ab5ac09c29a375fdede03ba253f8f8287847bd480782f73a6a", size = 13834976, upload-time = "2025-12-15T05:03:08.786Z" },
+    { url = "https://pypi.netflix.net/packages/19479003626/mypy-1.19.1-cp312-cp312-win_amd64.whl", hash = "sha256:b10e7c2cd7870ba4ad9b2d8a6102eb5ffc1f16ca35e3de6bfa390c1113029d13", size = 10118104, upload-time = "2025-12-15T05:03:10.834Z" },
+    { url = "https://pypi.netflix.net/packages/19478998172/mypy-1.19.1-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:e3157c7594ff2ef1634ee058aafc56a82db665c9438fd41b390f3bde1ab12250", size = 13201927, upload-time = "2025-12-15T05:02:29.138Z" },
+    { url = "https://pypi.netflix.net/packages/19479001860/mypy-1.19.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:bdb12f69bcc02700c2b47e070238f42cb87f18c0bc1fc4cdb4fb2bc5fd7a3b8b", size = 12206730, upload-time = "2025-12-15T05:03:01.325Z" },
+    { url = "https://pypi.netflix.net/packages/19479003629/mypy-1.19.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:f859fb09d9583a985be9a493d5cfc5515b56b08f7447759a0c5deaf68d80506e", size = 12724581, upload-time = "2025-12-15T05:03:20.087Z" },
+    { url = "https://pypi.netflix.net/packages/19478999927/mypy-1.19.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c9a6538e0415310aad77cb94004ca6482330fece18036b5f360b62c45814c4ef", size = 13616252, upload-time = "2025-12-15T05:02:49.036Z" },
+    { url = "https://pypi.netflix.net/packages/19479001862/mypy-1.19.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:da4869fc5e7f62a88f3fe0b5c919d1d9f7ea3cef92d3689de2823fd27e40aa75", size = 13840848, upload-time = "2025-12-15T05:02:55.95Z" },
+    { url = "https://pypi.netflix.net/packages/19479001863/mypy-1.19.1-cp313-cp313-win_amd64.whl", hash = "sha256:016f2246209095e8eda7538944daa1d60e1e8134d98983b9fc1e92c1fc0cb8dd", size = 10135510, upload-time = "2025-12-15T05:02:58.438Z" },
+    { url = "https://pypi.netflix.net/packages/19479005409/mypy-1.19.1-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:06e6170bd5836770e8104c8fdd58e5e725cfeb309f0a6c681a811f557e97eac1", size = 13199744, upload-time = "2025-12-15T05:03:30.823Z" },
+    { url = "https://pypi.netflix.net/packages/19478999928/mypy-1.19.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:804bd67b8054a85447c8954215a906d6eff9cabeabe493fb6334b24f4bfff718", size = 12215815, upload-time = "2025-12-15T05:02:42.323Z" },
+    { url = "https://pypi.netflix.net/packages/19479005411/mypy-1.19.1-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:21761006a7f497cb0d4de3d8ef4ca70532256688b0523eee02baf9eec895e27b", size = 12740047, upload-time = "2025-12-15T05:03:33.168Z" },
+    { url = "https://pypi.netflix.net/packages/19479003634/mypy-1.19.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:28902ee51f12e0f19e1e16fbe2f8f06b6637f482c459dd393efddd0ec7f82045", size = 13601998, upload-time = "2025-12-15T05:03:13.056Z" },
+    { url = "https://pypi.netflix.net/packages/19479003635/mypy-1.19.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:481daf36a4c443332e2ae9c137dfee878fcea781a2e3f895d54bd3002a900957", size = 13807476, upload-time = "2025-12-15T05:03:17.977Z" },
+    { url = "https://pypi.netflix.net/packages/19479001865/mypy-1.19.1-cp314-cp314-win_amd64.whl", hash = "sha256:8bb5c6f6d043655e055be9b542aa5f3bdd30e4f3589163e85f93f3640060509f", size = 10281872, upload-time = "2025-12-15T05:03:05.549Z" },
+    { url = "https://pypi.netflix.net/packages/19479001869/mypy-1.19.1-py3-none-any.whl", hash = "sha256:f1235f5ea01b7db5468d53ece6aaddf1ad0b88d9e7462b86ef96fe04995d7247", size = 2471239, upload-time = "2025-12-15T05:03:07.248Z" },
+]
+
+[[package]]
+name = "mypy-extensions"
+version = "1.1.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/18629119459/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/18629119458/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
+]
+
+[[package]]
+name = "packaging"
+version = "26.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19647727504/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19647727503/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
+]
+
+[[package]]
+name = "pathspec"
+version = "1.0.4"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19684829906/pathspec-1.0.4.tar.gz", hash = "sha256:0210e2ae8a21a9137c0d470578cb0e595af87edaa6ebf12ff176f14a02e0e645", size = 131200, upload-time = "2026-01-27T03:59:46.938Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19684829905/pathspec-1.0.4-py3-none-any.whl", hash = "sha256:fb6ae2fd4e7c921a165808a552060e722767cfa526f99ca5156ed2ce45a5c723", size = 55206, upload-time = "2026-01-27T03:59:45.137Z" },
+]
+
+[[package]]
+name = "pluggy"
+version = "1.6.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/18687957487/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412, upload-time = "2025-05-15T12:30:07.975Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/18687957486/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
+]
+
+[[package]]
+name = "pydantic"
+version = "2.12.5"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "annotated-types" },
+    { name = "pydantic-core" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19391909805/pydantic-2.12.5.tar.gz", hash = "sha256:4d351024c75c0f085a9febbb665ce8c0c6ec5d30e903bdb6394b7ede26aebb49", size = 821591, upload-time = "2025-11-26T15:11:46.471Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19391909804/pydantic-2.12.5-py3-none-any.whl", hash = "sha256:e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d", size = 463580, upload-time = "2025-11-26T15:11:44.605Z" },
+]
+
+[[package]]
+name = "pydantic-core"
+version = "2.41.5"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19290297566/pydantic_core-2.41.5.tar.gz", hash = "sha256:08daa51ea16ad373ffd5e7606252cc32f07bc72b28284b6bc9c6df804816476e", size = 460952, upload-time = "2025-11-04T13:43:49.098Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19289578916/pydantic_core-2.41.5-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:77b63866ca88d804225eaa4af3e664c5faf3568cea95360d21f4725ab6e07146", size = 2107298, upload-time = "2025-11-04T13:39:04.116Z" },
+    { url = "https://pypi.netflix.net/packages/19289578917/pydantic_core-2.41.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:dfa8a0c812ac681395907e71e1274819dec685fec28273a28905df579ef137e2", size = 1901475, upload-time = "2025-11-04T13:39:06.055Z" },
+    { url = "https://pypi.netflix.net/packages/19289578918/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5921a4d3ca3aee735d9fd163808f5e8dd6c6972101e4adbda9a4667908849b97", size = 1918815, upload-time = "2025-11-04T13:39:10.41Z" },
+    { url = "https://pypi.netflix.net/packages/19289578919/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:e25c479382d26a2a41b7ebea1043564a937db462816ea07afa8a44c0866d52f9", size = 2065567, upload-time = "2025-11-04T13:39:12.244Z" },
+    { url = "https://pypi.netflix.net/packages/19289578920/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f547144f2966e1e16ae626d8ce72b4cfa0caedc7fa28052001c94fb2fcaa1c52", size = 2230442, upload-time = "2025-11-04T13:39:13.962Z" },
+    { url = "https://pypi.netflix.net/packages/19289578921/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6f52298fbd394f9ed112d56f3d11aabd0d5bd27beb3084cc3d8ad069483b8941", size = 2350956, upload-time = "2025-11-04T13:39:15.889Z" },
+    { url = "https://pypi.netflix.net/packages/19289578922/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:100baa204bb412b74fe285fb0f3a385256dad1d1879f0a5cb1499ed2e83d132a", size = 2068253, upload-time = "2025-11-04T13:39:17.403Z" },
+    { url = "https://pypi.netflix.net/packages/19289578923/pydantic_core-2.41.5-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:05a2c8852530ad2812cb7914dc61a1125dc4e06252ee98e5638a12da6cc6fb6c", size = 2177050, upload-time = "2025-11-04T13:39:19.351Z" },
+    { url = "https://pypi.netflix.net/packages/19289578924/pydantic_core-2.41.5-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:29452c56df2ed968d18d7e21f4ab0ac55e71dc59524872f6fc57dcf4a3249ed2", size = 2147178, upload-time = "2025-11-04T13:39:21Z" },
+    { url = "https://pypi.netflix.net/packages/19289591694/pydantic_core-2.41.5-cp310-cp310-musllinux_1_1_armv7l.whl", hash = "sha256:d5160812ea7a8a2ffbe233d8da666880cad0cbaf5d4de74ae15c313213d62556", size = 2341833, upload-time = "2025-11-04T13:39:22.606Z" },
+    { url = "https://pypi.netflix.net/packages/19289591695/pydantic_core-2.41.5-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:df3959765b553b9440adfd3c795617c352154e497a4eaf3752555cfb5da8fc49", size = 2321156, upload-time = "2025-11-04T13:39:25.843Z" },
+    { url = "https://pypi.netflix.net/packages/19289591696/pydantic_core-2.41.5-cp310-cp310-win32.whl", hash = "sha256:1f8d33a7f4d5a7889e60dc39856d76d09333d8a6ed0f5f1190635cbec70ec4ba", size = 1989378, upload-time = "2025-11-04T13:39:27.92Z" },
+    { url = "https://pypi.netflix.net/packages/19289591697/pydantic_core-2.41.5-cp310-cp310-win_amd64.whl", hash = "sha256:62de39db01b8d593e45871af2af9e497295db8d73b085f6bfd0b18c83c70a8f9", size = 2013622, upload-time = "2025-11-04T13:39:29.848Z" },
+    { url = "https://pypi.netflix.net/packages/19289591698/pydantic_core-2.41.5-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:a3a52f6156e73e7ccb0f8cced536adccb7042be67cb45f9562e12b319c119da6", size = 2105873, upload-time = "2025-11-04T13:39:31.373Z" },
+    { url = "https://pypi.netflix.net/packages/19289591699/pydantic_core-2.41.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7f3bf998340c6d4b0c9a2f02d6a400e51f123b59565d74dc60d252ce888c260b", size = 1899826, upload-time = "2025-11-04T13:39:32.897Z" },
+    { url = "https://pypi.netflix.net/packages/19289591700/pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:378bec5c66998815d224c9ca994f1e14c0c21cb95d2f52b6021cc0b2a58f2a5a", size = 1917869, upload-time = "2025-11-04T13:39:34.469Z" },
+    { url = "https://pypi.netflix.net/packages/19289591701/pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:e7b576130c69225432866fe2f4a469a85a54ade141d96fd396dffcf607b558f8", size = 2063890, upload-time = "2025-11-04T13:39:36.053Z" },
+    { url = "https://pypi.netflix.net/packages/19289591702/pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:6cb58b9c66f7e4179a2d5e0f849c48eff5c1fca560994d6eb6543abf955a149e", size = 2229740, upload-time = "2025-11-04T13:39:37.753Z" },
+    { url = "https://pypi.netflix.net/packages/19289611287/pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:88942d3a3dff3afc8288c21e565e476fc278902ae4d6d134f1eeda118cc830b1", size = 2350021, upload-time = "2025-11-04T13:39:40.94Z" },
+    { url = "https://pypi.netflix.net/packages/19289611288/pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f31d95a179f8d64d90f6831d71fa93290893a33148d890ba15de25642c5d075b", size = 2066378, upload-time = "2025-11-04T13:39:42.523Z" },
+    { url = "https://pypi.netflix.net/packages/19289611289/pydantic_core-2.41.5-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:c1df3d34aced70add6f867a8cf413e299177e0c22660cc767218373d0779487b", size = 2175761, upload-time = "2025-11-04T13:39:44.553Z" },
+    { url = "https://pypi.netflix.net/packages/19289611290/pydantic_core-2.41.5-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:4009935984bd36bd2c774e13f9a09563ce8de4abaa7226f5108262fa3e637284", size = 2146303, upload-time = "2025-11-04T13:39:46.238Z" },
+    { url = "https://pypi.netflix.net/packages/19289611291/pydantic_core-2.41.5-cp311-cp311-musllinux_1_1_armv7l.whl", hash = "sha256:34a64bc3441dc1213096a20fe27e8e128bd3ff89921706e83c0b1ac971276594", size = 2340355, upload-time = "2025-11-04T13:39:48.002Z" },
+    { url = "https://pypi.netflix.net/packages/19289611292/pydantic_core-2.41.5-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:c9e19dd6e28fdcaa5a1de679aec4141f691023916427ef9bae8584f9c2fb3b0e", size = 2319875, upload-time = "2025-11-04T13:39:49.705Z" },
+    { url = "https://pypi.netflix.net/packages/19289611293/pydantic_core-2.41.5-cp311-cp311-win32.whl", hash = "sha256:2c010c6ded393148374c0f6f0bf89d206bf3217f201faa0635dcd56bd1520f6b", size = 1987549, upload-time = "2025-11-04T13:39:51.842Z" },
+    { url = "https://pypi.netflix.net/packages/19289611294/pydantic_core-2.41.5-cp311-cp311-win_amd64.whl", hash = "sha256:76ee27c6e9c7f16f47db7a94157112a2f3a00e958bc626e2f4ee8bec5c328fbe", size = 2011305, upload-time = "2025-11-04T13:39:53.485Z" },
+    { url = "https://pypi.netflix.net/packages/19289623685/pydantic_core-2.41.5-cp311-cp311-win_arm64.whl", hash = "sha256:4bc36bbc0b7584de96561184ad7f012478987882ebf9f9c389b23f432ea3d90f", size = 1972902, upload-time = "2025-11-04T13:39:56.488Z" },
+    { url = "https://pypi.netflix.net/packages/19289623686/pydantic_core-2.41.5-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:f41a7489d32336dbf2199c8c0a215390a751c5b014c2c1c5366e817202e9cdf7", size = 2110990, upload-time = "2025-11-04T13:39:58.079Z" },
+    { url = "https://pypi.netflix.net/packages/19289623687/pydantic_core-2.41.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:070259a8818988b9a84a449a2a7337c7f430a22acc0859c6b110aa7212a6d9c0", size = 1896003, upload-time = "2025-11-04T13:39:59.956Z" },
+    { url = "https://pypi.netflix.net/packages/19289623688/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e96cea19e34778f8d59fe40775a7a574d95816eb150850a85a7a4c8f4b94ac69", size = 1919200, upload-time = "2025-11-04T13:40:02.241Z" },
+    { url = "https://pypi.netflix.net/packages/19289623689/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ed2e99c456e3fadd05c991f8f437ef902e00eedf34320ba2b0842bd1c3ca3a75", size = 2052578, upload-time = "2025-11-04T13:40:04.401Z" },
+    { url = "https://pypi.netflix.net/packages/19289623690/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:65840751b72fbfd82c3c640cff9284545342a4f1eb1586ad0636955b261b0b05", size = 2208504, upload-time = "2025-11-04T13:40:06.072Z" },
+    { url = "https://pypi.netflix.net/packages/19289623691/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:e536c98a7626a98feb2d3eaf75944ef6f3dbee447e1f841eae16f2f0a72d8ddc", size = 2335816, upload-time = "2025-11-04T13:40:07.835Z" },
+    { url = "https://pypi.netflix.net/packages/19289623692/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eceb81a8d74f9267ef4081e246ffd6d129da5d87e37a77c9bde550cb04870c1c", size = 2075366, upload-time = "2025-11-04T13:40:09.804Z" },
+    { url = "https://pypi.netflix.net/packages/19289652502/pydantic_core-2.41.5-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d38548150c39b74aeeb0ce8ee1d8e82696f4a4e16ddc6de7b1d8823f7de4b9b5", size = 2171698, upload-time = "2025-11-04T13:40:12.004Z" },
+    { url = "https://pypi.netflix.net/packages/19289652503/pydantic_core-2.41.5-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:c23e27686783f60290e36827f9c626e63154b82b116d7fe9adba1fda36da706c", size = 2132603, upload-time = "2025-11-04T13:40:13.868Z" },
+    { url = "https://pypi.netflix.net/packages/19289652504/pydantic_core-2.41.5-cp312-cp312-musllinux_1_1_armv7l.whl", hash = "sha256:482c982f814460eabe1d3bb0adfdc583387bd4691ef00b90575ca0d2b6fe2294", size = 2329591, upload-time = "2025-11-04T13:40:15.672Z" },
+    { url = "https://pypi.netflix.net/packages/19289652505/pydantic_core-2.41.5-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:bfea2a5f0b4d8d43adf9d7b8bf019fb46fdd10a2e5cde477fbcb9d1fa08c68e1", size = 2319068, upload-time = "2025-11-04T13:40:17.532Z" },
+    { url = "https://pypi.netflix.net/packages/19289652506/pydantic_core-2.41.5-cp312-cp312-win32.whl", hash = "sha256:b74557b16e390ec12dca509bce9264c3bbd128f8a2c376eaa68003d7f327276d", size = 1985908, upload-time = "2025-11-04T13:40:19.309Z" },
+    { url = "https://pypi.netflix.net/packages/19289652507/pydantic_core-2.41.5-cp312-cp312-win_amd64.whl", hash = "sha256:1962293292865bca8e54702b08a4f26da73adc83dd1fcf26fbc875b35d81c815", size = 2020145, upload-time = "2025-11-04T13:40:21.548Z" },
+    { url = "https://pypi.netflix.net/packages/19289652508/pydantic_core-2.41.5-cp312-cp312-win_arm64.whl", hash = "sha256:1746d4a3d9a794cacae06a5eaaccb4b8643a131d45fbc9af23e353dc0a5ba5c3", size = 1976179, upload-time = "2025-11-04T13:40:23.393Z" },
+    { url = "https://pypi.netflix.net/packages/19289652509/pydantic_core-2.41.5-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:941103c9be18ac8daf7b7adca8228f8ed6bb7a1849020f643b3a14d15b1924d9", size = 2120403, upload-time = "2025-11-04T13:40:25.248Z" },
+    { url = "https://pypi.netflix.net/packages/19289652510/pydantic_core-2.41.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:112e305c3314f40c93998e567879e887a3160bb8689ef3d2c04b6cc62c33ac34", size = 1896206, upload-time = "2025-11-04T13:40:27.099Z" },
+    { url = "https://pypi.netflix.net/packages/19289652511/pydantic_core-2.41.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0cbaad15cb0c90aa221d43c00e77bb33c93e8d36e0bf74760cd00e732d10a6a0", size = 1919307, upload-time = "2025-11-04T13:40:29.806Z" },
+    { url = "https://pypi.netflix.net/packages/19289652512/pydantic_core-2.41.5-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:03ca43e12fab6023fc79d28ca6b39b05f794ad08ec2feccc59a339b02f2b3d33", size = 2063258, upload-time = "2025-11-04T13:40:33.544Z" },
+    { url = "https://pypi.netflix.net/packages/19289652513/pydantic_core-2.41.5-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:dc799088c08fa04e43144b164feb0c13f9a0bc40503f8df3e9fde58a3c0c101e", size = 2214917, upload-time = "2025-11-04T13:40:35.479Z" },
+    { url = "https://pypi.netflix.net/packages/19289652514/pydantic_core-2.41.5-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:97aeba56665b4c3235a0e52b2c2f5ae9cd071b8a8310ad27bddb3f7fb30e9aa2", size = 2332186, upload-time = "2025-11-04T13:40:37.436Z" },
+    { url = "https://pypi.netflix.net/packages/19289652515/pydantic_core-2.41.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:406bf18d345822d6c21366031003612b9c77b3e29ffdb0f612367352aab7d586", size = 2073164, upload-time = "2025-11-04T13:40:40.289Z" },
+    { url = "https://pypi.netflix.net/packages/19289652516/pydantic_core-2.41.5-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:b93590ae81f7010dbe380cdeab6f515902ebcbefe0b9327cc4804d74e93ae69d", size = 2179146, upload-time = "2025-11-04T13:40:42.809Z" },
+    { url = "https://pypi.netflix.net/packages/19289665326/pydantic_core-2.41.5-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:01a3d0ab748ee531f4ea6c3e48ad9dac84ddba4b0d82291f87248f2f9de8d740", size = 2137788, upload-time = "2025-11-04T13:40:44.752Z" },
+    { url = "https://pypi.netflix.net/packages/19289665327/pydantic_core-2.41.5-cp313-cp313-musllinux_1_1_armv7l.whl", hash = "sha256:6561e94ba9dacc9c61bce40e2d6bdc3bfaa0259d3ff36ace3b1e6901936d2e3e", size = 2340133, upload-time = "2025-11-04T13:40:46.66Z" },
+    { url = "https://pypi.netflix.net/packages/19289665328/pydantic_core-2.41.5-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:915c3d10f81bec3a74fbd4faebe8391013ba61e5a1a8d48c4455b923bdda7858", size = 2324852, upload-time = "2025-11-04T13:40:48.575Z" },
+    { url = "https://pypi.netflix.net/packages/19289665329/pydantic_core-2.41.5-cp313-cp313-win32.whl", hash = "sha256:650ae77860b45cfa6e2cdafc42618ceafab3a2d9a3811fcfbd3bbf8ac3c40d36", size = 1994679, upload-time = "2025-11-04T13:40:50.619Z" },
+    { url = "https://pypi.netflix.net/packages/19289665330/pydantic_core-2.41.5-cp313-cp313-win_amd64.whl", hash = "sha256:79ec52ec461e99e13791ec6508c722742ad745571f234ea6255bed38c6480f11", size = 2019766, upload-time = "2025-11-04T13:40:52.631Z" },
+    { url = "https://pypi.netflix.net/packages/19289665331/pydantic_core-2.41.5-cp313-cp313-win_arm64.whl", hash = "sha256:3f84d5c1b4ab906093bdc1ff10484838aca54ef08de4afa9de0f5f14d69639cd", size = 1981005, upload-time = "2025-11-04T13:40:54.734Z" },
+    { url = "https://pypi.netflix.net/packages/19289665332/pydantic_core-2.41.5-cp314-cp314-macosx_10_12_x86_64.whl", hash = "sha256:3f37a19d7ebcdd20b96485056ba9e8b304e27d9904d233d7b1015db320e51f0a", size = 2119622, upload-time = "2025-11-04T13:40:56.68Z" },
+    { url = "https://pypi.netflix.net/packages/19289665333/pydantic_core-2.41.5-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:1d1d9764366c73f996edd17abb6d9d7649a7eb690006ab6adbda117717099b14", size = 1891725, upload-time = "2025-11-04T13:40:58.807Z" },
+    { url = "https://pypi.netflix.net/packages/19289682151/pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:25e1c2af0fce638d5f1988b686f3b3ea8cd7de5f244ca147c777769e798a9cd1", size = 1915040, upload-time = "2025-11-04T13:41:00.853Z" },
+    { url = "https://pypi.netflix.net/packages/19289682152/pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:506d766a8727beef16b7adaeb8ee6217c64fc813646b424d0804d67c16eddb66", size = 2063691, upload-time = "2025-11-04T13:41:03.504Z" },
+    { url = "https://pypi.netflix.net/packages/19289682153/pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4819fa52133c9aa3c387b3328f25c1facc356491e6135b459f1de698ff64d869", size = 2213897, upload-time = "2025-11-04T13:41:05.804Z" },
+    { url = "https://pypi.netflix.net/packages/19289682154/pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2b761d210c9ea91feda40d25b4efe82a1707da2ef62901466a42492c028553a2", size = 2333302, upload-time = "2025-11-04T13:41:07.809Z" },
+    { url = "https://pypi.netflix.net/packages/19289682155/pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:22f0fb8c1c583a3b6f24df2470833b40207e907b90c928cc8d3594b76f874375", size = 2064877, upload-time = "2025-11-04T13:41:09.827Z" },
+    { url = "https://pypi.netflix.net/packages/19289690978/pydantic_core-2.41.5-cp314-cp314-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:2782c870e99878c634505236d81e5443092fba820f0373997ff75f90f68cd553", size = 2180680, upload-time = "2025-11-04T13:41:12.379Z" },
+    { url = "https://pypi.netflix.net/packages/19289690979/pydantic_core-2.41.5-cp314-cp314-musllinux_1_1_aarch64.whl", hash = "sha256:0177272f88ab8312479336e1d777f6b124537d47f2123f89cb37e0accea97f90", size = 2138960, upload-time = "2025-11-04T13:41:14.627Z" },
+    { url = "https://pypi.netflix.net/packages/19289690980/pydantic_core-2.41.5-cp314-cp314-musllinux_1_1_armv7l.whl", hash = "sha256:63510af5e38f8955b8ee5687740d6ebf7c2a0886d15a6d65c32814613681bc07", size = 2339102, upload-time = "2025-11-04T13:41:16.868Z" },
+    { url = "https://pypi.netflix.net/packages/19289690981/pydantic_core-2.41.5-cp314-cp314-musllinux_1_1_x86_64.whl", hash = "sha256:e56ba91f47764cc14f1daacd723e3e82d1a89d783f0f5afe9c364b8bb491ccdb", size = 2326039, upload-time = "2025-11-04T13:41:18.934Z" },
+    { url = "https://pypi.netflix.net/packages/19289690982/pydantic_core-2.41.5-cp314-cp314-win32.whl", hash = "sha256:aec5cf2fd867b4ff45b9959f8b20ea3993fc93e63c7363fe6851424c8a7e7c23", size = 1995126, upload-time = "2025-11-04T13:41:21.418Z" },
+    { url = "https://pypi.netflix.net/packages/19289690983/pydantic_core-2.41.5-cp314-cp314-win_amd64.whl", hash = "sha256:8e7c86f27c585ef37c35e56a96363ab8de4e549a95512445b85c96d3e2f7c1bf", size = 2015489, upload-time = "2025-11-04T13:41:24.076Z" },
+    { url = "https://pypi.netflix.net/packages/19289690984/pydantic_core-2.41.5-cp314-cp314-win_arm64.whl", hash = "sha256:e672ba74fbc2dc8eea59fb6d4aed6845e6905fc2a8afe93175d94a83ba2a01a0", size = 1977288, upload-time = "2025-11-04T13:41:26.33Z" },
+    { url = "https://pypi.netflix.net/packages/19289690985/pydantic_core-2.41.5-cp314-cp314t-macosx_10_12_x86_64.whl", hash = "sha256:8566def80554c3faa0e65ac30ab0932b9e3a5cd7f8323764303d468e5c37595a", size = 2120255, upload-time = "2025-11-04T13:41:28.569Z" },
+    { url = "https://pypi.netflix.net/packages/19289703816/pydantic_core-2.41.5-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:b80aa5095cd3109962a298ce14110ae16b8c1aece8b72f9dafe81cf597ad80b3", size = 1863760, upload-time = "2025-11-04T13:41:31.055Z" },
+    { url = "https://pypi.netflix.net/packages/19289703817/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3006c3dd9ba34b0c094c544c6006cc79e87d8612999f1a5d43b769b89181f23c", size = 1878092, upload-time = "2025-11-04T13:41:33.21Z" },
+    { url = "https://pypi.netflix.net/packages/19289703818/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:72f6c8b11857a856bcfa48c86f5368439f74453563f951e473514579d44aa612", size = 2053385, upload-time = "2025-11-04T13:41:35.508Z" },
+    { url = "https://pypi.netflix.net/packages/19289703819/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:5cb1b2f9742240e4bb26b652a5aeb840aa4b417c7748b6f8387927bc6e45e40d", size = 2218832, upload-time = "2025-11-04T13:41:37.732Z" },
+    { url = "https://pypi.netflix.net/packages/19289703820/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:bd3d54f38609ff308209bd43acea66061494157703364ae40c951f83ba99a1a9", size = 2327585, upload-time = "2025-11-04T13:41:40Z" },
+    { url = "https://pypi.netflix.net/packages/19289703821/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2ff4321e56e879ee8d2a879501c8e469414d948f4aba74a2d4593184eb326660", size = 2041078, upload-time = "2025-11-04T13:41:42.323Z" },
+    { url = "https://pypi.netflix.net/packages/19289703822/pydantic_core-2.41.5-cp314-cp314t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d0d2568a8c11bf8225044aa94409e21da0cb09dcdafe9ecd10250b2baad531a9", size = 2173914, upload-time = "2025-11-04T13:41:45.221Z" },
+    { url = "https://pypi.netflix.net/packages/19289703823/pydantic_core-2.41.5-cp314-cp314t-musllinux_1_1_aarch64.whl", hash = "sha256:a39455728aabd58ceabb03c90e12f71fd30fa69615760a075b9fec596456ccc3", size = 2129560, upload-time = "2025-11-04T13:41:47.474Z" },
+    { url = "https://pypi.netflix.net/packages/19289716662/pydantic_core-2.41.5-cp314-cp314t-musllinux_1_1_armv7l.whl", hash = "sha256:239edca560d05757817c13dc17c50766136d21f7cd0fac50295499ae24f90fdf", size = 2329244, upload-time = "2025-11-04T13:41:49.992Z" },
+    { url = "https://pypi.netflix.net/packages/19289716663/pydantic_core-2.41.5-cp314-cp314t-musllinux_1_1_x86_64.whl", hash = "sha256:2a5e06546e19f24c6a96a129142a75cee553cc018ffee48a460059b1185f4470", size = 2331955, upload-time = "2025-11-04T13:41:54.079Z" },
+    { url = "https://pypi.netflix.net/packages/19289716664/pydantic_core-2.41.5-cp314-cp314t-win32.whl", hash = "sha256:b4ececa40ac28afa90871c2cc2b9ffd2ff0bf749380fbdf57d165fd23da353aa", size = 1988906, upload-time = "2025-11-04T13:41:56.606Z" },
+    { url = "https://pypi.netflix.net/packages/19289716665/pydantic_core-2.41.5-cp314-cp314t-win_amd64.whl", hash = "sha256:80aa89cad80b32a912a65332f64a4450ed00966111b6615ca6816153d3585a8c", size = 1981607, upload-time = "2025-11-04T13:41:58.889Z" },
+    { url = "https://pypi.netflix.net/packages/19289716666/pydantic_core-2.41.5-cp314-cp314t-win_arm64.whl", hash = "sha256:35b44f37a3199f771c3eaa53051bc8a70cd7b54f333531c59e29fd4db5d15008", size = 1974769, upload-time = "2025-11-04T13:42:01.186Z" },
+    { url = "https://pypi.netflix.net/packages/19289755228/pydantic_core-2.41.5-graalpy311-graalpy242_311_native-macosx_10_12_x86_64.whl", hash = "sha256:b96d5f26b05d03cc60f11a7761a5ded1741da411e7fe0909e27a5e6a0cb7b034", size = 2115441, upload-time = "2025-11-04T13:42:39.557Z" },
+    { url = "https://pypi.netflix.net/packages/19289755229/pydantic_core-2.41.5-graalpy311-graalpy242_311_native-macosx_11_0_arm64.whl", hash = "sha256:634e8609e89ceecea15e2d61bc9ac3718caaaa71963717bf3c8f38bfde64242c", size = 1930291, upload-time = "2025-11-04T13:42:42.169Z" },
+    { url = "https://pypi.netflix.net/packages/19289755230/pydantic_core-2.41.5-graalpy311-graalpy242_311_native-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:93e8740d7503eb008aa2df04d3b9735f845d43ae845e6dcd2be0b55a2da43cd2", size = 1948632, upload-time = "2025-11-04T13:42:44.564Z" },
+    { url = "https://pypi.netflix.net/packages/19289755231/pydantic_core-2.41.5-graalpy311-graalpy242_311_native-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f15489ba13d61f670dcc96772e733aad1a6f9c429cc27574c6cdaed82d0146ad", size = 2138905, upload-time = "2025-11-04T13:42:47.156Z" },
+    { url = "https://pypi.netflix.net/packages/19289755232/pydantic_core-2.41.5-graalpy312-graalpy250_312_native-macosx_10_12_x86_64.whl", hash = "sha256:7da7087d756b19037bc2c06edc6c170eeef3c3bafcb8f532ff17d64dc427adfd", size = 2110495, upload-time = "2025-11-04T13:42:49.689Z" },
+    { url = "https://pypi.netflix.net/packages/19289775023/pydantic_core-2.41.5-graalpy312-graalpy250_312_native-macosx_11_0_arm64.whl", hash = "sha256:aabf5777b5c8ca26f7824cb4a120a740c9588ed58df9b2d196ce92fba42ff8dc", size = 1915388, upload-time = "2025-11-04T13:42:52.215Z" },
+    { url = "https://pypi.netflix.net/packages/19289775024/pydantic_core-2.41.5-graalpy312-graalpy250_312_native-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c007fe8a43d43b3969e8469004e9845944f1a80e6acd47c150856bb87f230c56", size = 1942879, upload-time = "2025-11-04T13:42:56.483Z" },
+    { url = "https://pypi.netflix.net/packages/19289775025/pydantic_core-2.41.5-graalpy312-graalpy250_312_native-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76d0819de158cd855d1cbb8fcafdf6f5cf1eb8e470abe056d5d161106e38062b", size = 2139017, upload-time = "2025-11-04T13:42:59.471Z" },
+    { url = "https://pypi.netflix.net/packages/19289775026/pydantic_core-2.41.5-pp310-pypy310_pp73-macosx_10_12_x86_64.whl", hash = "sha256:b5819cd790dbf0c5eb9f82c73c16b39a65dd6dd4d1439dcdea7816ec9adddab8", size = 2103351, upload-time = "2025-11-04T13:43:02.058Z" },
+    { url = "https://pypi.netflix.net/packages/19289775027/pydantic_core-2.41.5-pp310-pypy310_pp73-macosx_11_0_arm64.whl", hash = "sha256:5a4e67afbc95fa5c34cf27d9089bca7fcab4e51e57278d710320a70b956d1b9a", size = 1925363, upload-time = "2025-11-04T13:43:05.159Z" },
+    { url = "https://pypi.netflix.net/packages/19289775028/pydantic_core-2.41.5-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ece5c59f0ce7d001e017643d8d24da587ea1f74f6993467d85ae8a5ef9d4f42b", size = 2135615, upload-time = "2025-11-04T13:43:08.116Z" },
+    { url = "https://pypi.netflix.net/packages/19289775029/pydantic_core-2.41.5-pp310-pypy310_pp73-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:16f80f7abe3351f8ea6858914ddc8c77e02578544a0ebc15b4c2e1a0e813b0b2", size = 2175369, upload-time = "2025-11-04T13:43:12.49Z" },
+    { url = "https://pypi.netflix.net/packages/19289775030/pydantic_core-2.41.5-pp310-pypy310_pp73-musllinux_1_1_aarch64.whl", hash = "sha256:33cb885e759a705b426baada1fe68cbb0a2e68e34c5d0d0289a364cf01709093", size = 2144218, upload-time = "2025-11-04T13:43:15.431Z" },
+    { url = "https://pypi.netflix.net/packages/19289775031/pydantic_core-2.41.5-pp310-pypy310_pp73-musllinux_1_1_armv7l.whl", hash = "sha256:c8d8b4eb992936023be7dee581270af5c6e0697a8559895f527f5b7105ecd36a", size = 2329951, upload-time = "2025-11-04T13:43:18.062Z" },
+    { url = "https://pypi.netflix.net/packages/19289775032/pydantic_core-2.41.5-pp310-pypy310_pp73-musllinux_1_1_x86_64.whl", hash = "sha256:242a206cd0318f95cd21bdacff3fcc3aab23e79bba5cac3db5a841c9ef9c6963", size = 2318428, upload-time = "2025-11-04T13:43:20.679Z" },
+    { url = "https://pypi.netflix.net/packages/19289775033/pydantic_core-2.41.5-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:d3a978c4f57a597908b7e697229d996d77a6d3c94901e9edee593adada95ce1a", size = 2147009, upload-time = "2025-11-04T13:43:23.286Z" },
+    { url = "https://pypi.netflix.net/packages/19289798632/pydantic_core-2.41.5-pp311-pypy311_pp73-macosx_10_12_x86_64.whl", hash = "sha256:b2379fa7ed44ddecb5bfe4e48577d752db9fc10be00a6b7446e9663ba143de26", size = 2101980, upload-time = "2025-11-04T13:43:25.97Z" },
+    { url = "https://pypi.netflix.net/packages/19289798633/pydantic_core-2.41.5-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:266fb4cbf5e3cbd0b53669a6d1b039c45e3ce651fd5442eff4d07c2cc8d66808", size = 1923865, upload-time = "2025-11-04T13:43:28.763Z" },
+    { url = "https://pypi.netflix.net/packages/19289798634/pydantic_core-2.41.5-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:58133647260ea01e4d0500089a8c4f07bd7aa6ce109682b1426394988d8aaacc", size = 2134256, upload-time = "2025-11-04T13:43:31.71Z" },
+    { url = "https://pypi.netflix.net/packages/19289798635/pydantic_core-2.41.5-pp311-pypy311_pp73-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:287dad91cfb551c363dc62899a80e9e14da1f0e2b6ebde82c806612ca2a13ef1", size = 2174762, upload-time = "2025-11-04T13:43:34.744Z" },
+    { url = "https://pypi.netflix.net/packages/19289824837/pydantic_core-2.41.5-pp311-pypy311_pp73-musllinux_1_1_aarch64.whl", hash = "sha256:03b77d184b9eb40240ae9fd676ca364ce1085f203e1b1256f8ab9984dca80a84", size = 2143141, upload-time = "2025-11-04T13:43:37.701Z" },
+    { url = "https://pypi.netflix.net/packages/19289824838/pydantic_core-2.41.5-pp311-pypy311_pp73-musllinux_1_1_armv7l.whl", hash = "sha256:a668ce24de96165bb239160b3d854943128f4334822900534f2fe947930e5770", size = 2330317, upload-time = "2025-11-04T13:43:40.406Z" },
+    { url = "https://pypi.netflix.net/packages/19289824839/pydantic_core-2.41.5-pp311-pypy311_pp73-musllinux_1_1_x86_64.whl", hash = "sha256:f14f8f046c14563f8eb3f45f499cc658ab8d10072961e07225e507adb700e93f", size = 2316992, upload-time = "2025-11-04T13:43:43.602Z" },
+    { url = "https://pypi.netflix.net/packages/19289824840/pydantic_core-2.41.5-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:56121965f7a4dc965bff783d70b907ddf3d57f6eba29b6d2e5dabfaf07799c51", size = 2145302, upload-time = "2025-11-04T13:43:46.64Z" },
+]
+
+[[package]]
+name = "pygments"
+version = "2.19.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/18805843371/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/18805843370/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
+name = "pytest"
+version = "9.0.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
+    { name = "iniconfig" },
+    { name = "packaging" },
+    { name = "pluggy" },
+    { name = "pygments" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19434856402/pytest-9.0.2.tar.gz", hash = "sha256:75186651a92bd89611d1d9fc20f0b4345fd827c41ccd5c299a868a05d70edf11", size = 1568901, upload-time = "2025-12-06T21:30:51.014Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19434856401/pytest-9.0.2-py3-none-any.whl", hash = "sha256:711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b", size = 374801, upload-time = "2025-12-06T21:30:49.154Z" },
+]
+
+[[package]]
+name = "ruff"
+version = "0.15.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19892137945/ruff-0.15.2.tar.gz", hash = "sha256:14b965afee0969e68bb871eba625343b8673375f457af4abe98553e8bbb98342", size = 4558148, upload-time = "2026-02-19T22:32:20.271Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19892144540/ruff-0.15.2-py3-none-linux_armv6l.whl", hash = "sha256:120691a6fdae2f16d65435648160f5b81a9625288f75544dc40637436b5d3c0d", size = 10430565, upload-time = "2026-02-19T22:32:41.824Z" },
+    { url = "https://pypi.netflix.net/packages/19892131142/ruff-0.15.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:a89056d831256099658b6bba4037ac6dd06f49d194199215befe2bb10457ea5e", size = 10820354, upload-time = "2026-02-19T22:32:07.366Z" },
+    { url = "https://pypi.netflix.net/packages/19892131143/ruff-0.15.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:e36dee3a64be0ebd23c86ffa3aa3fd3ac9a712ff295e192243f814a830b6bd87", size = 10170767, upload-time = "2026-02-19T22:32:13.188Z" },
+    { url = "https://pypi.netflix.net/packages/19892131144/ruff-0.15.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a9fb47b6d9764677f8c0a193c0943ce9a05d6763523f132325af8a858eadc2b9", size = 10529591, upload-time = "2026-02-19T22:32:02.547Z" },
+    { url = "https://pypi.netflix.net/packages/19892137934/ruff-0.15.2-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f376990f9d0d6442ea9014b19621d8f2aaf2b8e39fdbfc79220b7f0c596c9b80", size = 10260771, upload-time = "2026-02-19T22:32:36.938Z" },
+    { url = "https://pypi.netflix.net/packages/19892137935/ruff-0.15.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2dcc987551952d73cbf5c88d9fdee815618d497e4df86cd4c4824cc59d5dd75f", size = 11045791, upload-time = "2026-02-19T22:32:31.642Z" },
+    { url = "https://pypi.netflix.net/packages/19892137936/ruff-0.15.2-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:42a47fd785cbe8c01b9ff45031af875d101b040ad8f4de7bbb716487c74c9a77", size = 11879271, upload-time = "2026-02-19T22:32:29.305Z" },
+    { url = "https://pypi.netflix.net/packages/19892137937/ruff-0.15.2-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:cbe9f49354866e575b4c6943856989f966421870e85cd2ac94dccb0a9dcb2fea", size = 11303707, upload-time = "2026-02-19T22:32:22.492Z" },
+    { url = "https://pypi.netflix.net/packages/19892144548/ruff-0.15.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b7a672c82b5f9887576087d97be5ce439f04bbaf548ee987b92d3a7dede41d3a", size = 11149151, upload-time = "2026-02-19T22:32:44.234Z" },
+    { url = "https://pypi.netflix.net/packages/19892137938/ruff-0.15.2-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:72ecc64f46f7019e2bcc3cdc05d4a7da958b629a5ab7033195e11a438403d956", size = 11091132, upload-time = "2026-02-19T22:32:24.691Z" },
+    { url = "https://pypi.netflix.net/packages/19892137939/ruff-0.15.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:8dcf243b15b561c655c1ef2f2b0050e5d50db37fe90115507f6ff37d865dc8b4", size = 10504717, upload-time = "2026-02-19T22:32:26.75Z" },
+    { url = "https://pypi.netflix.net/packages/19892131145/ruff-0.15.2-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:dab6941c862c05739774677c6273166d2510d254dac0695c0e3f5efa1b5585de", size = 10263122, upload-time = "2026-02-19T22:32:10.036Z" },
+    { url = "https://pypi.netflix.net/packages/19892144552/ruff-0.15.2-py3-none-musllinux_1_2_i686.whl", hash = "sha256:1b9164f57fc36058e9a6806eb92af185b0697c9fe4c7c52caa431c6554521e5c", size = 10735295, upload-time = "2026-02-19T22:32:39.227Z" },
+    { url = "https://pypi.netflix.net/packages/19892137941/ruff-0.15.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:80d24fcae24d42659db7e335b9e1531697a7102c19185b8dc4a028b952865fd8", size = 11241641, upload-time = "2026-02-19T22:32:34.617Z" },
+    { url = "https://pypi.netflix.net/packages/19892131146/ruff-0.15.2-py3-none-win32.whl", hash = "sha256:fd5ff9e5f519a7e1bd99cbe8daa324010a74f5e2ebc97c6242c08f26f3714f6f", size = 10507885, upload-time = "2026-02-19T22:32:15.635Z" },
+    { url = "https://pypi.netflix.net/packages/19892131147/ruff-0.15.2-py3-none-win_amd64.whl", hash = "sha256:d20014e3dfa400f3ff84830dfb5755ece2de45ab62ecea4af6b7262d0fb4f7c5", size = 11623725, upload-time = "2026-02-19T22:32:04.947Z" },
+    { url = "https://pypi.netflix.net/packages/19892131148/ruff-0.15.2-py3-none-win_arm64.whl", hash = "sha256:cabddc5822acdc8f7b5527b36ceac55cc51eec7b1946e60181de8fe83ca8876e", size = 10941649, upload-time = "2026-02-19T22:32:18.108Z" },
+]
+
+[[package]]
+name = "tomli"
+version = "2.4.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19585910318/tomli-2.4.0.tar.gz", hash = "sha256:aa89c3f6c277dd275d8e243ad24f3b5e701491a860d5121f2cdd399fbb31fc9c", size = 17477, upload-time = "2026-01-11T11:22:38.165Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19585909822/tomli-2.4.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b5ef256a3fd497d4973c11bf142e9ed78b150d36f5773f1ca6088c230ffc5867", size = 153663, upload-time = "2026-01-11T11:21:45.27Z" },
+    { url = "https://pypi.netflix.net/packages/19585909823/tomli-2.4.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:5572e41282d5268eb09a697c89a7bee84fae66511f87533a6f88bd2f7b652da9", size = 148469, upload-time = "2026-01-11T11:21:46.873Z" },
+    { url = "https://pypi.netflix.net/packages/19585909824/tomli-2.4.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:551e321c6ba03b55676970b47cb1b73f14a0a4dce6a3e1a9458fd6d921d72e95", size = 236039, upload-time = "2026-01-11T11:21:48.503Z" },
+    { url = "https://pypi.netflix.net/packages/19585909825/tomli-2.4.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5e3f639a7a8f10069d0e15408c0b96a2a828cfdec6fca05296ebcdcc28ca7c76", size = 243007, upload-time = "2026-01-11T11:21:49.456Z" },
+    { url = "https://pypi.netflix.net/packages/19585909826/tomli-2.4.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:1b168f2731796b045128c45982d3a4874057626da0e2ef1fdd722848b741361d", size = 240875, upload-time = "2026-01-11T11:21:50.755Z" },
+    { url = "https://pypi.netflix.net/packages/19585909827/tomli-2.4.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:133e93646ec4300d651839d382d63edff11d8978be23da4cc106f5a18b7d0576", size = 246271, upload-time = "2026-01-11T11:21:51.81Z" },
+    { url = "https://pypi.netflix.net/packages/19585909828/tomli-2.4.0-cp311-cp311-win32.whl", hash = "sha256:b6c78bdf37764092d369722d9946cb65b8767bfa4110f902a1b2542d8d173c8a", size = 96770, upload-time = "2026-01-11T11:21:52.647Z" },
+    { url = "https://pypi.netflix.net/packages/19585909829/tomli-2.4.0-cp311-cp311-win_amd64.whl", hash = "sha256:d3d1654e11d724760cdb37a3d7691f0be9db5fbdaef59c9f532aabf87006dbaa", size = 107626, upload-time = "2026-01-11T11:21:53.459Z" },
+    { url = "https://pypi.netflix.net/packages/19585909830/tomli-2.4.0-cp311-cp311-win_arm64.whl", hash = "sha256:cae9c19ed12d4e8f3ebf46d1a75090e4c0dc16271c5bce1c833ac168f08fb614", size = 94842, upload-time = "2026-01-11T11:21:54.831Z" },
+    { url = "https://pypi.netflix.net/packages/19585909831/tomli-2.4.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:920b1de295e72887bafa3ad9f7a792f811847d57ea6b1215154030cf131f16b1", size = 154894, upload-time = "2026-01-11T11:21:56.07Z" },
+    { url = "https://pypi.netflix.net/packages/19585909832/tomli-2.4.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7d6d9a4aee98fac3eab4952ad1d73aee87359452d1c086b5ceb43ed02ddb16b8", size = 149053, upload-time = "2026-01-11T11:21:57.467Z" },
+    { url = "https://pypi.netflix.net/packages/19585909833/tomli-2.4.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:36b9d05b51e65b254ea6c2585b59d2c4cb91c8a3d91d0ed0f17591a29aaea54a", size = 243481, upload-time = "2026-01-11T11:21:58.661Z" },
+    { url = "https://pypi.netflix.net/packages/19585909834/tomli-2.4.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1c8a885b370751837c029ef9bc014f27d80840e48bac415f3412e6593bbc18c1", size = 251720, upload-time = "2026-01-11T11:22:00.178Z" },
+    { url = "https://pypi.netflix.net/packages/19585909972/tomli-2.4.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:8768715ffc41f0008abe25d808c20c3d990f42b6e2e58305d5da280ae7d1fa3b", size = 247014, upload-time = "2026-01-11T11:22:01.238Z" },
+    { url = "https://pypi.netflix.net/packages/19585909973/tomli-2.4.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:7b438885858efd5be02a9a133caf5812b8776ee0c969fea02c45e8e3f296ba51", size = 251820, upload-time = "2026-01-11T11:22:02.727Z" },
+    { url = "https://pypi.netflix.net/packages/19585909974/tomli-2.4.0-cp312-cp312-win32.whl", hash = "sha256:0408e3de5ec77cc7f81960c362543cbbd91ef883e3138e81b729fc3eea5b9729", size = 97712, upload-time = "2026-01-11T11:22:03.777Z" },
+    { url = "https://pypi.netflix.net/packages/19585909975/tomli-2.4.0-cp312-cp312-win_amd64.whl", hash = "sha256:685306e2cc7da35be4ee914fd34ab801a6acacb061b6a7abca922aaf9ad368da", size = 108296, upload-time = "2026-01-11T11:22:04.86Z" },
+    { url = "https://pypi.netflix.net/packages/19585909976/tomli-2.4.0-cp312-cp312-win_arm64.whl", hash = "sha256:5aa48d7c2356055feef06a43611fc401a07337d5b006be13a30f6c58f869e3c3", size = 94553, upload-time = "2026-01-11T11:22:05.854Z" },
+    { url = "https://pypi.netflix.net/packages/19585909977/tomli-2.4.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:84d081fbc252d1b6a982e1870660e7330fb8f90f676f6e78b052ad4e64714bf0", size = 154915, upload-time = "2026-01-11T11:22:06.703Z" },
+    { url = "https://pypi.netflix.net/packages/19585909978/tomli-2.4.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:9a08144fa4cba33db5255f9b74f0b89888622109bd2776148f2597447f92a94e", size = 149038, upload-time = "2026-01-11T11:22:07.56Z" },
+    { url = "https://pypi.netflix.net/packages/19585909979/tomli-2.4.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c73add4bb52a206fd0c0723432db123c0c75c280cbd67174dd9d2db228ebb1b4", size = 242245, upload-time = "2026-01-11T11:22:08.344Z" },
+    { url = "https://pypi.netflix.net/packages/19585909980/tomli-2.4.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1fb2945cbe303b1419e2706e711b7113da57b7db31ee378d08712d678a34e51e", size = 250335, upload-time = "2026-01-11T11:22:09.951Z" },
+    { url = "https://pypi.netflix.net/packages/19585909981/tomli-2.4.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:bbb1b10aa643d973366dc2cb1ad94f99c1726a02343d43cbc011edbfac579e7c", size = 245962, upload-time = "2026-01-11T11:22:11.27Z" },
+    { url = "https://pypi.netflix.net/packages/19585909982/tomli-2.4.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:4cbcb367d44a1f0c2be408758b43e1ffb5308abe0ea222897d6bfc8e8281ef2f", size = 250396, upload-time = "2026-01-11T11:22:12.325Z" },
+    { url = "https://pypi.netflix.net/packages/19585909983/tomli-2.4.0-cp313-cp313-win32.whl", hash = "sha256:7d49c66a7d5e56ac959cb6fc583aff0651094ec071ba9ad43df785abc2320d86", size = 97530, upload-time = "2026-01-11T11:22:13.865Z" },
+    { url = "https://pypi.netflix.net/packages/19585909984/tomli-2.4.0-cp313-cp313-win_amd64.whl", hash = "sha256:3cf226acb51d8f1c394c1b310e0e0e61fecdd7adcb78d01e294ac297dd2e7f87", size = 108227, upload-time = "2026-01-11T11:22:15.224Z" },
+    { url = "https://pypi.netflix.net/packages/19585910135/tomli-2.4.0-cp313-cp313-win_arm64.whl", hash = "sha256:d20b797a5c1ad80c516e41bc1fb0443ddb5006e9aaa7bda2d71978346aeb9132", size = 94748, upload-time = "2026-01-11T11:22:16.009Z" },
+    { url = "https://pypi.netflix.net/packages/19585910136/tomli-2.4.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:26ab906a1eb794cd4e103691daa23d95c6919cc2fa9160000ac02370cc9dd3f6", size = 154725, upload-time = "2026-01-11T11:22:17.269Z" },
+    { url = "https://pypi.netflix.net/packages/19585910137/tomli-2.4.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:20cedb4ee43278bc4f2fee6cb50daec836959aadaf948db5172e776dd3d993fc", size = 148901, upload-time = "2026-01-11T11:22:18.287Z" },
+    { url = "https://pypi.netflix.net/packages/19585910138/tomli-2.4.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:39b0b5d1b6dd03684b3fb276407ebed7090bbec989fa55838c98560c01113b66", size = 243375, upload-time = "2026-01-11T11:22:19.154Z" },
+    { url = "https://pypi.netflix.net/packages/19585910139/tomli-2.4.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a26d7ff68dfdb9f87a016ecfd1e1c2bacbe3108f4e0f8bcd2228ef9a766c787d", size = 250639, upload-time = "2026-01-11T11:22:20.168Z" },
+    { url = "https://pypi.netflix.net/packages/19585910140/tomli-2.4.0-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:20ffd184fb1df76a66e34bd1b36b4a4641bd2b82954befa32fe8163e79f1a702", size = 246897, upload-time = "2026-01-11T11:22:21.544Z" },
+    { url = "https://pypi.netflix.net/packages/19585910141/tomli-2.4.0-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:75c2f8bbddf170e8effc98f5e9084a8751f8174ea6ccf4fca5398436e0320bc8", size = 254697, upload-time = "2026-01-11T11:22:23.058Z" },
+    { url = "https://pypi.netflix.net/packages/19585910142/tomli-2.4.0-cp314-cp314-win32.whl", hash = "sha256:31d556d079d72db7c584c0627ff3a24c5d3fb4f730221d3444f3efb1b2514776", size = 98567, upload-time = "2026-01-11T11:22:24.033Z" },
+    { url = "https://pypi.netflix.net/packages/19585910143/tomli-2.4.0-cp314-cp314-win_amd64.whl", hash = "sha256:43e685b9b2341681907759cf3a04e14d7104b3580f808cfde1dfdb60ada85475", size = 108556, upload-time = "2026-01-11T11:22:25.378Z" },
+    { url = "https://pypi.netflix.net/packages/19585910144/tomli-2.4.0-cp314-cp314-win_arm64.whl", hash = "sha256:3d895d56bd3f82ddd6faaff993c275efc2ff38e52322ea264122d72729dca2b2", size = 96014, upload-time = "2026-01-11T11:22:26.138Z" },
+    { url = "https://pypi.netflix.net/packages/19585910145/tomli-2.4.0-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:5b5807f3999fb66776dbce568cc9a828544244a8eb84b84b9bafc080c99597b9", size = 163339, upload-time = "2026-01-11T11:22:27.143Z" },
+    { url = "https://pypi.netflix.net/packages/19585910146/tomli-2.4.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:c084ad935abe686bd9c898e62a02a19abfc9760b5a79bc29644463eaf2840cb0", size = 159490, upload-time = "2026-01-11T11:22:28.399Z" },
+    { url = "https://pypi.netflix.net/packages/19585910147/tomli-2.4.0-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0f2e3955efea4d1cfbcb87bc321e00dc08d2bcb737fd1d5e398af111d86db5df", size = 269398, upload-time = "2026-01-11T11:22:29.345Z" },
+    { url = "https://pypi.netflix.net/packages/19585910311/tomli-2.4.0-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0e0fe8a0b8312acf3a88077a0802565cb09ee34107813bba1c7cd591fa6cfc8d", size = 276515, upload-time = "2026-01-11T11:22:30.327Z" },
+    { url = "https://pypi.netflix.net/packages/19585910312/tomli-2.4.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:413540dce94673591859c4c6f794dfeaa845e98bf35d72ed59636f869ef9f86f", size = 273806, upload-time = "2026-01-11T11:22:32.56Z" },
+    { url = "https://pypi.netflix.net/packages/19585910313/tomli-2.4.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:0dc56fef0e2c1c470aeac5b6ca8cc7b640bb93e92d9803ddaf9ea03e198f5b0b", size = 281340, upload-time = "2026-01-11T11:22:33.505Z" },
+    { url = "https://pypi.netflix.net/packages/19585910314/tomli-2.4.0-cp314-cp314t-win32.whl", hash = "sha256:d878f2a6707cc9d53a1be1414bbb419e629c3d6e67f69230217bb663e76b5087", size = 108106, upload-time = "2026-01-11T11:22:34.451Z" },
+    { url = "https://pypi.netflix.net/packages/19585910315/tomli-2.4.0-cp314-cp314t-win_amd64.whl", hash = "sha256:2add28aacc7425117ff6364fe9e06a183bb0251b03f986df0e78e974047571fd", size = 120504, upload-time = "2026-01-11T11:22:35.764Z" },
+    { url = "https://pypi.netflix.net/packages/19585910316/tomli-2.4.0-cp314-cp314t-win_arm64.whl", hash = "sha256:2b1e3b80e1d5e52e40e9b924ec43d81570f0e7d09d11081b797bc4692765a3d4", size = 99561, upload-time = "2026-01-11T11:22:36.624Z" },
+    { url = "https://pypi.netflix.net/packages/19585910317/tomli-2.4.0-py3-none-any.whl", hash = "sha256:1f776e7d669ebceb01dee46484485f43a4048746235e683bcdffacdf1fb4785a", size = 14477, upload-time = "2026-01-11T11:22:37.446Z" },
+]
+
+[[package]]
+name = "typing-extensions"
+version = "4.15.0"
+source = { registry = "https://pypi.netflix.net/simple" }
+sdist = { url = "https://pypi.netflix.net/packages/19006597195/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19006597194/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
+]
+
+[[package]]
+name = "typing-inspection"
+version = "0.4.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19151033440/typing_inspection-0.4.2.tar.gz", hash = "sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464", size = 75949, upload-time = "2025-10-01T02:14:41.687Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19151033439/typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7", size = 14611, upload-time = "2025-10-01T02:14:40.154Z" },
+]
+
+[[package]]
+name = "xsdata"
+version = "26.2"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19851582861/xsdata-26.2.tar.gz", hash = "sha256:c631af71aaa75734f8ce92a08fcf8389d905dee2aab0b5032c9032e9071009a6", size = 349690, upload-time = "2026-02-15T16:13:31.274Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19851582860/xsdata-26.2-py3-none-any.whl", hash = "sha256:85a591a4405d903416afbd4a917e8dda8ea44641a3e66d72134bc2a31b3c16b0", size = 235561, upload-time = "2026-02-15T16:13:29.614Z" },
+]
+
+[package.optional-dependencies]
+lxml = [
+    { name = "lxml" },
+]
+
+[[package]]
+name = "xsdata-pydantic"
+version = "24.5"
+source = { registry = "https://pypi.netflix.net/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "xsdata" },
+]
+sdist = { url = "https://pypi.netflix.net/packages/19560887037/xsdata_pydantic-24.5.tar.gz", hash = "sha256:e3c8758133195657ece578537eda6c7ebd8419f77abf6b90fd4ced96e348129b", size = 18763, upload-time = "2024-05-08T17:49:48.28Z" }
+wheels = [
+    { url = "https://pypi.netflix.net/packages/19560887036/xsdata_pydantic-24.5-py3-none-any.whl", hash = "sha256:bb6da7d3445d655640096c65c1b11037153b19df533da89553f24247ef352cd0", size = 8891, upload-time = "2024-05-08T17:49:46.408Z" },
+]
