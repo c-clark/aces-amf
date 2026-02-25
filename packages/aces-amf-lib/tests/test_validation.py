@@ -9,15 +9,11 @@ from aces_amf_lib.validation import validate_schema, ValidationType
 
 
 @pytest.mark.parametrize(
-    "amf_subpath",
-    [
-        Path("aces-examples") / "example1.amf",
-        Path("aces-examples") / "example6.amf",
-        Path("aces-examples") / "exampleMinimum.amf",
-    ],
+    "amf_name",
+    ["example1.amf", "example6.amf", "exampleMinimum.amf"],
 )
-def test_amf_validation_pos(amf_subpath, test_data_path):
-    amf_path = test_data_path / amf_subpath
+def test_amf_validation_pos(amf_name, aces_amf_examples_path):
+    amf_path = aces_amf_examples_path / amf_name
     assert isinstance(validate_schema(amf_path), list)
     assert len(validate_schema(amf_path)) == 0
 

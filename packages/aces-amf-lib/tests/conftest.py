@@ -2,8 +2,10 @@
 from pathlib import Path
 import pytest
 
+from aces_amf_lib.fixtures import get_amf_examples_path
 
-# Test data directory
+
+# Test data directory (local test data, not package fixtures)
 TEST_DATA_DIR = Path(__file__).parent / "data"
 
 
@@ -14,6 +16,6 @@ def test_data_path() -> Path:
 
 
 @pytest.fixture
-def aces_amf_examples_path(test_data_path) -> Path:
-    """Path to ACES example AMF files."""
-    return test_data_path / "aces-examples"
+def aces_amf_examples_path() -> Path:
+    """Path to ACES example AMF files (from package fixtures)."""
+    return get_amf_examples_path()

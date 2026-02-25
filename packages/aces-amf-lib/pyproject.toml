@@ -28,7 +28,7 @@ dev = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-aces_amf_lib = ["data/amf-schema/**/*.xsd"]
+aces_amf_lib = ["data/amf-schema/**/*.xsd", "fixtures/amf-examples/*.amf"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
