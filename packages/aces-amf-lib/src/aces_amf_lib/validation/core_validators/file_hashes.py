@@ -1,0 +1,123 @@
+# SPDX-License-Identifier: Apache-2.0
+"""File hash verification: compute and verify hashes for referenced files."""
+
+from __future__ import annotations
+
+import hashlib
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+
+if TYPE_CHECKING:
+    from ...aces_amf import ACESAMF
+
+logger = logging.getLogger(__name__)
+
+# Map AMF hash algorithm URIs to hashlib names
+HASH_ALGO_MAP = {
+    "http://www.w3.org/2001/04/xmlenc#sha256": "sha256",
+    "http://www.w3.org/2000/09/xmldsig#sha1": "sha1",
+    "http://www.w3.org/2001/04/xmldsig-more#md5": "md5",
+}
+
+
+class FileHashValidator:
+    name = "file_hashes"
+
+    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+        messages: list[ValidationMessage] = []
+
+        if context.base_path is None:
+            # Can't verify file hashes without a base path to resolve files against
+            return messages
+
+        transforms = _collect_transforms_with_hashes(amf)
+
+        for label, transform in transforms:
+            if transform.hash is None:
+                continue
+
+            file_ref = getattr(transform, "file", None)
+            if not file_ref:
+                continue
+
+            # Normalize file_ref to a single path
+            if isinstance(file_ref, list):
+                file_paths = file_ref
+            else:
+                file_paths = [file_ref]
+
+            for fp in file_paths:
+                if not fp:
+                    continue
+
+                resolved = context.base_path / fp
+                if not resolved.is_file():
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.WARNING,
+                            validation_type=ValidationType.HASH_FILE_NOT_FOUND,
+                            message=f"{label} references file {fp!r} which was not found at {resolved}",
+                            file_path=context.amf_path,
+                        )
+                    )
+                    continue
+
+                algo_uri = transform.hash.algorithm.value if hasattr(transform.hash.algorithm, "value") else str(transform.hash.algorithm)
+                algo_name = HASH_ALGO_MAP.get(algo_uri)
+
+                if algo_name is None:
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.WARNING,
+                            validation_type=ValidationType.HASH_ALGORITHM_UNSUPPORTED,
+                            message=f"{label} uses unsupported hash algorithm: {algo_uri}",
+                            file_path=context.amf_path,
+                        )
+                    )
+                    continue
+
+                expected_hash = transform.hash.value
+                actual_hash = _compute_file_hash(resolved, algo_name)
+
+                if actual_hash != expected_hash:
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.ERROR,
+                            validation_type=ValidationType.HASH_MISMATCH,
+                            message=f"{label} file {fp!r} hash mismatch: expected {expected_hash!r}, got {actual_hash!r}",
+                            file_path=context.amf_path,
+                        )
+                    )
+
+        return messages
+
+
+def _collect_transforms_with_hashes(amf: ACESAMF) -> list[tuple[str, object]]:
+    """Collect all transforms that might have hash elements."""
+    transforms = []
+
+    if amf.amf.pipeline:
+        if amf.amf.pipeline.input_transform:
+            transforms.append(("Input transform", amf.amf.pipeline.input_transform))
+
+        if amf.amf.pipeline.look_transform:
+            for idx, lt in enumerate(amf.amf.pipeline.look_transform):
+                desc = lt.description or f"Look transform #{idx + 1}"
+                transforms.append((desc, lt))
+
+        if amf.amf.pipeline.output_transform:
+            transforms.append(("Output transform", amf.amf.pipeline.output_transform))
+
+    return transforms
+
+
+def _compute_file_hash(file_path: Path, algo_name: str) -> bytes:
+    """Compute the hash of a file."""
+    h = hashlib.new(algo_name)
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.digest()

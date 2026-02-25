@@ -22,24 +22,41 @@ Example usage:
 """
 
 from .aces_amf import ACESAMF
-from .validation import validate_amf, ValidationMessage, ValidationType
-from .semantic_validation import validate_semantic, SemanticValidator, SemanticValidationMessage, ValidationLevel, SemanticValidationType
+from .validation import (
+    validate_schema,
+    validate_semantic,
+    validate_all,
+    ValidatorRegistry,
+    get_default_registry,
+    ValidationContext,
+    ValidationLevel,
+    ValidationMessage,
+    ValidationType,
+)
+from .protocols import AMFValidator, TransformRegistry
 from . import amf_utilities
 from . import amf_v1
 from . import amf_v2
 
 __version__ = "0.1.0"
 
+# Backward compat: old validate_amf was schema-only
+validate_amf = validate_schema
+
 __all__ = [
     "ACESAMF",
     "validate_amf",
+    "validate_schema",
+    "validate_semantic",
+    "validate_all",
+    "ValidatorRegistry",
+    "get_default_registry",
+    "ValidationContext",
+    "ValidationLevel",
     "ValidationMessage",
     "ValidationType",
-    "validate_semantic",
-    "SemanticValidator",
-    "SemanticValidationMessage",
-    "ValidationLevel",
-    "SemanticValidationType",
+    "AMFValidator",
+    "TransformRegistry",
     "amf_utilities",
     "amf_v1",
     "amf_v2",

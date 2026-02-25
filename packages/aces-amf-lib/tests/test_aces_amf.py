@@ -6,7 +6,7 @@ import time
 import pytest
 
 from aces_amf_lib import ACESAMF
-from aces_amf_lib.validation import validate_amf
+from aces_amf_lib.validation import validate_schema
 
 from conftest import TEST_DATA_DIR
 
@@ -58,7 +58,7 @@ def test_create_minimal(tmp_path):
     out_path = tmp_path / "out.amf"
     amf.write(out_path)
 
-    validation_messages = validate_amf(out_path)
+    validation_messages = validate_schema(out_path)
     assert not validation_messages
 
 
@@ -78,7 +78,7 @@ def test_create_with_cdl(tmp_path):
     out_path = tmp_path / "out.amf"
     amf.write(out_path)
 
-    validation_messages = validate_amf(out_path)
+    validation_messages = validate_schema(out_path)
     assert not validation_messages
 
 
@@ -132,7 +132,7 @@ def test_roundtrip(aces_amf_examples_path, tmp_path):
     amf_obj.write(out_path)
 
     # Validate the output
-    validation_messages = validate_amf(out_path)
+    validation_messages = validate_schema(out_path)
     assert not validation_messages
 
     # Load back and verify

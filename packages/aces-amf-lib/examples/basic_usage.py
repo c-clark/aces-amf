@@ -4,8 +4,8 @@
 
 from pathlib import Path
 
-from aces_amf_lib import ACESAMF, validate_amf, amf_v2
-from aces_amf_lib.semantic_validation import validate_semantic
+from aces_amf_lib import ACESAMF, amf_v2
+from aces_amf_lib.validation import validate_schema, validate_semantic
 
 
 def create_amf_with_cdl(output_path: Path):
@@ -17,15 +17,14 @@ def create_amf_with_cdl(output_path: Path):
     amf.pipeline_description = "DI Grade Pipeline"
 
     # Add an author
-    author = amf_v2.AuthorType()
-    author.name = "Jane Colorist"
-    author.email_address = "jane@example.com"
+    author = amf_v2.AuthorType(name="Jane Colorist", email_address="jane@example.com")
     amf.add_amf_author(author)
 
     # Set input transform by transform ID
-    input_transform = amf_v2.InputTransformType()
-    input_transform.transform_id = "urn:ampas:aces:transformId:v1.5:IDT.ARRI.Alexa-v3-logC-EI800.a1.v2"
-    input_transform.applied = True
+    input_transform = amf_v2.InputTransformType(
+        transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.Alexa-v3-logC-EI800.a1.v2",
+        applied=True,
+    )
     amf.set_input_transform(input_transform)
 
     # Add a CDL look transform
@@ -39,9 +38,10 @@ def create_amf_with_cdl(output_path: Path):
     })
 
     # Set output transform
-    output_transform = amf_v2.OutputTransformType()
-    output_transform.transform_id = "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3"
-    output_transform.applied = True
+    output_transform = amf_v2.OutputTransformType(
+        transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
+        applied=True,
+    )
     amf.set_output_transform(output_transform)
 
     # Write to file
@@ -55,10 +55,10 @@ def validate_amf_file(amf_path: Path):
     """Validate an AMF file using both XSD and semantic validation."""
     # XSD schema validation
     print(f"\nValidating: {amf_path}")
-    xsd_messages = validate_amf(amf_path)
+    xsd_messages = validate_schema(amf_path)
     if xsd_messages:
         for msg in xsd_messages:
-            print(f"  XSD: {msg.validation_message}")
+            print(f"  XSD: {msg}")
     else:
         print("  XSD: PASS")
 
