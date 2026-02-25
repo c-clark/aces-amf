@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: aces-amf-transforms
-Version: 0.1.0
-Summary: ACES transform URN registry for aces-amf-lib
-License-Expression: Apache-2.0
-Requires-Python: >=3.10
-Description-Content-Type: text/markdown
-Requires-Dist: aces-amf-lib>=0.1.0

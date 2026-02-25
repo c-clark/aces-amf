@@ -1,2 +1,0 @@
-[aces_amf.validators]
-transform_id = aces_amf_transforms.validator:TransformIdValidator
