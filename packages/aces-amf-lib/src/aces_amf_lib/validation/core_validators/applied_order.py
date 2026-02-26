@@ -12,36 +12,48 @@ from typing import TYPE_CHECKING
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile
 
 
 class AppliedOrderValidator:
     name = "applied_order"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
 
-        if not amf.amf.pipeline or not amf.amf.pipeline.look_transform:
-            return messages
+        if amf.pipeline:
+            messages.extend(_validate_pipeline_applied_order(amf.pipeline.look_transform, "", context.amf_path))
 
-        seen_non_applied = False
-
-        for idx, lt in enumerate(amf.amf.pipeline.look_transform):
-            desc = lt.description or f"Look transform #{idx + 1}"
-            is_applied = lt.applied if lt.applied is not None else True
-
-            if seen_non_applied and is_applied:
-                messages.append(
-                    ValidationMessage(
-                        level=ValidationLevel.ERROR,
-                        validation_type=ValidationType.INVALID_APPLIED_ORDER,
-                        message=f"{desc} has applied=True but appears after a non-applied transform. "
-                        f"Once applied=False, all subsequent transforms must be applied=False.",
-                        file_path=context.amf_path,
-                    )
+        for idx, archived in enumerate(amf.archived_pipeline):
+            messages.extend(
+                _validate_pipeline_applied_order(
+                    archived.look_transform, f"Archived pipeline #{idx + 1} ", context.amf_path
                 )
-
-            if not is_applied:
-                seen_non_applied = True
+            )
 
         return messages
+
+
+def _validate_pipeline_applied_order(look_transforms, prefix: str, amf_path) -> list[ValidationMessage]:
+    messages: list[ValidationMessage] = []
+    seen_non_applied = False
+
+    for idx, lt in enumerate(look_transforms):
+        desc = f"{prefix}{lt.description or f'Look transform #{idx + 1}'}"
+        is_applied = lt.applied if lt.applied is not None else True
+
+        if seen_non_applied and is_applied:
+            messages.append(
+                ValidationMessage(
+                    level=ValidationLevel.ERROR,
+                    validation_type=ValidationType.INVALID_APPLIED_ORDER,
+                    message=f"{desc} has applied=True but appears after a non-applied transform. "
+                    f"Once applied=False, all subsequent transforms must be applied=False.",
+                    file_path=amf_path,
+                )
+            )
+
+        if not is_applied:
+            seen_non_applied = True
+
+    return messages

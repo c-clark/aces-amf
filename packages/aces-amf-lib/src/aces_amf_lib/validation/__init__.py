@@ -15,10 +15,12 @@ Usage:
     messages = validate_all("example.amf")
 """
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Optional
 
 from .types import (
+    AMFValidationError,
     ValidationContext,
     ValidationLevel,
     ValidationMessage,
@@ -34,11 +36,11 @@ from . import core_validators  # noqa: F401
 def validate_semantic(
     amf_path: Path | str,
     *,
-    base_path: Optional[Path] = None,
-    validators: Optional[list[str]] = None,
-    exclude: Optional[list[str]] = None,
-    uuid_pool: Optional[set[str]] = None,
-    registry: Optional[ValidatorRegistry] = None,
+    base_path: Path | None = None,
+    validators: list[str] | None = None,
+    exclude: list[str] | None = None,
+    uuid_pool: set[str] | None = None,
+    registry: ValidatorRegistry | None = None,
 ) -> list[ValidationMessage]:
     """Run semantic validation on an AMF file.
 
@@ -53,13 +55,13 @@ def validate_semantic(
     Returns:
         List of validation messages.
     """
-    from ..aces_amf import ACESAMF
+    from ..amf_utilities import load_amf
 
     amf_path = Path(amf_path)
 
     # Load the AMF
     try:
-        amf = ACESAMF.from_file(amf_path)
+        amf = load_amf(amf_path, validate=False)
     except Exception as e:
         return [
             ValidationMessage(
@@ -83,11 +85,11 @@ def validate_semantic(
 def validate_all(
     amf_path: Path | str,
     *,
-    base_path: Optional[Path] = None,
-    validators: Optional[list[str]] = None,
-    exclude: Optional[list[str]] = None,
-    uuid_pool: Optional[set[str]] = None,
-    registry: Optional[ValidatorRegistry] = None,
+    base_path: Path | None = None,
+    validators: list[str] | None = None,
+    exclude: list[str] | None = None,
+    uuid_pool: set[str] | None = None,
+    registry: ValidatorRegistry | None = None,
 ) -> list[ValidationMessage]:
     """Run both schema and semantic validation on an AMF file.
 
@@ -121,21 +123,15 @@ def validate_all(
     return messages
 
 
-# Backward compatibility aliases
-SemanticValidationType = ValidationType
-SemanticValidationMessage = ValidationMessage
-
 __all__ = [
     "validate_schema",
     "validate_semantic",
     "validate_all",
+    "AMFValidationError",
     "ValidatorRegistry",
     "get_default_registry",
     "ValidationContext",
     "ValidationLevel",
     "ValidationMessage",
     "ValidationType",
-    # Backward compat
-    "SemanticValidationType",
-    "SemanticValidationMessage",
 ]

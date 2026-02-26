@@ -6,57 +6,96 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from ._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile, PipelineType
 
 
 class UUIDValidator:
     name = "uuid"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
-        local_uuids: set[str] = set()
-        expected_count = 0
+        uuids: list[tuple[str, str]] = []  # (uuid, label) pairs
 
-        # Collect UUIDs
-        if amf.amf.amf_info and amf.amf.amf_info.uuid:
-            local_uuids.add(amf.amf.amf_info.uuid)
-            expected_count += 1
+        # Collect UUIDs from amfInfo
+        if amf.amf_info and amf.amf_info.uuid:
+            uuids.append((amf.amf_info.uuid, "amfInfo"))
 
-        if amf.amf.pipeline and amf.amf.pipeline.pipeline_info and amf.amf.pipeline.pipeline_info.uuid:
-            local_uuids.add(amf.amf.pipeline.pipeline_info.uuid)
-            expected_count += 1
+        # Collect from active pipeline
+        if amf.pipeline:
+            uuids.extend(_collect_pipeline_uuids(amf.pipeline, "Pipeline"))
 
-        if amf.amf.pipeline and amf.amf.pipeline.look_transform:
-            for lt in amf.amf.pipeline.look_transform:
-                if lt.uuid:
-                    expected_count += 1
-                    local_uuids.add(lt.uuid)
+        # Collect from archived pipelines
+        for idx, archived in enumerate(amf.archived_pipeline):
+            uuids.extend(_collect_pipeline_uuids(archived, f"Archived pipeline #{idx + 1}"))
 
         # Check for duplicates within this file
-        if len(local_uuids) != expected_count:
-            messages.append(
-                ValidationMessage(
-                    level=ValidationLevel.ERROR,
-                    validation_type=ValidationType.DUPLICATE_UUID,
-                    message="Duplicate UUIDs found within AMF file",
-                    file_path=context.amf_path,
+        seen: dict[str, str] = {}
+        for uid, label in uuids:
+            if uid in seen:
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.ERROR,
+                        validation_type=ValidationType.DUPLICATE_UUID,
+                        message=f"Duplicate UUID {uid} found in {label} and {seen[uid]}",
+                        file_path=context.amf_path,
+                    )
                 )
-            )
+            else:
+                seen[uid] = label
 
         # Check against cross-file UUID pool
         if context.uuid_pool is not None:
-            for uid in local_uuids:
+            for uid, label in uuids:
                 if uid in context.uuid_pool:
                     messages.append(
                         ValidationMessage(
                             level=ValidationLevel.ERROR,
                             validation_type=ValidationType.DUPLICATE_UUID,
-                            message=f"UUID {uid} appears in multiple AMF files",
+                            message=f"UUID {uid} ({label}) appears in multiple AMF files",
                             file_path=context.amf_path,
                         )
                     )
                 context.uuid_pool.add(uid)
 
         return messages
+
+
+def _collect_pipeline_uuids(pipeline: PipelineType, prefix: str) -> list[tuple[str, str]]:
+    """Collect all UUIDs from a pipeline (active or archived)."""
+    uuids: list[tuple[str, str]] = []
+
+    if pipeline.pipeline_info and pipeline.pipeline_info.uuid:
+        uuids.append((pipeline.pipeline_info.uuid, f"{prefix} pipelineInfo"))
+
+    if pipeline.input_transform:
+        _collect_transform_uuids(pipeline.input_transform, f"{prefix} inputTransform", uuids)
+        for sub_label, sub in collect_sub_transforms(pipeline.input_transform, f"{prefix} Input"):
+            _collect_transform_uuids(sub, sub_label, uuids)
+
+    for idx, lt in enumerate(pipeline.look_transform):
+        desc = lt.description or f"lookTransform #{idx + 1}"
+        _collect_transform_uuids(lt, f"{prefix} {desc}", uuids)
+        # Working space transforms
+        if lt.cdl_working_space:
+            ws = lt.cdl_working_space
+            if ws.from_cdl_working_space:
+                _collect_transform_uuids(ws.from_cdl_working_space, f"{prefix} {desc} fromCdlWorkingSpace", uuids)
+            if ws.to_cdl_working_space:
+                _collect_transform_uuids(ws.to_cdl_working_space, f"{prefix} {desc} toCdlWorkingSpace", uuids)
+
+    if pipeline.output_transform:
+        _collect_transform_uuids(pipeline.output_transform, f"{prefix} outputTransform", uuids)
+        for sub_label, sub in collect_sub_transforms(pipeline.output_transform, f"{prefix} Output"):
+            _collect_transform_uuids(sub, sub_label, uuids)
+
+    return uuids
+
+
+def _collect_transform_uuids(transform, label: str, uuids: list[tuple[str, str]]) -> None:
+    """Collect UUID from a transform if present."""
+    uid = getattr(transform, "uuid", None)
+    if uid:
+        uuids.append((uid, label))

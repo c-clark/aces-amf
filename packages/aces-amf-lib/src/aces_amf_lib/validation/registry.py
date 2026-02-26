@@ -6,13 +6,13 @@ Validator registry with entry point discovery and explicit registration.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from ..protocols import AMFValidator
 from .types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from ..aces_amf import ACESAMF
+    from ..amf_v2 import AcesMetadataFile
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class ValidatorRegistry:
         """Remove a validator by name."""
         self._validators.pop(name, None)
 
-    def get(self, name: str) -> Optional[AMFValidator]:
+    def get(self, name: str) -> AMFValidator | None:
         """Get a validator by name."""
         return self._validators.get(name)
 
@@ -61,11 +61,11 @@ class ValidatorRegistry:
 
     def validate(
         self,
-        amf: ACESAMF,
+        amf: AcesMetadataFile,
         context: ValidationContext,
         *,
-        validators: Optional[list[str]] = None,
-        exclude: Optional[list[str]] = None,
+        validators: list[str] | None = None,
+        exclude: list[str] | None = None,
     ) -> list[ValidationMessage]:
         """Run validators and collect messages.
 
@@ -110,7 +110,7 @@ class ValidatorRegistry:
 
 
 # Global default registry
-_default_registry: Optional[ValidatorRegistry] = None
+_default_registry: ValidatorRegistry | None = None
 
 
 def get_default_registry() -> ValidatorRegistry:

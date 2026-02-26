@@ -4,50 +4,58 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from urllib.parse import unquote
 
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from ._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile, PipelineType
 
 
 class FilePathValidator:
     name = "file_paths"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
 
-        # Check input transform
-        if amf.amf.pipeline and amf.amf.pipeline.input_transform:
-            it = amf.amf.pipeline.input_transform
-            for file_ref in _normalize_file_list(getattr(it, "file", None)):
-                if file_ref:
-                    messages.extend(_check_path_security(unquote(file_ref), "Input transform", context.amf_path))
+        if amf.pipeline:
+            messages.extend(_validate_pipeline_file_paths(amf.pipeline, "", context.amf_path))
 
-        # Check look transforms
-        if amf.amf.pipeline and amf.amf.pipeline.look_transform:
-            for idx, lt in enumerate(amf.amf.pipeline.look_transform):
-                desc = lt.description or f"Look transform #{idx + 1}"
-                for file_ref in _normalize_file_list(lt.file):
-                    if file_ref:
-                        messages.extend(_check_path_security(unquote(file_ref), desc, context.amf_path))
-
-        # Check output transform
-        if amf.amf.pipeline and amf.amf.pipeline.output_transform:
-            ot = amf.amf.pipeline.output_transform
-            for file_ref in _normalize_file_list(getattr(ot, "file", None)):
-                if file_ref:
-                    messages.extend(_check_path_security(unquote(file_ref), "Output transform", context.amf_path))
+        for idx, archived in enumerate(amf.archived_pipeline):
+            messages.extend(
+                _validate_pipeline_file_paths(archived, f"Archived pipeline #{idx + 1} ", context.amf_path)
+            )
 
         return messages
 
 
-def _normalize_file_list(file_field) -> list[str]:
-    """Convert file field to list, handling None, string, or list."""
-    if not file_field:
-        return []
-    return file_field if isinstance(file_field, list) else [file_field]
+def _validate_pipeline_file_paths(pipeline: PipelineType, prefix: str, amf_path) -> list[ValidationMessage]:
+    messages: list[ValidationMessage] = []
+
+    if pipeline.input_transform:
+        file_ref = getattr(pipeline.input_transform, "file", None)
+        if file_ref:
+            messages.extend(_check_path_security(file_ref, f"{prefix}Input transform", amf_path))
+        for sub_label, sub in collect_sub_transforms(pipeline.input_transform, f"{prefix}Input"):
+            sub_file = getattr(sub, "file", None)
+            if sub_file:
+                messages.extend(_check_path_security(sub_file, sub_label, amf_path))
+
+    for idx, lt in enumerate(pipeline.look_transform):
+        desc = f"{prefix}{lt.description or f'Look transform #{idx + 1}'}"
+        if lt.file:
+            messages.extend(_check_path_security(lt.file, desc, amf_path))
+
+    if pipeline.output_transform:
+        file_ref = getattr(pipeline.output_transform, "file", None)
+        if file_ref:
+            messages.extend(_check_path_security(file_ref, f"{prefix}Output transform", amf_path))
+        for sub_label, sub in collect_sub_transforms(pipeline.output_transform, f"{prefix}Output"):
+            sub_file = getattr(sub, "file", None)
+            if sub_file:
+                messages.extend(_check_path_security(sub_file, sub_label, amf_path))
+
+    return messages
 
 
 def _check_path_security(file_ref: str, label: str, amf_path) -> list[ValidationMessage]:

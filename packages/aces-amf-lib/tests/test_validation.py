@@ -25,9 +25,3 @@ def test_amf_validation_neg_syntax(tmp_path):
     result = validate_schema(bad_file)
     assert len(result) == 1
     assert result[0].validation_type == ValidationType.SCHEMA_VIOLATION
-
-
-def test_backward_compat_validate_amf():
-    """Test that the old validate_amf import still works."""
-    from aces_amf_lib import validate_amf
-    assert validate_amf is validate_schema

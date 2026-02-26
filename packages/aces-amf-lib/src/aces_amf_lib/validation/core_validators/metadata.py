@@ -8,17 +8,18 @@ from typing import TYPE_CHECKING
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile
 
 
 class MetadataValidator:
     name = "metadata"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
 
         # Check AMF description
-        if not amf.amf_description or not amf.amf_description.strip():
+        desc = amf.amf_info.description if amf.amf_info else None
+        if not desc or not desc.strip():
             messages.append(
                 ValidationMessage(
                     level=ValidationLevel.WARNING,
@@ -29,7 +30,8 @@ class MetadataValidator:
             )
 
         # Check for at least one author
-        if not amf.amf_authors:
+        authors = amf.amf_info.author if amf.amf_info else []
+        if not authors:
             messages.append(
                 ValidationMessage(
                     level=ValidationLevel.WARNING,
@@ -40,27 +42,40 @@ class MetadataValidator:
             )
 
         # Check pipeline description
-        if not amf.pipeline_description or not amf.pipeline_description.strip():
+        if amf.pipeline:
+            messages.extend(_validate_pipeline_metadata(amf.pipeline, "", context.amf_path))
+
+        for idx, archived in enumerate(amf.archived_pipeline):
+            messages.extend(
+                _validate_pipeline_metadata(archived, f"Archived pipeline #{idx + 1} ", context.amf_path)
+            )
+
+        return messages
+
+
+def _validate_pipeline_metadata(pipeline, prefix: str, amf_path) -> list[ValidationMessage]:
+    messages: list[ValidationMessage] = []
+
+    pipeline_desc = pipeline.pipeline_info.description if pipeline.pipeline_info else None
+    if not pipeline_desc or not pipeline_desc.strip():
+        messages.append(
+            ValidationMessage(
+                level=ValidationLevel.WARNING,
+                validation_type=ValidationType.MISSING_DESCRIPTION,
+                message=f"{prefix}Pipeline description is missing or empty",
+                file_path=amf_path,
+            )
+        )
+
+    for idx, lt in enumerate(pipeline.look_transform):
+        if not lt.description or not lt.description.strip():
             messages.append(
                 ValidationMessage(
-                    level=ValidationLevel.WARNING,
-                    validation_type=ValidationType.MISSING_DESCRIPTION,
-                    message="Pipeline description is missing or empty",
-                    file_path=context.amf_path,
+                    level=ValidationLevel.INFO,
+                    validation_type=ValidationType.MISSING_TRANSFORM_DESCRIPTION,
+                    message=f"{prefix}Look transform #{idx + 1} has no description",
+                    file_path=amf_path,
                 )
             )
 
-        # Check look transform descriptions
-        if amf.amf.pipeline and amf.amf.pipeline.look_transform:
-            for idx, lt in enumerate(amf.amf.pipeline.look_transform):
-                if not lt.description or not lt.description.strip():
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.INFO,
-                            validation_type=ValidationType.MISSING_TRANSFORM_DESCRIPTION,
-                            message=f"Look transform #{idx + 1} has no description",
-                            file_path=context.amf_path,
-                        )
-                    )
-
-        return messages
+    return messages

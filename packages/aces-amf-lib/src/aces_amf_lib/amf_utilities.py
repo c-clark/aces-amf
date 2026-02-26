@@ -2,24 +2,23 @@
 """
 Utilities for working with generated AMF classes.
 
-These handle direct interactions with the AMF classes. For a higher level
-interface that maintains more semantic correctness, see the ACESAMF class.
+Provides both low-level functions (dump_amf, write_amf, from_amf_file, from_amf_data)
+and high-level convenience functions (load_amf, save_amf, render_amf, minimal_amf).
 """
 
 import datetime
 import json
 import uuid
 from pathlib import Path
-from typing import TextIO
+from typing import Callable, TextIO
 
 import lxml.etree
 from xsdata.exceptions import ParserError
 from xsdata.models.datatype import XmlDateTime
-from xsdata_pydantic.bindings import JsonParser, JsonSerializer
+from xsdata_pydantic.bindings import JsonParser, JsonSerializer, XmlParser, XmlSerializer
 
 from . import amf_v1
 from . import amf_v2
-from .uri_codec import UriXmlParser, UriXmlSerializer
 
 
 FloatVector = tuple[float, float, float]
@@ -126,8 +125,13 @@ def cdl_look_transform(
 
 
 def cdl_look_transform_to_dict(look_transform: amf_v2.LookTransformType) -> dict:
-    """
-    Convert the provided CDL look transform to a dictionary.
+    """Extract CDL values from a look transform as a plain dict.
+
+    Returns:
+        Dict with ``asc_sop`` (slope/offset/power lists) and ``asc_sat`` (float).
+
+    Raises:
+        ValueError: If the look transform has no ASC SOP node.
     """
     if look_transform.asc_sop is None:
         raise ValueError("Missing ASC SOP node in CDL look transform")
@@ -147,26 +151,24 @@ def cdl_look_transform_to_dict(look_transform: amf_v2.LookTransformType) -> dict
 
 
 def from_amf_data(amf_data: bytes) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
-    """
-    Read the provided AMF data and return the parsed data and the namespace map.
+    """Parse AMF XML bytes into a v2 model and namespace map.
 
-    Note: Uses UriXmlParser to automatically decode URL-encoded xs:anyURI values.
+    Automatically upgrades v1 AMF data to v2 if needed.
     """
-    parser = UriXmlParser()
+    parser = XmlParser()
     return _read_amf(amf_data, parser.from_bytes)
 
 
 def from_amf_file(amf_path: Path | str) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
-    """
-    Read the provided AMF data and return the parsed data and the namespace map.
+    """Parse an AMF file into a v2 model and namespace map.
 
-    Note: Uses UriXmlParser to automatically decode URL-encoded xs:anyURI values.
+    Automatically upgrades v1 AMF files to v2 if needed.
     """
-    parser = UriXmlParser()
+    parser = XmlParser()
     return _read_amf(Path(amf_path), parser.from_path)
 
 
-def _read_amf(amf_source: Path | bytes, parse_method: callable) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
+def _read_amf(amf_source: Path | bytes, parse_method: Callable) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
     """
     Read the provided AMF data and return the parsed data and the namespace map.
     """
@@ -201,13 +203,11 @@ def _read_amf(amf_source: Path | bytes, parse_method: callable) -> tuple[amf_v2.
     return parsed, DEFAULT_NS_MAP
 
 
-def _amf_serializer() -> UriXmlSerializer:
+def _amf_serializer() -> XmlSerializer:
     """
     Create a serializer for AMF data that will serialize in the example style.
-
-    Note: Uses UriXmlSerializer to automatically encode xs:anyURI values.
     """
-    serializer = UriXmlSerializer()
+    serializer = XmlSerializer()
     serializer.config.indent = "    "
     return serializer
 
@@ -216,31 +216,46 @@ def _upgrade_amf_v1_to_v2_in_place(amf_json: dict):
     """
     Upgrade the provided AMF V1 JSON data to V2.
 
+    V1→V2 differences handled:
+    - ``uuid`` on amfInfo/pipelineInfo: optional in v1, required in v2
+    - ``applied`` on outputTransform: absent in v1, required in v2
+
     Note: This modifies the provided dictionary in place.
     """
     amf_json["version"] = "2.0"
 
-    # Change file elements to lists
-    try:
-        look_transforms = amf_json["pipeline"]["lookTransform"]
-    except KeyError:
+    # Generate UUIDs where missing (optional in v1, required in v2)
+    amf_info = amf_json.get("amfInfo")
+    if amf_info and not amf_info.get("uuid"):
+        amf_info["uuid"] = uuid.uuid4().urn
+
+    pipeline = amf_json.get("pipeline")
+    if not pipeline:
         return
 
-    for look_transform in look_transforms:
-        try:
-            file = look_transform["file"]
-            if file is None:
-                look_transform["file"] = []
-            else:
-                look_transform["file"] = [file]
-        except KeyError:
-            pass
+    pipeline_info = pipeline.get("pipelineInfo")
+    if pipeline_info and not pipeline_info.get("uuid"):
+        pipeline_info["uuid"] = uuid.uuid4().urn
+
+    # Add applied=false on outputTransform (absent in v1, required in v2)
+    _ensure_applied(pipeline.get("outputTransform"))
+
+    # Handle archivedPipeline entries the same way
+    for archived in amf_json.get("archivedPipeline", []):
+        archived_pipeline_info = archived.get("pipelineInfo")
+        if archived_pipeline_info and not archived_pipeline_info.get("uuid"):
+            archived_pipeline_info["uuid"] = uuid.uuid4().urn
+        _ensure_applied(archived.get("outputTransform"))
+
+
+def _ensure_applied(transform_dict: dict | None) -> None:
+    """Set ``applied`` to ``false`` on a transform dict if not already present."""
+    if transform_dict is not None and "applied" not in transform_dict:
+        transform_dict["applied"] = False
 
 
 def dump_amf(amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
-    """
-    Write the provided AMF data to bytes.
-    """
+    """Serialize the provided AMF data to an XML string."""
     if ns_map is None:
         ns_map = DEFAULT_NS_MAP
 
@@ -249,14 +264,156 @@ def dump_amf(amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str
 
 
 def write_amf(out: TextIO, amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
-    """
-    Write the provided AMF data to bytes.
-    """
+    """Serialize the provided AMF data as XML to a text stream."""
     if ns_map is None:
         ns_map = DEFAULT_NS_MAP
 
     serializer = _amf_serializer()
     return serializer.write(out, amf, ns_map=ns_map)
+
+
+def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None) -> None:
+    """Run validation and raise AMFValidationError on errors.
+
+    Calls schema validation (if path available) + semantic validation directly,
+    bypassing validate_semantic() to avoid circular imports.
+    """
+    from .validation.types import AMFValidationError, ValidationContext, ValidationLevel
+    from .validation.schema import validate_schema
+    from .validation.registry import get_default_registry
+
+    messages = []
+
+    # Schema validation (needs a file path)
+    if amf_path is not None:
+        messages.extend(validate_schema(amf_path))
+
+    # Semantic validation — direct registry call, no circular import
+    schema_errors = [m for m in messages if m.level == ValidationLevel.ERROR]
+    if not schema_errors:
+        context = ValidationContext(amf_path=amf_path)
+        registry = get_default_registry()
+        messages.extend(registry.validate(amf, context))
+
+    errors = [m for m in messages if m.level == ValidationLevel.ERROR]
+    if errors:
+        raise AMFValidationError(messages)
+
+
+def load_amf(path: Path | str, *, validate: bool = True) -> amf_v2.AcesMetadataFile:
+    """Load an AMF file. Auto-upgrades v1 to v2.
+
+    Args:
+        path: Path to the AMF file.
+        validate: Run semantic validation on the loaded model. Defaults to True.
+
+    Returns:
+        Parsed AcesMetadataFile (v2).
+
+    Raises:
+        AMFValidationError: If validation is enabled and errors are found.
+    """
+    path = Path(path)
+    amf, _ = from_amf_file(path)
+    if validate:
+        _run_validation(amf, amf_path=None)  # semantic only — file may be v1
+    return amf
+
+
+def load_amf_data(data: bytes, *, validate: bool = True) -> amf_v2.AcesMetadataFile:
+    """Load AMF from bytes. Auto-upgrades v1 to v2.
+
+    Args:
+        data: Raw AMF XML bytes.
+        validate: Run semantic validation after loading. Defaults to True.
+            Schema validation is skipped (no file path available).
+
+    Returns:
+        Parsed AcesMetadataFile (v2).
+
+    Raises:
+        AMFValidationError: If validation is enabled and errors are found.
+    """
+    amf, _ = from_amf_data(data)
+    if validate:
+        _run_validation(amf, amf_path=None)
+    return amf
+
+
+def prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
+    """Update modification timestamps and regenerate UUIDs.
+
+    Called automatically by ``save_amf`` and ``render_amf``.
+    Can also be called manually before low-level ``dump_amf``/``write_amf``.
+    """
+    now = amf_xml_date_time()
+    if amf.amf_info:
+        amf.amf_info.date_time.modification_date_time = now
+        amf.amf_info.uuid = uuid.uuid4().urn
+    if amf.pipeline and amf.pipeline.pipeline_info:
+        amf.pipeline.pipeline_info.date_time.modification_date_time = now
+        amf.pipeline.pipeline_info.uuid = uuid.uuid4().urn
+    # Update archived pipeline modification timestamps (preserve UUIDs — they're historical)
+    for archived in amf.archived_pipeline:
+        if archived.pipeline_info and archived.pipeline_info.date_time:
+            archived.pipeline_info.date_time.modification_date_time = now
+
+
+def save_amf(
+    amf: amf_v2.AcesMetadataFile,
+    path: Path | str,
+    *,
+    ns_map: dict[str, str] = None,
+    validate: bool = True,
+) -> None:
+    """Prepare housekeeping fields and write AMF to file.
+
+    Calls ``prepare_for_write`` then serializes to the given path.
+
+    Args:
+        amf: The AMF model to write.
+        path: Output file path.
+        ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
+        validate: Run semantic validation after writing. Defaults to True.
+
+    Raises:
+        AMFValidationError: If validation is enabled and errors are found.
+    """
+    prepare_for_write(amf)
+    path = Path(path)
+    with open(path, "w") as f:
+        write_amf(f, amf, ns_map)
+    if validate:
+        _run_validation(amf, amf_path=None)
+
+
+def render_amf(
+    amf: amf_v2.AcesMetadataFile,
+    *,
+    ns_map: dict[str, str] = None,
+    validate: bool = True,
+) -> str:
+    """Prepare housekeeping fields and serialize AMF to an XML string.
+
+    Calls ``prepare_for_write`` then serializes to string.
+
+    Args:
+        amf: The AMF model to serialize.
+        ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
+        validate: Run semantic validation after rendering. Defaults to True.
+            Schema validation is skipped (no file path available).
+
+    Returns:
+        XML string.
+
+    Raises:
+        AMFValidationError: If validation is enabled and errors are found.
+    """
+    prepare_for_write(amf)
+    xml_str = dump_amf(amf, ns_map)
+    if validate:
+        _run_validation(amf, amf_path=None)
+    return xml_str
 
 
 def get_amf_namespace(amf_data: bytes) -> str:
@@ -277,7 +434,8 @@ def get_amf_namespace(amf_data: bytes) -> str:
             # If aces namespace not found in root, raise error
             raise ValueError("Missing ACES namespace in AMF")
 
+        # Loop completed without finding any elements
+        raise ValueError("Empty or invalid AMF file")
+
     except lxml.etree.XMLSyntaxError as e:
         raise ValueError(f"Syntax error in AMF: {e}")
-    except StopIteration:
-        raise ValueError("Empty or invalid AMF file")

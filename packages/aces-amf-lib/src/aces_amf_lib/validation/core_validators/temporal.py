@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile
 
 logger = logging.getLogger(__name__)
 
@@ -18,22 +18,31 @@ logger = logging.getLogger(__name__)
 class TemporalValidator:
     name = "temporal"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
 
         # AMF info dates
-        if amf.amf.amf_info and amf.amf.amf_info.date_time:
-            dt = amf.amf.amf_info.date_time
+        if amf.amf_info and amf.amf_info.date_time:
+            dt = amf.amf_info.date_time
             messages.extend(
                 _validate_date_pair(dt.creation_date_time, dt.modification_date_time, "AMF", context.amf_path)
             )
 
         # Pipeline info dates
-        if amf.amf.pipeline and amf.amf.pipeline.pipeline_info and amf.amf.pipeline.pipeline_info.date_time:
-            dt = amf.amf.pipeline.pipeline_info.date_time
+        if amf.pipeline and amf.pipeline.pipeline_info and amf.pipeline.pipeline_info.date_time:
+            dt = amf.pipeline.pipeline_info.date_time
             messages.extend(
                 _validate_date_pair(dt.creation_date_time, dt.modification_date_time, "Pipeline", context.amf_path)
             )
+
+        # Archived pipeline dates
+        for idx, archived in enumerate(amf.archived_pipeline):
+            if archived.pipeline_info and archived.pipeline_info.date_time:
+                dt = archived.pipeline_info.date_time
+                label = f"Archived pipeline #{idx + 1}"
+                messages.extend(
+                    _validate_date_pair(dt.creation_date_time, dt.modification_date_time, label, context.amf_path)
+                )
 
         return messages
 

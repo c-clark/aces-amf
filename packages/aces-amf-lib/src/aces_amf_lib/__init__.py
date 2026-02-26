@@ -3,35 +3,44 @@
 aces-amf-lib — Lightweight reference library for ACES Metadata Files (AMF).
 
 Example usage:
-    from aces_amf_lib import ACESAMF
+    from aces_amf_lib import load_amf, save_amf, minimal_amf
 
     # Read an AMF file (automatically upgrades v1 to v2)
-    amf = ACESAMF.from_file("example.amf")
+    amf = load_amf("example.amf")
 
     # Access metadata
-    print(f"Description: {amf.amf_description}")
+    print(f"Description: {amf.amf_info.description}")
 
-    # Add a CDL transform
-    amf.add_cdl_look_transform({
-        'asc_sop': {'slope': [1.2, 1.0, 0.8], 'offset': [0, 0, 0], 'power': [1, 1, 1]},
-        'asc_sat': 1.0
-    })
-
-    # Write back
-    amf.write("modified.amf")
+    # Create a new AMF and write it
+    amf = minimal_amf()
+    save_amf(amf, "output.amf")
 """
 
-from .aces_amf import ACESAMF
+from .amf_utilities import (
+    DEFAULT_NS_MAP,
+    cdl_look_transform,
+    cdl_look_transform_to_dict,
+    dump_amf,
+    load_amf,
+    load_amf_data,
+    minimal_amf,
+    prepare_for_write,
+    render_amf,
+    save_amf,
+    write_amf,
+)
+from .amf_v2 import AcesMetadataFile
 from .validation import (
-    validate_schema,
-    validate_semantic,
-    validate_all,
-    ValidatorRegistry,
-    get_default_registry,
+    AMFValidationError,
     ValidationContext,
     ValidationLevel,
     ValidationMessage,
     ValidationType,
+    ValidatorRegistry,
+    get_default_registry,
+    validate_all,
+    validate_schema,
+    validate_semantic,
 )
 from .protocols import AMFValidator, TransformRegistry
 from . import amf_utilities
@@ -40,15 +49,23 @@ from . import amf_v2
 
 __version__ = "0.1.0"
 
-# Backward compat: old validate_amf was schema-only
-validate_amf = validate_schema
-
 __all__ = [
-    "ACESAMF",
-    "validate_amf",
+    "AcesMetadataFile",
+    "load_amf",
+    "load_amf_data",
+    "save_amf",
+    "render_amf",
+    "prepare_for_write",
+    "minimal_amf",
+    "cdl_look_transform",
+    "cdl_look_transform_to_dict",
+    "dump_amf",
+    "write_amf",
+    "DEFAULT_NS_MAP",
     "validate_schema",
     "validate_semantic",
     "validate_all",
+    "AMFValidationError",
     "ValidatorRegistry",
     "get_default_registry",
     "ValidationContext",

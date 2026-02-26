@@ -9,9 +9,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from ._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...aces_amf import ACESAMF
+    from ...amf_v2 import AcesMetadataFile
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ HASH_ALGO_MAP = {
 class FileHashValidator:
     name = "file_hashes"
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]:
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
         messages: list[ValidationMessage] = []
 
         if context.base_path is None:
@@ -43,73 +44,76 @@ class FileHashValidator:
             if not file_ref:
                 continue
 
-            # Normalize file_ref to a single path
-            if isinstance(file_ref, list):
-                file_paths = file_ref
-            else:
-                file_paths = [file_ref]
-
-            for fp in file_paths:
-                if not fp:
-                    continue
-
-                resolved = context.base_path / fp
-                if not resolved.is_file():
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.WARNING,
-                            validation_type=ValidationType.HASH_FILE_NOT_FOUND,
-                            message=f"{label} references file {fp!r} which was not found at {resolved}",
-                            file_path=context.amf_path,
-                        )
+            resolved = context.base_path / file_ref
+            if not resolved.is_file():
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.WARNING,
+                        validation_type=ValidationType.HASH_FILE_NOT_FOUND,
+                        message=f"{label} references file {file_ref!r} which was not found at {resolved}",
+                        file_path=context.amf_path,
                     )
-                    continue
+                )
+                continue
 
-                algo_uri = transform.hash.algorithm.value if hasattr(transform.hash.algorithm, "value") else str(transform.hash.algorithm)
-                algo_name = HASH_ALGO_MAP.get(algo_uri)
+            algo_uri = transform.hash.algorithm.value if hasattr(transform.hash.algorithm, "value") else str(transform.hash.algorithm)
+            algo_name = HASH_ALGO_MAP.get(algo_uri)
 
-                if algo_name is None:
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.WARNING,
-                            validation_type=ValidationType.HASH_ALGORITHM_UNSUPPORTED,
-                            message=f"{label} uses unsupported hash algorithm: {algo_uri}",
-                            file_path=context.amf_path,
-                        )
+            if algo_name is None:
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.WARNING,
+                        validation_type=ValidationType.HASH_ALGORITHM_UNSUPPORTED,
+                        message=f"{label} uses unsupported hash algorithm: {algo_uri}",
+                        file_path=context.amf_path,
                     )
-                    continue
+                )
+                continue
 
-                expected_hash = transform.hash.value
-                actual_hash = _compute_file_hash(resolved, algo_name)
+            expected_hash = transform.hash.value
+            actual_hash = _compute_file_hash(resolved, algo_name)
 
-                if actual_hash != expected_hash:
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.ERROR,
-                            validation_type=ValidationType.HASH_MISMATCH,
-                            message=f"{label} file {fp!r} hash mismatch: expected {expected_hash!r}, got {actual_hash!r}",
-                            file_path=context.amf_path,
-                        )
+            if actual_hash != expected_hash:
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.ERROR,
+                        validation_type=ValidationType.HASH_MISMATCH,
+                        message=f"{label} file {file_ref!r} hash mismatch: expected {expected_hash!r}, got {actual_hash!r}",
+                        file_path=context.amf_path,
                     )
+                )
 
         return messages
 
 
-def _collect_transforms_with_hashes(amf: ACESAMF) -> list[tuple[str, object]]:
+def _collect_transforms_with_hashes(amf: AcesMetadataFile) -> list[tuple[str, object]]:
     """Collect all transforms that might have hash elements."""
     transforms = []
 
-    if amf.amf.pipeline:
-        if amf.amf.pipeline.input_transform:
-            transforms.append(("Input transform", amf.amf.pipeline.input_transform))
+    if amf.pipeline:
+        transforms.extend(_collect_pipeline_transforms(amf.pipeline, ""))
 
-        if amf.amf.pipeline.look_transform:
-            for idx, lt in enumerate(amf.amf.pipeline.look_transform):
-                desc = lt.description or f"Look transform #{idx + 1}"
-                transforms.append((desc, lt))
+    for idx, archived in enumerate(amf.archived_pipeline):
+        transforms.extend(_collect_pipeline_transforms(archived, f"Archived pipeline #{idx + 1} "))
 
-        if amf.amf.pipeline.output_transform:
-            transforms.append(("Output transform", amf.amf.pipeline.output_transform))
+    return transforms
+
+
+def _collect_pipeline_transforms(pipeline, prefix: str) -> list[tuple[str, object]]:
+    """Collect transforms from a single pipeline, including nested sub-transforms."""
+    transforms = []
+
+    if pipeline.input_transform:
+        transforms.append((f"{prefix}Input transform", pipeline.input_transform))
+        transforms.extend(collect_sub_transforms(pipeline.input_transform, f"{prefix}Input"))
+
+    for idx, lt in enumerate(pipeline.look_transform):
+        desc = lt.description or f"Look transform #{idx + 1}"
+        transforms.append((f"{prefix}{desc}", lt))
+
+    if pipeline.output_transform:
+        transforms.append((f"{prefix}Output transform", pipeline.output_transform))
+        transforms.extend(collect_sub_transforms(pipeline.output_transform, f"{prefix}Output"))
 
     return transforms
 

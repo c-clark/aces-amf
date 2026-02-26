@@ -8,10 +8,10 @@ to extend aces-amf-lib functionality.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from .aces_amf import ACESAMF
+    from .amf_v2 import AcesMetadataFile
     from .validation.types import ValidationContext, ValidationMessage
 
 
@@ -26,7 +26,7 @@ class AMFValidator(Protocol):
 
     name: str
 
-    def validate(self, amf: ACESAMF, context: ValidationContext) -> list[ValidationMessage]: ...
+    def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]: ...
 
 
 @runtime_checkable
@@ -40,6 +40,6 @@ class TransformRegistry(Protocol):
 
     def is_valid_transform_id(self, transform_id: str) -> bool: ...
 
-    def get_transform_info(self, transform_id: str) -> Optional[dict]: ...
+    def get_transform_info(self, transform_id: str) -> dict | None: ...
 
-    def list_transforms(self, *, category: Optional[str] = None) -> list[dict]: ...
+    def list_transforms(self, *, category: str | None = None) -> list[dict]: ...

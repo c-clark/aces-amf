@@ -11,25 +11,23 @@ pip install -e .
 ## Quick Start
 
 ```python
-from aces_amf_lib import ACESAMF, validate_amf
+from aces_amf_lib import load_amf, save_amf, minimal_amf, cdl_look_transform, validate_all
 
 # Read an AMF file (automatically upgrades v1 to v2)
-amf = ACESAMF.from_file("example.amf")
-print(f"Description: {amf.amf_description}")
-print(f"ACES version: {amf.aces_version}")
+amf = load_amf("example.amf")
+print(f"Description: {amf.amf_info.description}")
 
 # Create a new AMF with a CDL look transform
-amf = ACESAMF()
-amf.amf_description = "My Show"
-amf.pipeline_description = "DI Grade"
-amf.add_cdl_look_transform({
-    'asc_sop': {'slope': [1.2, 1.0, 0.8], 'offset': [0, 0, 0], 'power': [1, 1, 1]},
-    'asc_sat': 1.0
-})
-amf.write("output.amf")
+amf = minimal_amf()
+amf.amf_info.description = "My Show"
+amf.pipeline.pipeline_info.description = "DI Grade"
+amf.pipeline.look_transform.append(
+    cdl_look_transform(slope=[1.2, 1.0, 0.8], saturation=1.0)
+)
+save_amf(amf, "output.amf")
 
-# Validate against XSD schema
-messages = validate_amf("output.amf")
+# Validate (schema + semantic checks)
+messages = validate_all("output.amf")
 ```
 
 ## Features

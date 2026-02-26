@@ -3,10 +3,11 @@
 Unified validation types for AMF validation.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Optional
 
 
 class ValidationLevel(Enum):
@@ -70,8 +71,8 @@ class ValidationMessage:
     level: ValidationLevel
     validation_type: ValidationType
     message: str
-    file_path: Optional[Path] = None
-    validator_name: Optional[str] = None
+    file_path: Path | None = None
+    validator_name: str | None = None
 
     def __str__(self) -> str:
         parts = [f"[{self.level.value.upper()}]"]
@@ -81,10 +82,19 @@ class ValidationMessage:
         return " ".join(parts)
 
 
+class AMFValidationError(Exception):
+    """Raised when AMF validation fails with ERROR-level messages."""
+
+    def __init__(self, messages: list[ValidationMessage]):
+        self.messages = messages
+        error_msgs = [m.message for m in messages if m.level == ValidationLevel.ERROR]
+        super().__init__(f"AMF validation failed: {'; '.join(error_msgs)}")
+
+
 @dataclass
 class ValidationContext:
     """Shared context passed to validators."""
 
-    amf_path: Optional[Path] = None
-    base_path: Optional[Path] = None
-    uuid_pool: Optional[set] = None
+    amf_path: Path | None = None
+    base_path: Path | None = None
+    uuid_pool: set[str] | None = None
