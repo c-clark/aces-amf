@@ -11,7 +11,6 @@ from __future__ import annotations
 import importlib.resources
 import json
 import logging
-from typing import Optional
 
 from .types import TransformInfo
 
@@ -31,7 +30,7 @@ class ACESTransformRegistry:
     """
 
     def __init__(self):
-        self._data: Optional[dict] = None
+        self._data: dict | None = None
         self._index: dict[str, TransformInfo] = {}
         self._previous_id_map: dict[str, str] = {}
 
@@ -58,7 +57,7 @@ class ACESTransformRegistry:
                     previous_equivalent_ids=t.get("previousEquivalentTransformIds", []),
                 )
 
-                # Index by current ID (latest version wins)
+                # Index by current ID (first version loaded wins)
                 if tid not in self._index:
                     self._index[tid] = info
 
@@ -75,7 +74,7 @@ class ACESTransformRegistry:
         self._ensure_loaded()
         return transform_id in self._index or transform_id in self._previous_id_map
 
-    def get_transform_info(self, transform_id: str) -> Optional[dict]:
+    def get_transform_info(self, transform_id: str) -> dict | None:
         """Get information about a transform by ID.
 
         Returns a dict with transform metadata, or None if not found.
@@ -101,7 +100,7 @@ class ACESTransformRegistry:
             "previous_equivalent_ids": info.previous_equivalent_ids,
         }
 
-    def list_transforms(self, *, category: Optional[str] = None) -> list[dict]:
+    def list_transforms(self, *, category: str | None = None) -> list[dict]:
         """List all known transforms, optionally filtered by category.
 
         Args:
@@ -110,12 +109,7 @@ class ACESTransformRegistry:
         self._ensure_loaded()
 
         results = []
-        seen = set()
         for info in self._index.values():
-            if info.transform_id in seen:
-                continue
-            seen.add(info.transform_id)
-
             if category and info.transform_type != category:
                 continue
 

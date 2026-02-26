@@ -14,6 +14,8 @@ def registry():
 class TestACESTransformRegistry:
     def test_loads_transforms(self, registry):
         assert registry.transform_count > 0
+
+    def test_schema_version(self, registry):
         assert registry.schema_version == "1.0.0"
 
     def test_is_valid_transform_id_known(self, registry):
@@ -84,19 +86,19 @@ class TestACESTransformRegistry:
 
 class TestTransformIdValidator:
     def test_validator_with_known_transform(self, tmp_path):
-        from aces_amf_lib import ACESAMF, amf_v2
+        from aces_amf_lib import minimal_amf, save_amf, load_amf, amf_v2
         from aces_amf_transforms import TransformIdValidator
         from aces_amf_lib.validation.types import ValidationContext, ValidationType
 
-        amf = ACESAMF()
-        amf.amf.pipeline.input_transform = amf_v2.InputTransformType(
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(
             applied=True,
             transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScc.a1.0.3",
         )
         amf_path = tmp_path / "test.amf"
-        amf.write(amf_path)
+        save_amf(amf, amf_path)
 
-        loaded = ACESAMF.from_file(amf_path)
+        loaded = load_amf(amf_path)
         validator = TransformIdValidator()
         context = ValidationContext(amf_path=amf_path)
         messages = validator.validate(loaded, context)
@@ -105,19 +107,19 @@ class TestTransformIdValidator:
         assert len(id_warnings) == 0
 
     def test_validator_with_unknown_transform(self, tmp_path):
-        from aces_amf_lib import ACESAMF, amf_v2
+        from aces_amf_lib import minimal_amf, save_amf, load_amf, amf_v2
         from aces_amf_transforms import TransformIdValidator
         from aces_amf_lib.validation.types import ValidationContext, ValidationType
 
-        amf = ACESAMF()
-        amf.amf.pipeline.input_transform = amf_v2.InputTransformType(
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(
             applied=True,
             transform_id="urn:ampas:aces:transformId:v99.0:FAKE.Transform.a99.v1",
         )
         amf_path = tmp_path / "test.amf"
-        amf.write(amf_path)
+        save_amf(amf, amf_path)
 
-        loaded = ACESAMF.from_file(amf_path)
+        loaded = load_amf(amf_path)
         validator = TransformIdValidator()
         context = ValidationContext(amf_path=amf_path)
         messages = validator.validate(loaded, context)
