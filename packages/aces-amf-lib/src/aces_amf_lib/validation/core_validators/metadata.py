@@ -67,7 +67,7 @@ def _validate_pipeline_metadata(pipeline, prefix: str, amf_path) -> list[Validat
             )
         )
 
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         if not lt.description or not lt.description.strip():
             messages.append(
                 ValidationMessage(

@@ -70,7 +70,7 @@ def test_create_minimal(tmp_path):
 
 def test_create_with_cdl(tmp_path):
     amf = minimal_amf()
-    amf.pipeline.look_transform.append(
+    amf.pipeline.working_location_or_look_transform.append(
         cdl_look_transform(
             slope=(1.0, 1.0, 1.0),
             offset=(0.0, 0.0, 0.0),
@@ -93,7 +93,7 @@ def test_housekeeping_updates(tmp_path):
 
     time.sleep(1.00)
 
-    amf.pipeline.look_transform.append(
+    amf.pipeline.working_location_or_look_transform.append(
         cdl_look_transform(
             slope=(1.0, 1.0, 1.0),
             offset=(0.0, 0.0, 0.0),
@@ -145,7 +145,7 @@ def test_roundtrip(aces_amf_examples_path, tmp_path):
     # Load back and verify
     amf2 = load_amf(out_path)
     assert amf2.pipeline is not None
-    assert len(amf2.pipeline.look_transform) == len(amf.pipeline.look_transform)
+    assert len(amf2.pipeline.look_transforms) == len(amf.pipeline.look_transforms)
 
 
 def test_set_aces_version():
@@ -181,7 +181,7 @@ def test_load_amf_v1_output_transform_applied(test_data_path):
 def test_load_amf_v1_file_field_preserved(test_data_path):
     """file field stays as str (not converted to list) after v1→v2 upgrade."""
     amf = load_amf(test_data_path / "v1_example.amf")
-    look = amf.pipeline.look_transform[0]
+    look = amf.pipeline.look_transforms[0]
     assert look.file == "showLook.clf"
     assert isinstance(look.file, str)
 
@@ -214,7 +214,7 @@ def test_save_raises_on_invalid(tmp_path):
     from aces_amf_lib.validation.types import AMFValidationError
 
     amf = minimal_amf()
-    amf.pipeline.look_transform.append(
+    amf.pipeline.working_location_or_look_transform.append(
         cdl_look_transform(slope=(-1.0, 1.0, 1.0))
     )
     out = tmp_path / "invalid.amf"
@@ -225,7 +225,7 @@ def test_save_raises_on_invalid(tmp_path):
 def test_save_skip_validation(tmp_path):
     """validate=False allows saving invalid AMF without error."""
     amf = minimal_amf()
-    amf.pipeline.look_transform.append(
+    amf.pipeline.working_location_or_look_transform.append(
         cdl_look_transform(slope=(-1.0, 1.0, 1.0))
     )
     out = tmp_path / "invalid.amf"
@@ -249,3 +249,61 @@ def test_roundtrip_file_paths(aces_amf_examples_path):
     assert "showLook.clf" in xml_out
     assert "%2F" not in xml_out
     assert "%25" not in xml_out
+
+
+# --- workingLocation interleaving tests ---
+
+
+def test_working_location_ordering_preserved(test_data_path):
+    """Loading an AMF with interleaved workingLocation/lookTransform preserves order."""
+    from aces_amf_lib.amf_v2 import WorkingLocationType, LookTransformType
+
+    amf = load_amf(test_data_path / "interleaved_working_location.amf", validate=False)
+    items = amf.pipeline.working_location_or_look_transform
+
+    # Should be: lookTransform, workingLocation, lookTransform
+    assert len(items) == 3
+    assert isinstance(items[0], LookTransformType)
+    assert isinstance(items[1], WorkingLocationType)
+    assert isinstance(items[2], LookTransformType)
+
+    # First look is pre-working-location, second is post
+    assert items[0].description == "Pre-working-location look"
+    assert items[2].description == "Post-working-location look"
+
+
+def test_working_location_roundtrip(test_data_path, tmp_path):
+    """Round-trip preserves workingLocation/lookTransform ordering."""
+    from aces_amf_lib.amf_v2 import WorkingLocationType, LookTransformType
+
+    amf = load_amf(test_data_path / "interleaved_working_location.amf", validate=False)
+    out_path = tmp_path / "roundtrip.amf"
+    save_amf(amf, out_path, validate=False)
+
+    amf2 = load_amf(out_path, validate=False)
+    items = amf2.pipeline.working_location_or_look_transform
+
+    assert len(items) == 3
+    assert isinstance(items[0], LookTransformType)
+    assert isinstance(items[1], WorkingLocationType)
+    assert isinstance(items[2], LookTransformType)
+
+
+def test_look_transforms_property_filters(test_data_path):
+    """pipeline.look_transforms returns only LookTransformType items."""
+    amf = load_amf(test_data_path / "interleaved_working_location.amf", validate=False)
+
+    # Full list has 3 items (2 looks + 1 working location)
+    assert len(amf.pipeline.working_location_or_look_transform) == 3
+    # Property filters to just look transforms
+    assert len(amf.pipeline.look_transforms) == 2
+    assert amf.pipeline.look_transforms[0].description == "Pre-working-location look"
+    assert amf.pipeline.look_transforms[1].description == "Post-working-location look"
+
+
+def test_v1_upgrade_look_transforms_preserved(test_data_path):
+    """v1→v2 upgrade preserves lookTransform in the compound field."""
+    amf = load_amf(test_data_path / "v1_example.amf")
+    # v1 lookTransform should end up in working_location_or_look_transform
+    assert len(amf.pipeline.look_transforms) == 1
+    assert amf.pipeline.look_transforms[0].file == "showLook.clf"

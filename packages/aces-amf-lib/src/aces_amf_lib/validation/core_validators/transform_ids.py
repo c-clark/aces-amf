@@ -47,7 +47,7 @@ def _validate_pipeline_transform_ids(pipeline, prefix: str, amf_path) -> list[Va
             if sub.transform_id:
                 _check_id(sub.transform_id, sub_label, messages, amf_path)
 
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         if lt.transform_id:
             desc = lt.description or f"Look transform #{idx + 1}"
             _check_id(lt.transform_id, f"{prefix}{desc}", messages, amf_path)
@@ -60,7 +60,7 @@ def _validate_pipeline_transform_ids(pipeline, prefix: str, amf_path) -> list[Va
                 _check_id(sub.transform_id, sub_label, messages, amf_path)
 
     # Working space transforms
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         if lt.cdl_working_space:
             ws = lt.cdl_working_space
             if ws.from_cdl_working_space and ws.from_cdl_working_space.transform_id:

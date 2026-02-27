@@ -97,7 +97,7 @@ class TestUUIDValidation:
 class TestCDLValidation:
     def test_valid_cdl(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.2, 1.0, 0.8), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.05
         ))
         amf_path = tmp_path / "test.amf"
@@ -109,7 +109,7 @@ class TestCDLValidation:
 
     def test_identity_cdl_info(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -122,7 +122,7 @@ class TestCDLValidation:
 
     def test_negative_slope_error(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(-1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -135,7 +135,7 @@ class TestCDLValidation:
 
     def test_extreme_slope_warning(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(10.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -148,7 +148,7 @@ class TestCDLValidation:
 
     def test_negative_saturation_error(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=-0.5
         ))
         amf_path = tmp_path / "test.amf"
@@ -164,10 +164,10 @@ class TestAppliedOrderValidation:
     def test_valid_all_applied(self, tmp_path):
         amf = minimal_amf()
         for _ in range(3):
-            amf.pipeline.look_transform.append(cdl_look_transform(
+            amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
                 slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
             ))
-            amf.pipeline.look_transform[-1].applied = True
+            amf.pipeline.working_location_or_look_transform[-1].applied = True
 
         amf_path = tmp_path / "test.amf"
         save_amf(amf, amf_path)
@@ -178,17 +178,17 @@ class TestAppliedOrderValidation:
 
     def test_invalid_non_applied_then_applied(self, tmp_path):
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
-        amf.pipeline.look_transform[-1].applied = False
-        amf.pipeline.look_transform[-1].description = "Non-applied First"
+        amf.pipeline.working_location_or_look_transform[-1].applied = False
+        amf.pipeline.working_location_or_look_transform[-1].description = "Non-applied First"
 
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.2, 1.0, 0.8), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.05
         ))
-        amf.pipeline.look_transform[-1].applied = True
-        amf.pipeline.look_transform[-1].description = "Applied Second"
+        amf.pipeline.working_location_or_look_transform[-1].applied = True
+        amf.pipeline.working_location_or_look_transform[-1].description = "Applied Second"
 
         amf_path = tmp_path / "test.amf"
         save_amf(amf, amf_path, validate=False)
@@ -274,7 +274,7 @@ class TestCDLBoundaryFixes:
     def test_cdl_slope_zero_valid(self, tmp_path):
         """Slope=0 is valid per XSD (nonNegativeFloatType) — should be WARNING, not ERROR."""
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(0.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -291,7 +291,7 @@ class TestCDLBoundaryFixes:
     def test_cdl_saturation_zero_valid(self, tmp_path):
         """Saturation=0 is valid per XSD (nonNegativeFloatType) — should be WARNING, not ERROR."""
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=0.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -308,7 +308,7 @@ class TestCDLBoundaryFixes:
     def test_cdl_power_zero_error(self, tmp_path):
         """Power=0 is invalid per XSD (positiveFloatType, minExclusive=0) — should be ERROR."""
         amf = minimal_amf()
-        amf.pipeline.look_transform.append(cdl_look_transform(
+        amf.pipeline.working_location_or_look_transform.append(cdl_look_transform(
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(0.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
@@ -353,7 +353,7 @@ class TestArchivedPipelineValidation:
         amf_path = self._make_amf_with_archived(tmp_path)
         # Load, add look to archived, save
         amf = load_amf(amf_path)
-        amf.archived_pipeline[0].look_transform.append(look)
+        amf.archived_pipeline[0].working_location_or_look_transform.append(look)
         save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
@@ -371,7 +371,7 @@ class TestArchivedPipelineValidation:
         lt2 = cdl_look_transform()
         lt2.applied = True
         lt2.description = "Applied after non-applied"
-        amf.archived_pipeline[0].look_transform.extend([lt1, lt2])
+        amf.archived_pipeline[0].working_location_or_look_transform.extend([lt1, lt2])
         save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["applied_order"])
@@ -447,7 +447,7 @@ class TestCDLAlternateFields:
             ),
             applied=False,
         )
-        amf.pipeline.look_transform.append(lt)
+        amf.pipeline.working_location_or_look_transform.append(lt)
         amf_path = tmp_path / "test.amf"
         save_amf(amf, amf_path, validate=False)
 
@@ -468,7 +468,7 @@ class TestCDLAlternateFields:
             ),
             applied=False,
         )
-        amf.pipeline.look_transform.append(lt)
+        amf.pipeline.working_location_or_look_transform.append(lt)
         amf_path = tmp_path / "test.amf"
         save_amf(amf, amf_path)
 
@@ -628,3 +628,63 @@ class TestValidationMessage:
         msg_str = str(msg)
         assert "WARNING" in msg_str
         assert "test.amf" in msg_str
+
+
+class TestMultipleWorkingLocations:
+    """Validate that at most one workingLocation is allowed per pipeline."""
+
+    def test_zero_working_locations_valid(self, tmp_path):
+        """A pipeline with no workingLocation is valid."""
+        amf = minimal_amf()
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        wl_msgs = [m for m in msgs if m.validation_type == ValidationType.MULTIPLE_WORKING_LOCATIONS]
+        assert len(wl_msgs) == 0
+
+    def test_one_working_location_valid(self, tmp_path):
+        """A pipeline with exactly one workingLocation is valid."""
+        amf = minimal_amf()
+        amf.pipeline.working_location_or_look_transform.append(amf_v2.WorkingLocationType())
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        wl_msgs = [m for m in msgs if m.validation_type == ValidationType.MULTIPLE_WORKING_LOCATIONS]
+        assert len(wl_msgs) == 0
+
+    def test_multiple_working_locations_error(self, tmp_path):
+        """A pipeline with 2+ workingLocations produces an ERROR."""
+        amf = minimal_amf()
+        amf.pipeline.working_location_or_look_transform.append(amf_v2.WorkingLocationType())
+        amf.pipeline.working_location_or_look_transform.append(amf_v2.WorkingLocationType())
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        wl_msgs = [m for m in msgs if m.validation_type == ValidationType.MULTIPLE_WORKING_LOCATIONS]
+        assert len(wl_msgs) == 1
+        assert wl_msgs[0].level == ValidationLevel.ERROR
+        assert "2 workingLocation" in wl_msgs[0].message
+
+    def test_archived_multiple_working_locations_error(self, tmp_path):
+        """Archived pipelines with 2+ workingLocations also produce an ERROR."""
+        from aces_amf_lib.amf_utilities import amf_xml_date_time
+
+        amf = minimal_amf()
+        now = amf_xml_date_time()
+        archived = amf_v2.PipelineType(pipeline_info=amf_v2.PipelineInfoType(
+            uuid="urn:uuid:00000000-0000-0000-0000-000000000099",
+            date_time=amf_v2.DateTimeType(
+                creation_date_time=now,
+                modification_date_time=now,
+            ),
+            system_version=amf_v2.VersionType(major_version=1, minor_version=3, patch_version=0),
+        ))
+        archived.working_location_or_look_transform.append(amf_v2.WorkingLocationType())
+        archived.working_location_or_look_transform.append(amf_v2.WorkingLocationType())
+        amf.archived_pipeline.append(archived)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        wl_msgs = [m for m in msgs if m.validation_type == ValidationType.MULTIPLE_WORKING_LOCATIONS]
+        assert len(wl_msgs) == 1
+        assert "Archived pipeline #1" in wl_msgs[0].message

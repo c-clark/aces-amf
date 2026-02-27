@@ -56,7 +56,7 @@ def test_cdl_look_transform_to_dict(aces_amf_examples_path):
     amf_path = aces_amf_examples_path / "example6.amf"
     amf, ns_map = amf_utilities.from_amf_file(amf_path)
 
-    cdl_look_transform = amf.pipeline.look_transform[0]
+    cdl_look_transform = amf.pipeline.look_transforms[0]
     cdl_dict = amf_utilities.cdl_look_transform_to_dict(cdl_look_transform)
 
     assert cdl_dict == {"asc_sat": 1.0, "asc_sop": {"slope": [2.0, 2.0, 2.0], "offset": [0.1, 0.1, 0.1], "power": [1.0, 1.0, 1.0]}}
@@ -65,7 +65,7 @@ def test_cdl_look_transform_to_dict(aces_amf_examples_path):
 def test_cdl_look_transform(aces_amf_examples_path):
     amf_path = aces_amf_examples_path / "example6.amf"
     amf, ns_map = amf_utilities.from_amf_file(amf_path)
-    ref_look_transform = amf.pipeline.look_transform[0]
+    ref_look_transform = amf.pipeline.look_transforms[0]
 
     look_transform = amf_utilities.cdl_look_transform(slope=(2.0, 2.0, 2.0), offset=(0.1, 0.1, 0.1), power=(1.0, 1.0, 1.0), saturation=1.0)
     assert look_transform.description is None

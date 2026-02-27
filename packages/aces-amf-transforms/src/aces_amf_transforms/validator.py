@@ -71,7 +71,7 @@ class TransformIdValidator:
                     _check_id(sub.transform_id, sub_label)
 
         # Look transforms + working space transforms
-        for idx, lt in enumerate(pipeline.look_transform):
+        for idx, lt in enumerate(pipeline.look_transforms):
             if lt.transform_id:
                 desc = lt.description or f"Look transform #{idx + 1}"
                 _check_id(lt.transform_id, f"{prefix}{desc}")

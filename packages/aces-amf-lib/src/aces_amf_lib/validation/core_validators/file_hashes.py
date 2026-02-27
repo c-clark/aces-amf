@@ -107,7 +107,7 @@ def _collect_pipeline_transforms(pipeline, prefix: str) -> list[tuple[str, objec
         transforms.append((f"{prefix}Input transform", pipeline.input_transform))
         transforms.extend(collect_sub_transforms(pipeline.input_transform, f"{prefix}Input"))
 
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         desc = lt.description or f"Look transform #{idx + 1}"
         transforms.append((f"{prefix}{desc}", lt))
 

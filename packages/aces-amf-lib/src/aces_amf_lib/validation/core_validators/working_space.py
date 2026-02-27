@@ -7,8 +7,18 @@ from typing import TYPE_CHECKING
 
 from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
+from ...amf_v2 import WorkingLocationType
+
 if TYPE_CHECKING:
     from ...amf_v2 import AcesMetadataFile
+
+
+def _count_working_locations(pipeline) -> int:
+    """Count workingLocation elements in the compound field."""
+    return sum(
+        1 for item in pipeline.working_location_or_look_transform
+        if isinstance(item, WorkingLocationType)
+    )
 
 
 class WorkingSpaceValidator:
@@ -18,12 +28,32 @@ class WorkingSpaceValidator:
         messages: list[ValidationMessage] = []
 
         if amf.pipeline:
-            messages.extend(_validate_pipeline_working_space(amf.pipeline.look_transform, "", context.amf_path))
+            wl_count = _count_working_locations(amf.pipeline)
+            if wl_count > 1:
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.ERROR,
+                        validation_type=ValidationType.MULTIPLE_WORKING_LOCATIONS,
+                        message=f"Pipeline has {wl_count} workingLocation elements (at most 1 allowed)",
+                        file_path=context.amf_path,
+                    )
+                )
+            messages.extend(_validate_pipeline_working_space(amf.pipeline.look_transforms, "", context.amf_path))
 
         for idx, archived in enumerate(amf.archived_pipeline):
+            wl_count = _count_working_locations(archived)
+            if wl_count > 1:
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.ERROR,
+                        validation_type=ValidationType.MULTIPLE_WORKING_LOCATIONS,
+                        message=f"Archived pipeline #{idx + 1} has {wl_count} workingLocation elements (at most 1 allowed)",
+                        file_path=context.amf_path,
+                    )
+                )
             messages.extend(
                 _validate_pipeline_working_space(
-                    archived.look_transform, f"Archived pipeline #{idx + 1} ", context.amf_path
+                    archived.look_transforms, f"Archived pipeline #{idx + 1} ", context.amf_path
                 )
             )
 

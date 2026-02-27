@@ -164,7 +164,7 @@ class TestAddCdlCommand:
         assert out.exists()
 
         amf = load_amf(out)
-        assert len(amf.pipeline.look_transform) >= 1
+        assert len(amf.pipeline.look_transforms) >= 1
 
 
 class TestComputeHashesCommand:

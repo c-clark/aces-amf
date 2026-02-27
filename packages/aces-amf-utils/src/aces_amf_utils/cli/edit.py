@@ -30,7 +30,7 @@ def add_cdl(file, slope, offset, power, saturation, description, output):
     )
     if description:
         lt.description = description
-    amf.pipeline.look_transform.append(lt)
+    amf.pipeline.working_location_or_look_transform.append(lt)
 
     out_path = Path(output) if output else path
     save_amf(amf, out_path)

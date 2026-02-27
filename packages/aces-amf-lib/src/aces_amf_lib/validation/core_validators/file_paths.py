@@ -41,7 +41,7 @@ def _validate_pipeline_file_paths(pipeline: PipelineType, prefix: str, amf_path)
             if sub_file:
                 messages.extend(_check_path_security(sub_file, sub_label, amf_path))
 
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         desc = f"{prefix}{lt.description or f'Look transform #{idx + 1}'}"
         if lt.file:
             messages.extend(_check_path_security(lt.file, desc, amf_path))

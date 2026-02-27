@@ -75,7 +75,7 @@ def _collect_pipeline_uuids(pipeline: PipelineType, prefix: str) -> list[tuple[s
         for sub_label, sub in collect_sub_transforms(pipeline.input_transform, f"{prefix} Input"):
             _collect_transform_uuids(sub, sub_label, uuids)
 
-    for idx, lt in enumerate(pipeline.look_transform):
+    for idx, lt in enumerate(pipeline.look_transforms):
         desc = lt.description or f"lookTransform #{idx + 1}"
         _collect_transform_uuids(lt, f"{prefix} {desc}", uuids)
         # Working space transforms

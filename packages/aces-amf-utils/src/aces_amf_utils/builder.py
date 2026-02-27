@@ -135,7 +135,7 @@ class AMFBuilder:
             if description:
                 lt.description = description
             lt.applied = applied
-            self._amf.pipeline.look_transform.append(lt)
+            self._amf.pipeline.working_location_or_look_transform.append(lt)
         else:
             lt = amf_v2.LookTransformType(applied=applied)
             if description:
@@ -144,7 +144,18 @@ class AMFBuilder:
                 lt.transform_id = transform_id
             if file:
                 lt.file = file
-            self._amf.pipeline.look_transform.append(lt)
+            self._amf.pipeline.working_location_or_look_transform.append(lt)
+        return self
+
+    def working_location(self) -> AMFBuilder:
+        """Insert a working location delimiter.
+
+        Looks added before this call are pre-working-location,
+        looks added after are post-working-location.
+        """
+        self._amf.pipeline.working_location_or_look_transform.append(
+            amf_v2.WorkingLocationType()
+        )
         return self
 
     def output_transform(

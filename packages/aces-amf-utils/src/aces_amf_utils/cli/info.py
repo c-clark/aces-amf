@@ -60,9 +60,9 @@ def info(file, verbose):
             click.echo(f"  Description: {it.description}")
         click.echo(f"  Applied: {it.applied}")
 
-    if pipeline.look_transform:
-        click.echo(f"Look Transforms ({len(pipeline.look_transform)}):")
-        for i, lt in enumerate(pipeline.look_transform):
+    if pipeline.look_transforms:
+        click.echo(f"Look Transforms ({len(pipeline.look_transforms)}):")
+        for i, lt in enumerate(pipeline.look_transforms):
             click.echo(f"  [{i}] {lt.description or '(no description)'}")
             if lt.transform_id:
                 click.echo(f"      ID: {lt.transform_id}")

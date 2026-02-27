@@ -42,6 +42,7 @@ class ValidationType(Enum):
     # Working Space
     MISSING_CDL_WORKING_SPACE = auto()
     CDL_WORKING_SPACE_MISMATCH = auto()
+    MULTIPLE_WORKING_LOCATIONS = auto()
 
     # Transform IDs (format only, no registry)
     INVALID_TRANSFORM_ID = auto()

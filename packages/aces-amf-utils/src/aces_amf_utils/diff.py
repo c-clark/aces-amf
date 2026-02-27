@@ -129,8 +129,8 @@ def diff_amf(
     _compare_transforms(result, "input_transform", it1, it2, verbose)
 
     # Look transforms
-    lt1 = amf1.pipeline.look_transform if amf1.pipeline else []
-    lt2 = amf2.pipeline.look_transform if amf2.pipeline else []
+    lt1 = amf1.pipeline.look_transforms if amf1.pipeline else []
+    lt2 = amf2.pipeline.look_transforms if amf2.pipeline else []
     if len(lt1) != len(lt2):
         result.differences.append(FieldDiff("look_transform_count", len(lt1), len(lt2)))
 

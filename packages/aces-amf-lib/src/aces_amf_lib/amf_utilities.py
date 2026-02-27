@@ -96,6 +96,19 @@ def minimal_amf(aces_version: tuple[int, int, int] = (1, 3, 0)) -> amf_v2.AcesMe
     return amf
 
 
+def get_working_location_index(pipeline: amf_v2.PipelineType) -> int | None:
+    """Return the index of the workingLocation element in the compound field, or None if absent.
+
+    The v2 schema merges workingLocation and lookTransform into a single
+    ``working_location_or_look_transform`` list.  This helper finds the
+    workingLocation (a ``WorkingLocationType`` instance) within that list.
+    """
+    for idx, item in enumerate(pipeline.working_location_or_look_transform):
+        if isinstance(item, amf_v2.WorkingLocationType):
+            return idx
+    return None
+
+
 def cdl_look_transform(
     *, slope: FloatVector = None, offset: FloatVector = None, power: FloatVector = None, saturation: float = None
 ) -> amf_v2.LookTransformType:
@@ -219,6 +232,8 @@ def _upgrade_amf_v1_to_v2_in_place(amf_json: dict):
     V1→V2 differences handled:
     - ``uuid`` on amfInfo/pipelineInfo: optional in v1, required in v2
     - ``applied`` on outputTransform: absent in v1, required in v2
+    - ``lookTransform`` renamed to ``working_location_or_look_transform``
+      (v2 uses compound field for workingLocation/lookTransform interleaving)
 
     Note: This modifies the provided dictionary in place.
     """
@@ -237,6 +252,12 @@ def _upgrade_amf_v1_to_v2_in_place(amf_json: dict):
     if pipeline_info and not pipeline_info.get("uuid"):
         pipeline_info["uuid"] = uuid.uuid4().urn
 
+    # Rename lookTransform to compound field name (v2 uses xs:choice for
+    # workingLocation/lookTransform interleaving)
+    look_transforms = pipeline.pop("lookTransform", None)
+    if look_transforms is not None:
+        pipeline["working_location_or_look_transform"] = look_transforms
+
     # Add applied=false on outputTransform (absent in v1, required in v2)
     _ensure_applied(pipeline.get("outputTransform"))
 
@@ -246,6 +267,10 @@ def _upgrade_amf_v1_to_v2_in_place(amf_json: dict):
         if archived_pipeline_info and not archived_pipeline_info.get("uuid"):
             archived_pipeline_info["uuid"] = uuid.uuid4().urn
         _ensure_applied(archived.get("outputTransform"))
+        # Rename lookTransform in archived pipelines too
+        archived_looks = archived.pop("lookTransform", None)
+        if archived_looks is not None:
+            archived["working_location_or_look_transform"] = archived_looks
 
 
 def _ensure_applied(transform_dict: dict | None) -> None:

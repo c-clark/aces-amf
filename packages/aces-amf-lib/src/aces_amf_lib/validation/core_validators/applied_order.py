@@ -22,12 +22,12 @@ class AppliedOrderValidator:
         messages: list[ValidationMessage] = []
 
         if amf.pipeline:
-            messages.extend(_validate_pipeline_applied_order(amf.pipeline.look_transform, "", context.amf_path))
+            messages.extend(_validate_pipeline_applied_order(amf.pipeline.look_transforms, "", context.amf_path))
 
         for idx, archived in enumerate(amf.archived_pipeline):
             messages.extend(
                 _validate_pipeline_applied_order(
-                    archived.look_transform, f"Archived pipeline #{idx + 1} ", context.amf_path
+                    archived.look_transforms, f"Archived pipeline #{idx + 1} ", context.amf_path
                 )
             )
 
