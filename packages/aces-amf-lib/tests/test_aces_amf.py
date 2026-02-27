@@ -483,3 +483,38 @@ def test_v1_upgrade_look_transforms_preserved(test_data_path):
     # v1 lookTransform should end up in working_location_or_look_transform
     assert len(amf.pipeline.look_transforms) == 1
     assert amf.pipeline.look_transforms[0].file == "showLook.clf"
+
+
+_V1_AMF_NO_SYSTEM_VERSION = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v1.0"
+  xmlns:cdl="urn:ASC:CDL:v1.01" version="1.0">
+  <aces:amfInfo>
+    <aces:dateTime>
+      <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
+      <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
+    </aces:dateTime>
+  </aces:amfInfo>
+  <aces:pipeline>
+    <aces:pipelineInfo>
+      <aces:dateTime>
+        <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
+        <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
+      </aces:dateTime>
+    </aces:pipelineInfo>
+    <aces:outputTransform>
+      <aces:referenceRenderingTransform>
+        <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7.2nits_ST2084.a1.1.0</aces:transformId>
+      </aces:referenceRenderingTransform>
+    </aces:outputTransform>
+  </aces:pipeline>
+</aces:acesMetadataFile>"""
+
+
+def test_v1_missing_system_version():
+    """Legacy v1 files without systemVersion get a default during upgrade."""
+    amf = load_amf_data(_V1_AMF_NO_SYSTEM_VERSION.encode(), validate=False)
+    assert isinstance(amf, AcesMetadataFile)
+    sv = amf.pipeline.pipeline_info.system_version
+    assert sv is not None
+    assert (int(sv.major_version), int(sv.minor_version), int(sv.patch_version)) == (1, 3, 0)

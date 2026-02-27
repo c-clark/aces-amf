@@ -284,8 +284,14 @@ def _upgrade_amf_v1_to_v2_in_place(amf_json: dict):
         return
 
     pipeline_info = pipeline.get("pipelineInfo")
-    if pipeline_info and not pipeline_info.get("uuid"):
-        pipeline_info["uuid"] = uuid.uuid4().urn
+    if pipeline_info:
+        if not pipeline_info.get("uuid"):
+            pipeline_info["uuid"] = uuid.uuid4().urn
+        # Default systemVersion for legacy v1 files that omit it
+        if not pipeline_info.get("systemVersion"):
+            pipeline_info["systemVersion"] = {
+                "majorVersion": 1, "minorVersion": 3, "patchVersion": 0,
+            }
 
     # Rename lookTransform to compound field name (v2 uses xs:choice for
     # workingLocation/lookTransform interleaving)

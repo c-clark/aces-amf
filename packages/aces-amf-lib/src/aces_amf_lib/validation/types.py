@@ -38,6 +38,7 @@ class ValidationType(Enum):
     CDL_IDENTITY = auto()
     CDL_INVALID_VALUES = auto()
     CDL_EXTREME_VALUES = auto()
+    CDL_MISSING_CCR_FILE = auto()
 
     # Working Space
     MISSING_CDL_WORKING_SPACE = auto()

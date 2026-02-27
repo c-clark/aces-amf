@@ -43,6 +43,17 @@ def _validate_pipeline_cdl(look_transforms, prefix: str, amf_path) -> list[Valid
     for idx, lt in enumerate(look_transforms):
         desc = f"{prefix}{lt.description or f'Look transform #{idx + 1}'}"
 
+        # ColorCorrectionRef requires an accompanying file in v2
+        if lt.color_correction_ref is not None and lt.file is None:
+            messages.append(
+                ValidationMessage(
+                    level=ValidationLevel.WARNING,
+                    validation_type=ValidationType.CDL_MISSING_CCR_FILE,
+                    message=f"{desc} has ColorCorrectionRef without a file reference (required in AMF v2)",
+                    file_path=amf_path,
+                )
+            )
+
         # Resolve CDL element name alternates (ASC_SOP/SOPNode, ASC_SAT/SatNode)
         sop = lt.asc_sop or getattr(lt, "sopnode", None)
         sat = lt.asc_sat or getattr(lt, "sat_node", None)

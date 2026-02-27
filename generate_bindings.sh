@@ -59,12 +59,52 @@ generate() {
     # Clear the RETURN trap since we cleaned up manually
     trap - RETURN
 
-    # Post-generation patches (v2 only)
-    if [[ "$version" == "v2" ]]; then
+    # Post-generation patches
+    if [[ "$version" == "v1" ]]; then
+        _patch_v1_bindings "$outdir"
+    elif [[ "$version" == "v2" ]]; then
         _patch_v2_bindings "$outdir"
     fi
 
     echo "  -> $outdir"
+}
+
+_patch_v1_bindings() {
+    local outdir="$1"
+    local target="$outdir/aces_metadata_file.py"
+
+    if [[ ! -f "$target" ]]; then
+        echo "WARNING: Cannot patch — $target not found" >&2
+        return
+    fi
+
+    echo "  Patching $target: making system_version optional for legacy v1 files ..."
+
+    # Make PipelineInfoType.system_version optional so that legacy v1 files
+    # that omit <systemVersion> can still be parsed (the upgrade function
+    # will inject a default before converting to v2).
+    python3 - "$target" << 'PYSCRIPT'
+import re, sys
+
+target = sys.argv[1]
+with open(target, "r") as f:
+    content = f.read()
+
+# Match the required system_version field and make it optional
+old = "    system_version: VersionType = field(\n"
+new = "    system_version: None | VersionType = field(\n        default=None,\n"
+
+if old not in content:
+    print("WARNING: Could not find system_version field to patch", file=sys.stderr)
+    sys.exit(1)
+
+content = content.replace(old, new, 1)
+
+with open(target, "w") as f:
+    f.write(content)
+
+print(f"  Patched {target} successfully")
+PYSCRIPT
 }
 
 _patch_v2_bindings() {

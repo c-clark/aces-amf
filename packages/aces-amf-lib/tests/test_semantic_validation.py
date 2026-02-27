@@ -476,6 +476,38 @@ class TestCDLAlternateFields:
         identity_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_IDENTITY]
         assert len(identity_msgs) >= 1, "Identity detection should work via SOPNode/SatNode alternate"
 
+    def test_color_correction_ref_without_file(self, tmp_path):
+        """ColorCorrectionRef without a file element should produce a warning."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="cc-001"),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        messages = validate_semantic(amf_path, validators=["cdl"])
+        ccr_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_MISSING_CCR_FILE]
+        assert len(ccr_msgs) == 1
+        assert "ColorCorrectionRef" in ccr_msgs[0].message
+
+    def test_color_correction_ref_with_file_no_warning(self, tmp_path):
+        """ColorCorrectionRef WITH a file element should not produce a warning."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="cc-001"),
+            file="grades.ccc",
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        messages = validate_semantic(amf_path, validators=["cdl"])
+        ccr_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_MISSING_CCR_FILE]
+        assert len(ccr_msgs) == 0
+
 
 class TestNestedSubTransforms:
     """Tests for validation of nested sub-transforms (RRT, ODT, inverse transforms)."""
