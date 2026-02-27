@@ -6,11 +6,13 @@ Provides both low-level functions (dump_amf, write_amf, from_amf_file, from_amf_
 and high-level convenience functions (load_amf, save_amf, render_amf, minimal_amf).
 """
 
+import copy
 import datetime
 import json
 import uuid
 from pathlib import Path
 from typing import Callable, TextIO
+from urllib.parse import quote, unquote
 
 import lxml.etree
 from xsdata.exceptions import ParserError
@@ -35,6 +37,37 @@ CDL_NS_MAP = dict(
 )
 
 DEFAULT_NS_MAP = {**AMF_NS_MAP, **CDL_NS_MAP}
+
+
+def _walk_file_uris(obj, transform_fn: Callable[[str], str]) -> None:
+    """Walk a Pydantic model tree and apply *transform_fn* to all ``file`` string fields."""
+    from pydantic import BaseModel
+
+    if not isinstance(obj, BaseModel):
+        return
+    for field_name in type(obj).model_fields:
+        value = getattr(obj, field_name, None)
+        if value is None:
+            continue
+        if field_name == "file" and isinstance(value, str):
+            setattr(obj, field_name, transform_fn(value))
+        elif isinstance(value, BaseModel):
+            _walk_file_uris(value, transform_fn)
+        elif isinstance(value, list):
+            for item in value:
+                _walk_file_uris(item, transform_fn)
+
+
+def _decode_file_uris(amf) -> None:
+    """Decode percent-encoded file paths in-place after parsing."""
+    _walk_file_uris(amf, unquote)
+
+
+def _encode_file_uris(amf):
+    """Return a deep copy with file paths URI-encoded for serialization."""
+    amf_copy = copy.deepcopy(amf)
+    _walk_file_uris(amf_copy, lambda v: quote(v, safe="/"))
+    return amf_copy
 
 
 def amf_timestamp_string(time: datetime.datetime | None = None) -> str:
@@ -196,6 +229,7 @@ def _read_amf(amf_source: Path | bytes, parse_method: Callable) -> tuple[amf_v2.
         v2_parse_error = parse_error
 
     if v2_parse_error is None:
+        _decode_file_uris(parsed)
         return parsed, out_ns_map
 
     # If the first parse attempt failed, try parsing as V1 and upgrading
@@ -213,6 +247,7 @@ def _read_amf(amf_source: Path | bytes, parse_method: Callable) -> tuple[amf_v2.
     serialized = json.dumps(data)
     parsed = JsonParser().from_string(serialized, amf_v2.AcesMetadataFile)
 
+    _decode_file_uris(parsed)
     return parsed, DEFAULT_NS_MAP
 
 
@@ -285,7 +320,7 @@ def dump_amf(amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str
         ns_map = DEFAULT_NS_MAP
 
     serializer = _amf_serializer()
-    return serializer.render(amf, ns_map=ns_map)
+    return serializer.render(_encode_file_uris(amf), ns_map=ns_map)
 
 
 def write_amf(out: TextIO, amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
@@ -294,7 +329,7 @@ def write_amf(out: TextIO, amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] 
         ns_map = DEFAULT_NS_MAP
 
     serializer = _amf_serializer()
-    return serializer.write(out, amf, ns_map=ns_map)
+    return serializer.write(out, _encode_file_uris(amf), ns_map=ns_map)
 
 
 def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None) -> None:

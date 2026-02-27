@@ -14,6 +14,7 @@ from aces_amf_lib import (
     minimal_amf,
     cdl_look_transform,
 )
+from aces_amf_lib import amf_v2
 from aces_amf_lib.amf_v2 import AcesMetadataFile, VersionType
 from aces_amf_lib.validation import validate_schema
 
@@ -249,6 +250,181 @@ def test_roundtrip_file_paths(aces_amf_examples_path):
     assert "showLook.clf" in xml_out
     assert "%2F" not in xml_out
     assert "%25" not in xml_out
+
+
+# --- URI encoding/decoding tests ---
+
+
+_AMF_WITH_ENCODED_PATH = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<acesMetadataFile xmlns="urn:ampas:aces:amf:v2.0" version="2.0"
+  xmlns:cdl="urn:ASC:CDL:v1.01">
+  <amfInfo>
+    <dateTime>
+      <creationDateTime>2024-01-01T00:00:00Z</creationDateTime>
+      <modificationDateTime>2024-01-01T00:00:00Z</modificationDateTime>
+    </dateTime>
+    <uuid>urn:uuid:11111111-1111-1111-1111-111111111111</uuid>
+  </amfInfo>
+  <pipeline>
+    <pipelineInfo>
+      <dateTime>
+        <creationDateTime>2024-01-01T00:00:00Z</creationDateTime>
+        <modificationDateTime>2024-01-01T00:00:00Z</modificationDateTime>
+      </dateTime>
+      <uuid>urn:uuid:22222222-2222-2222-2222-222222222222</uuid>
+      <systemVersion>
+        <majorVersion>1</majorVersion>
+        <minorVersion>3</minorVersion>
+        <patchVersion>0</patchVersion>
+      </systemVersion>
+    </pipelineInfo>
+    <inputTransform applied="false">
+      <file>my%20show/Camera%20Files/A001.clf</file>
+    </inputTransform>
+  </pipeline>
+</acesMetadataFile>"""
+
+
+def test_load_decodes_percent_encoded_file_paths():
+    """Percent-encoded file paths are decoded to human-readable form on load."""
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    assert amf.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
+
+
+def test_save_encodes_file_paths_to_valid_uris(tmp_path):
+    """File paths with spaces are percent-encoded in serialized XML."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    # In-memory should be decoded
+    assert amf.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
+    # Serialized should be re-encoded
+    xml_out = dump_amf(amf)
+    assert "my%20show/Camera%20Files/A001.clf" in xml_out
+
+
+def test_roundtrip_preserves_plain_paths(aces_amf_examples_path):
+    """Plain paths with no special characters survive round-trip unchanged."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = load_amf(aces_amf_examples_path / "example5.amf")
+    # Second look is file-based (first is CDL)
+    assert amf.pipeline.look_transforms[1].file == "showLook.clf"
+    xml_out = dump_amf(amf)
+    assert "showLook.clf" in xml_out
+
+
+def test_roundtrip_encoded_paths():
+    """Encoded input -> decoded in memory -> re-encoded on save."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    xml_out = dump_amf(amf)
+    assert "my%20show/Camera%20Files/A001.clf" in xml_out
+    # Forward slashes must NOT be encoded
+    assert "%2F" not in xml_out
+
+
+def test_decode_does_not_double_decode():
+    """Already-decoded paths (no percent chars) pass through unchanged."""
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    # After decode, path should be clean
+    assert amf.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
+    # Loading again from XML that has no encoding should also work fine
+    amf2 = minimal_amf()
+    amf2.pipeline.input_transform = amf_v2.InputTransformType(
+        file="plain_file.clf", applied=False,
+    )
+    from aces_amf_lib.amf_utilities import dump_amf
+    xml_out = dump_amf(amf2)
+    assert "plain_file.clf" in xml_out
+
+
+def test_encode_does_not_mutate_original():
+    """dump_amf does not alter the in-memory model's file paths."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    original_path = amf.pipeline.input_transform.file
+    dump_amf(amf)  # should deep-copy internally
+    assert amf.pipeline.input_transform.file == original_path
+    assert amf.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
+
+
+def test_clip_id_file_uri_roundtrip(tmp_path):
+    """ClipIdType.file is decoded on load and encoded on save."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = minimal_amf()
+    amf.clip_id = amf_v2.ClipIdType(clip_name="A001", file="my show/A001.ari")
+    xml_out = dump_amf(amf)
+    assert "my%20show/A001.ari" in xml_out
+    # Round-trip: save then reload
+    out = tmp_path / "clip_uri.amf"
+    save_amf(amf, out, validate=False)
+    loaded = load_amf(out, validate=False)
+    assert loaded.clip_id.file == "my show/A001.ari"
+
+
+def test_nested_output_transform_file_uri():
+    """File fields nested inside OutputTransformType are encoded/decoded."""
+    from aces_amf_lib.amf_utilities import dump_amf
+    amf = minimal_amf()
+    amf.pipeline.output_transform = amf_v2.OutputTransformType(
+        applied=False,
+        reference_rendering_transform=amf_v2.ReferenceRenderingTransformType(
+            file="path with spaces/rrt.clf",
+        ),
+        output_device_transform=amf_v2.OutputDeviceTransformType(
+            file="path with spaces/odt.clf",
+        ),
+    )
+    xml_out = dump_amf(amf)
+    assert "path%20with%20spaces/rrt.clf" in xml_out
+    assert "path%20with%20spaces/odt.clf" in xml_out
+
+
+_V1_AMF_WITH_ENCODED_PATH = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v1.0"
+  xmlns:cdl="urn:ASC:CDL:v1.01" version="1.0">
+  <aces:amfInfo>
+    <aces:dateTime>
+      <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
+      <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
+    </aces:dateTime>
+  </aces:amfInfo>
+  <aces:pipeline>
+    <aces:pipelineInfo>
+      <aces:dateTime>
+        <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
+        <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
+      </aces:dateTime>
+      <aces:systemVersion>
+        <aces:majorVersion>1</aces:majorVersion>
+        <aces:minorVersion>3</aces:minorVersion>
+        <aces:patchVersion>0</aces:patchVersion>
+      </aces:systemVersion>
+    </aces:pipelineInfo>
+    <aces:lookTransform applied="true">
+      <aces:file>my%20show/look%20grade.clf</aces:file>
+    </aces:lookTransform>
+    <aces:outputTransform>
+      <aces:referenceRenderingTransform>
+        <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7.2nits_ST2084.a1.1.0</aces:transformId>
+      </aces:referenceRenderingTransform>
+    </aces:outputTransform>
+  </aces:pipeline>
+</aces:acesMetadataFile>"""
+
+
+def test_v1_with_encoded_file_paths():
+    """V1→V2 upgrade decodes percent-encoded file paths."""
+    amf = load_amf_data(_V1_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    assert amf.pipeline.look_transforms[0].file == "my show/look grade.clf"
+
+
+def test_render_amf_encodes_file_paths():
+    """render_amf() encodes file paths just like dump_amf()."""
+    amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
+    xml_out = render_amf(amf, validate=False)
+    assert "my%20show/Camera%20Files/A001.clf" in xml_out
 
 
 # --- workingLocation interleaving tests ---
