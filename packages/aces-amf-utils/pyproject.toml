@@ -11,8 +11,8 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 dependencies = [
-    "aces-amf-lib>=0.1.0",
-    "aces-amf-transforms>=0.1.0",
+    "aces-amf-lib[registry]>=0.1.0",
+    "aces-transforms>=0.1.0",
     "click>=8.0.0",
 ]
 
@@ -24,7 +24,7 @@ where = ["src"]
 
 [tool.uv.sources]
 aces-amf-lib = { workspace = true }
-aces-amf-transforms = { workspace = true }
+aces-transforms = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
