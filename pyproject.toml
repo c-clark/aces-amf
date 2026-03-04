@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+[project]
+name = "aces-amf"
+version = "0.1.0"
+description = "ACES Metadata File (AMF) monorepo"
+requires-python = ">=3.10"
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+]
+
+[tool.ruff]
+line-length = 140
+
+[tool.pytest.ini_options]
+testpaths = ["packages/*/tests"]
