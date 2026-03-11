@@ -58,13 +58,20 @@ if _REGISTRY_AVAILABLE:
         def _validate_pipeline(
             self, pipeline: PipelineType, prefix: str, messages: list[ValidationMessage], context: ValidationContext
         ) -> None:
+            # Extract ACES system version for version-scoped registry lookups
+            version_str = None
+            sv = getattr(getattr(pipeline, "pipeline_info", None), "system_version", None)
+            if sv is not None:
+                version_str = f"v{sv.major_version}.{sv.minor_version}"
+
             def _check_id(transform_id: str, label: str) -> None:
-                if not self._registry.is_valid_transform_id(transform_id):
+                if not self._registry.is_valid_transform_id(transform_id, version=version_str):
+                    scope = f" for ACES {version_str}" if version_str else ""
                     messages.append(
                         ValidationMessage(
                             level=ValidationLevel.WARNING,
                             validation_type=ValidationType.INVALID_TRANSFORM_ID,
-                            message=f"{label} uses unknown transform ID: {transform_id}",
+                            message=f"{label} uses unknown transform ID{scope}: {transform_id}",
                             file_path=context.amf_path,
                         )
                     )
