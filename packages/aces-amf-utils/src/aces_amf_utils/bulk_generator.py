@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from aces_amf_lib import amf_v2, minimal_amf, save_amf
-from aces_amf_transforms import ACESTransformRegistry
+from aces_transforms import ACESTransformRegistry
 
 from .template_registry import REGISTRY
 

@@ -3,7 +3,7 @@
 
 import click
 
-from aces_amf_transforms import ACESTransformRegistry
+from aces_transforms import ACESTransformRegistry
 
 
 @click.group()

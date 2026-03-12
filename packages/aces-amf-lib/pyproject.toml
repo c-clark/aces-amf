@@ -18,11 +18,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+registry = ["aces-transforms>=0.1.0"]
 dev = [
     "pytest>=7.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
+    "aces-transforms>=0.1.0",
 ]
+
+[tool.uv.sources]
+aces-transforms = { workspace = true }
 
 [tool.setuptools.packages.find]
 where = ["src"]

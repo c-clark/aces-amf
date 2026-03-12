@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
+# Copyright Contributors to the ACES Project.
 """Tests for the ACES transform registry."""
 
 import pytest
 
-from aces_amf_transforms import ACESTransformRegistry, TransformInfo
+from aces_transforms import ACESTransformRegistry
 
 
 @pytest.fixture
@@ -19,13 +20,11 @@ class TestACESTransformRegistry:
         assert registry.schema_version == "1.0.0"
 
     def test_is_valid_transform_id_known(self, registry):
-        # v2 CSC transform
         assert registry.is_valid_transform_id(
             "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
         )
 
     def test_is_valid_transform_id_v1(self, registry):
-        # v1 transform
         assert registry.is_valid_transform_id(
             "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScc.a1.0.3"
         )
@@ -34,7 +33,6 @@ class TestACESTransformRegistry:
         assert not registry.is_valid_transform_id("urn:ampas:aces:transformId:v99.0:FAKE.Transform")
 
     def test_is_valid_transform_id_previous_equivalent(self, registry):
-        # Previous equivalent IDs should resolve
         assert registry.is_valid_transform_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
 
     def test_get_transform_info(self, registry):
@@ -42,9 +40,11 @@ class TestACESTransformRegistry:
             "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
         )
         assert info is not None
+        assert isinstance(info, dict)
         assert info["user_name"] == "ACES2065-1 to ACEScc"
         assert info["transform_type"] == "CSC"
         assert info["inverse_transform_id"] is not None
+        assert info["aces_version"] is not None
 
     def test_get_transform_info_not_found(self, registry):
         info = registry.get_transform_info("urn:ampas:aces:transformId:v99.0:FAKE")
@@ -53,12 +53,12 @@ class TestACESTransformRegistry:
     def test_get_transform_info_via_previous_id(self, registry):
         info = registry.get_transform_info("ACEScsc.ACES_to_ACEScc.a1.0.3")
         assert info is not None
-        # Should resolve to the current version
         assert "ACES" in info["user_name"]
 
     def test_list_transforms(self, registry):
         transforms = registry.list_transforms()
         assert len(transforms) > 0
+        assert all(isinstance(t, dict) for t in transforms)
         assert all("transform_id" in t for t in transforms)
 
     def test_list_transforms_by_category(self, registry):
@@ -83,47 +83,26 @@ class TestACESTransformRegistry:
             "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
         )
 
+    def test_get_current_id(self, registry):
+        # A previous equivalent ID should resolve to the latest canonical one
+        current = registry.get_current_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
+        assert current is not None
+        assert current == "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
 
-class TestTransformIdValidator:
-    def test_validator_with_known_transform(self, tmp_path):
-        from aces_amf_lib import minimal_amf, save_amf, load_amf, amf_v2
-        from aces_amf_transforms import TransformIdValidator
-        from aces_amf_lib.validation.types import ValidationContext, ValidationType
+    def test_get_current_id_already_current(self, registry):
+        tid = "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
+        assert registry.get_current_id(tid) == tid
 
-        amf = minimal_amf()
-        amf.pipeline.input_transform = amf_v2.InputTransformType(
-            applied=True,
-            transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScc.a1.0.3",
+    def test_get_current_id_unknown(self, registry):
+        assert registry.get_current_id("totally.fake.id") is None
+
+    def test_get_previous_ids(self, registry):
+        prev = registry.get_previous_ids(
+            "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
         )
-        amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        assert isinstance(prev, list)
+        assert len(prev) > 0
 
-        loaded = load_amf(amf_path)
-        validator = TransformIdValidator()
-        context = ValidationContext(amf_path=amf_path)
-        messages = validator.validate(loaded, context)
-
-        id_warnings = [m for m in messages if m.validation_type == ValidationType.INVALID_TRANSFORM_ID]
-        assert len(id_warnings) == 0
-
-    def test_validator_with_unknown_transform(self, tmp_path):
-        from aces_amf_lib import minimal_amf, save_amf, load_amf, amf_v2
-        from aces_amf_transforms import TransformIdValidator
-        from aces_amf_lib.validation.types import ValidationContext, ValidationType
-
-        amf = minimal_amf()
-        amf.pipeline.input_transform = amf_v2.InputTransformType(
-            applied=True,
-            transform_id="urn:ampas:aces:transformId:v99.0:FAKE.Transform.a99.v1",
-        )
-        amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
-
-        loaded = load_amf(amf_path)
-        validator = TransformIdValidator()
-        context = ValidationContext(amf_path=amf_path)
-        messages = validator.validate(loaded, context)
-
-        id_warnings = [m for m in messages if m.validation_type == ValidationType.INVALID_TRANSFORM_ID]
-        assert len(id_warnings) == 1
-        assert "unknown transform id" in id_warnings[0].message.lower()
+    def test_get_previous_ids_none(self, registry):
+        prev = registry.get_previous_ids("totally.fake.id")
+        assert prev == []

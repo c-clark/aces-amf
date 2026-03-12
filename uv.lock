@@ -6,8 +6,8 @@ requires-python = ">=3.10"
 members = [
     "aces-amf",
     "aces-amf-lib",
-    "aces-amf-transforms",
     "aces-amf-utils",
+    "aces-transforms",
 ]
 
 [[package]]
@@ -44,13 +44,19 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "aces-transforms" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
 ]
+registry = [
+    { name = "aces-transforms" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "aces-transforms", marker = "extra == 'dev'", editable = "packages/aces-transforms" },
+    { name = "aces-transforms", marker = "extra == 'registry'", editable = "packages/aces-transforms" },
     { name = "lxml", specifier = ">=4.9.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
@@ -59,35 +65,29 @@ requires-dist = [
     { name = "xsdata", extras = ["lxml"], specifier = ">=24.0.0" },
     { name = "xsdata-pydantic", specifier = ">=24.5" },
 ]
-provides-extras = ["dev"]
-
-[[package]]
-name = "aces-amf-transforms"
-version = "0.1.0"
-source = { editable = "packages/aces-amf-transforms" }
-dependencies = [
-    { name = "aces-amf-lib" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "aces-amf-lib", editable = "packages/aces-amf-lib" }]
+provides-extras = ["registry", "dev"]
 
 [[package]]
 name = "aces-amf-utils"
 version = "0.1.0"
 source = { editable = "packages/aces-amf-utils" }
 dependencies = [
-    { name = "aces-amf-lib" },
-    { name = "aces-amf-transforms" },
+    { name = "aces-amf-lib", extra = ["registry"] },
+    { name = "aces-transforms" },
     { name = "click" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "aces-amf-lib", editable = "packages/aces-amf-lib" },
-    { name = "aces-amf-transforms", editable = "packages/aces-amf-transforms" },
+    { name = "aces-amf-lib", extras = ["registry"], editable = "packages/aces-amf-lib" },
+    { name = "aces-transforms", editable = "packages/aces-transforms" },
     { name = "click", specifier = ">=8.0.0" },
 ]
+
+[[package]]
+name = "aces-transforms"
+version = "0.1.0"
+source = { editable = "packages/aces-transforms" }
 
 [[package]]
 name = "annotated-types"
