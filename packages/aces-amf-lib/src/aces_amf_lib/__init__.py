@@ -40,6 +40,7 @@ from .validation import (
     validate_semantic,
 )
 from .protocols import AMFValidator, TransformRegistry
+from .validation.core_validators.file_hashes import compute_file_hash, DEFAULT_HASH_ALGORITHM
 from . import amf_helpers
 from . import amf_v1
 from . import amf_v2
@@ -69,6 +70,8 @@ __all__ = [
     "ValidationType",
     "AMFValidator",
     "TransformRegistry",
+    "compute_file_hash",
+    "DEFAULT_HASH_ALGORITHM",
     "amf_helpers",
     "amf_v1",
     "amf_v2",

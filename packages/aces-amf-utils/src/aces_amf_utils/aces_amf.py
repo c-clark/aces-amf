@@ -27,7 +27,9 @@ from typing import Iterator, Self
 
 from aces_amf_lib import (
     AcesMetadataFile,
+    DEFAULT_HASH_ALGORITHM,
     amf_v2,
+    compute_file_hash,
     load_amf,
     load_amf_data,
     render_amf,
@@ -131,6 +133,56 @@ class ACESAMF(_AMFMutatorMixin):
         """
         prepare_for_write(self._amf)
         return self
+
+    def compute_file_hashes(
+        self,
+        base_path: Path | str | None = None,
+        algorithm: str = DEFAULT_HASH_ALGORITHM,
+    ) -> dict[str, bytes]:
+        """Compute and set file hashes on all transforms with file references.
+
+        Walks all transforms in the active pipeline and sets ``hash.algorithm``
+        and ``hash.value`` for each transform that has a ``file`` reference
+        pointing to an existing file.
+
+        Args:
+            base_path: Base directory to resolve relative file paths against.
+                Defaults to current working directory.
+            algorithm: AMF hash algorithm URI. Defaults to SHA-256.
+
+        Returns:
+            Dict mapping file reference strings to their computed hash bytes.
+            Only includes files that were successfully hashed.
+
+        Raises:
+            ValueError: If the algorithm URI is not supported.
+        """
+        from aces_amf_lib.validation.core_validators.file_hashes import (
+            HASH_ALGO_MAP,
+            _collect_transforms_with_hashes,
+        )
+
+        if algorithm not in HASH_ALGO_MAP:
+            raise ValueError(f"Unsupported hash algorithm: {algorithm}")
+
+        base = Path(base_path) if base_path is not None else Path.cwd()
+        results: dict[str, bytes] = {}
+
+        for _, transform in _collect_transforms_with_hashes(self._amf):
+            file_ref = getattr(transform, "file", None)
+            if not file_ref:
+                continue
+            resolved = base / file_ref
+            if not resolved.is_file():
+                continue
+            digest = compute_file_hash(resolved, HASH_ALGO_MAP[algorithm])
+            transform.hash = amf_v2.HashType(
+                value=digest,
+                algorithm=amf_v2.HashAlgoType(algorithm),
+            )
+            results[file_ref] = digest
+
+        return results
 
     # ------------------------------------------------------------------
     # Read-only properties

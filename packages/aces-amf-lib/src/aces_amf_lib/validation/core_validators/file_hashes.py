@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_HASH_ALGORITHM = "http://www.w3.org/2001/04/xmlenc#sha256"
+
 # Map AMF hash algorithm URIs to hashlib names
 HASH_ALGO_MAP = {
     "http://www.w3.org/2001/04/xmlenc#sha256": "sha256",
@@ -71,7 +73,7 @@ class FileHashValidator:
                 continue
 
             expected_hash = transform.hash.value
-            actual_hash = _compute_file_hash(resolved, algo_name)
+            actual_hash = compute_file_hash(resolved, algo_name)
 
             if actual_hash != expected_hash:
                 messages.append(
@@ -118,7 +120,7 @@ def _collect_pipeline_transforms(pipeline, prefix: str) -> list[tuple[str, objec
     return transforms
 
 
-def _compute_file_hash(file_path: Path, algo_name: str) -> bytes:
+def compute_file_hash(file_path: Path, algo_name: str) -> bytes:
     """Compute the hash of a file."""
     h = hashlib.new(algo_name)
     with open(file_path, "rb") as f:
