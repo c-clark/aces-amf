@@ -4,7 +4,8 @@
 import pytest
 from pathlib import Path
 
-from aces_amf_lib import minimal_amf, save_amf, load_amf, cdl_look_transform
+from aces_amf_lib import save_amf, load_amf
+from aces_amf_utils.factories import minimal_amf, cdl_look_transform
 from aces_amf_lib.validation import (
     validate_semantic,
     get_default_registry,
@@ -25,7 +26,7 @@ def temp_amf_file(tmp_path):
     amf.amf_info.author.append(amf_v2.AuthorType(name="Test Author", email_address="test@example.com"))
 
     amf_path = tmp_path / "test.amf"
-    save_amf(amf, amf_path)
+    save_amf(amf, amf_path, validate=False)
     return amf_path
 
 
@@ -42,11 +43,24 @@ class TestValidatorRegistry:
         assert "working_space" in names
         assert "transform_ids" in names
         assert "file_hashes" in names
+        assert "transform_id_registry" in names
 
     def test_validate_minimal_amf(self, temp_amf_file):
-        messages = validate_semantic(temp_amf_file)
+        # Exclude transform_id_registry since no registry is provided
+        messages = validate_semantic(temp_amf_file, exclude=["transform_id_registry"])
         errors = [m for m in messages if m.level == ValidationLevel.ERROR]
         assert len(errors) == 0
+
+    def test_validate_with_registry(self, temp_amf_file):
+        from aces_transforms import ACESTransformRegistry
+        messages = validate_semantic(temp_amf_file, transform_registry=ACESTransformRegistry())
+        errors = [m for m in messages if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_validate_no_registry_raises(self, temp_amf_file):
+        from aces_amf_lib.validation.types import RegistryNotConfiguredError
+        with pytest.raises(RegistryNotConfiguredError):
+            validate_semantic(temp_amf_file)
 
     def test_validate_with_specific_validators(self, temp_amf_file):
         messages = validate_semantic(temp_amf_file, validators=["temporal", "uuid"])
@@ -55,7 +69,7 @@ class TestValidatorRegistry:
             assert msg.validator_name in ("temporal", "uuid")
 
     def test_validate_with_exclude(self, temp_amf_file):
-        messages = validate_semantic(temp_amf_file, exclude=["metadata"])
+        messages = validate_semantic(temp_amf_file, exclude=["metadata", "transform_id_registry"])
         for msg in messages:
             assert msg.validator_name != "metadata"
 
@@ -80,11 +94,11 @@ class TestUUIDValidation:
     def test_uuid_pool_tracking(self, tmp_path):
         amf1 = minimal_amf()
         amf1_path = tmp_path / "test1.amf"
-        save_amf(amf1, amf1_path)
+        save_amf(amf1, amf1_path, validate=False)
 
         amf2 = minimal_amf()
         amf2_path = tmp_path / "test2.amf"
-        save_amf(amf2, amf2_path)
+        save_amf(amf2, amf2_path, validate=False)
 
         uuid_pool = set()
         messages1 = validate_semantic(amf1_path, validators=["uuid"], uuid_pool=uuid_pool)
@@ -101,7 +115,7 @@ class TestCDLValidation:
             slope=(1.2, 1.0, 0.8), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.05
         ))
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         cdl_errors = [m for m in messages if m.validation_type == ValidationType.CDL_INVALID_VALUES]
@@ -113,7 +127,7 @@ class TestCDLValidation:
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         identity_info = [m for m in messages if m.validation_type == ValidationType.CDL_IDENTITY]
@@ -139,7 +153,7 @@ class TestCDLValidation:
             slope=(10.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         extreme_warnings = [m for m in messages if m.validation_type == ValidationType.CDL_EXTREME_VALUES and "slope" in m.message]
@@ -170,7 +184,7 @@ class TestAppliedOrderValidation:
             amf.pipeline.working_location_or_look_transform[-1].applied = True
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["applied_order"])
         order_errors = [m for m in messages if m.validation_type == ValidationType.INVALID_APPLIED_ORDER]
@@ -204,7 +218,7 @@ class TestMetadataValidation:
     def test_missing_description_warning(self, tmp_path):
         amf = minimal_amf()
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["metadata"])
         desc_warnings = [m for m in messages if m.validation_type == ValidationType.MISSING_DESCRIPTION]
@@ -215,7 +229,7 @@ class TestMetadataValidation:
         amf = minimal_amf()
         amf.amf_info.description = "Test"
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["metadata"])
         author_warnings = [m for m in messages if m.validation_type == ValidationType.MISSING_AUTHOR]
@@ -234,7 +248,7 @@ class TestFilePathValidation:
         amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="/absolute/path/to/file.clf")
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["file_paths"])
         path_warnings = [m for m in messages if m.validation_type == ValidationType.NON_PORTABLE_PATH]
@@ -246,7 +260,7 @@ class TestFilePathValidation:
         amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="../parent/file.clf")
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["file_paths"])
         path_warnings = [m for m in messages if m.validation_type == ValidationType.UNSAFE_FILE_PATH]
@@ -258,7 +272,7 @@ class TestFilePathValidation:
         amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="relative/path/to/file.clf")
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["file_paths"])
         path_warnings = [m for m in messages if m.validation_type in [
@@ -278,7 +292,7 @@ class TestCDLBoundaryFixes:
             slope=(0.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=1.0
         ))
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         slope_errors = [m for m in messages if m.validation_type == ValidationType.CDL_INVALID_VALUES and "slope" in m.message]
@@ -295,7 +309,7 @@ class TestCDLBoundaryFixes:
             slope=(1.0, 1.0, 1.0), offset=(0.0, 0.0, 0.0), power=(1.0, 1.0, 1.0), saturation=0.0
         ))
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         sat_errors = [m for m in messages if m.validation_type == ValidationType.CDL_INVALID_VALUES and "saturation" in m.message]
@@ -341,7 +355,7 @@ class TestArchivedPipelineValidation:
         amf.archived_pipeline.append(archived)
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
         return amf_path
 
     def test_archived_cdl_validation(self, tmp_path):
@@ -352,7 +366,7 @@ class TestArchivedPipelineValidation:
         look.description = "Bad CDL"
         amf_path = self._make_amf_with_archived(tmp_path)
         # Load, add look to archived, save
-        amf = load_amf(amf_path)
+        amf = load_amf(amf_path, validate=False)
         amf.archived_pipeline[0].working_location_or_look_transform.append(look)
         save_amf(amf, amf_path, validate=False)
 
@@ -363,7 +377,7 @@ class TestArchivedPipelineValidation:
     def test_archived_applied_order_validation(self, tmp_path):
         """Applied order validator should catch errors in archived pipelines."""
         amf_path = self._make_amf_with_archived(tmp_path)
-        amf = load_amf(amf_path)
+        amf = load_amf(amf_path, validate=False)
 
         lt1 = cdl_look_transform()
         lt1.applied = False
@@ -381,12 +395,12 @@ class TestArchivedPipelineValidation:
     def test_archived_file_path_validation(self, tmp_path):
         """File path validator should catch issues in archived pipelines."""
         amf_path = self._make_amf_with_archived(tmp_path)
-        amf = load_amf(amf_path)
+        amf = load_amf(amf_path, validate=False)
 
         amf.archived_pipeline[0].input_transform = amf_v2.InputTransformType(
             applied=True, file="/absolute/bad.clf"
         )
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["file_paths"])
         archived_warnings = [m for m in messages if "Archived" in m.message and m.validation_type == ValidationType.NON_PORTABLE_PATH]
@@ -410,7 +424,7 @@ class TestArchivedPipelineValidation:
         amf.archived_pipeline.append(archived)
 
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["metadata"])
         archived_warnings = [m for m in messages if "Archived" in m.message and m.validation_type == ValidationType.MISSING_DESCRIPTION]
@@ -419,7 +433,7 @@ class TestArchivedPipelineValidation:
     def test_archived_transform_ids_validation(self, tmp_path):
         """Transform ID validator should check archived pipeline transforms."""
         amf_path = self._make_amf_with_archived(tmp_path)
-        amf = load_amf(amf_path)
+        amf = load_amf(amf_path, validate=False)
 
         amf.archived_pipeline[0].input_transform = amf_v2.InputTransformType(
             applied=True, transform_id="bad-format-id"
@@ -470,7 +484,7 @@ class TestCDLAlternateFields:
         )
         amf.pipeline.working_location_or_look_transform.append(lt)
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["cdl"])
         identity_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_IDENTITY]
@@ -588,7 +602,7 @@ class TestPrepareForWriteArchived:
     def test_archived_mod_timestamp_updated(self, tmp_path):
         """prepare_for_write should update archived pipeline modification timestamps."""
         import uuid as uuid_mod
-        from aces_amf_lib.amf_utilities import amf_date_time_now
+        from aces_amf_lib.amf_helpers import amf_date_time_now
 
         amf = minimal_amf()
         archived_info = amf_v2.PipelineInfoType(
@@ -601,7 +615,7 @@ class TestPrepareForWriteArchived:
 
         # Save triggers prepare_for_write
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         # UUID should be preserved (archived = historical identity)
         assert amf.archived_pipeline[0].pipeline_info.uuid == original_uuid
@@ -620,7 +634,7 @@ class TestFilePathNoUnquote:
             applied=True, file="path/with%20space/file.clf"
         )
         amf_path = tmp_path / "test.amf"
-        save_amf(amf, amf_path)
+        save_amf(amf, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["file_paths"])
         # Should not produce security warnings — %20 is just a literal character sequence
@@ -633,7 +647,7 @@ class TestFilePathNoUnquote:
 
 class TestConvenienceFunction:
     def test_convenience_function(self, temp_amf_file):
-        messages = validate_semantic(temp_amf_file)
+        messages = validate_semantic(temp_amf_file, exclude=["transform_id_registry"])
         assert isinstance(messages, list)
         errors = [m for m in messages if m.level == ValidationLevel.ERROR]
         assert len(errors) == 0
@@ -699,7 +713,7 @@ class TestMultipleWorkingLocations:
 
     def test_archived_multiple_working_locations_error(self, tmp_path):
         """Archived pipelines with 2+ workingLocations also produce an ERROR."""
-        from aces_amf_lib.amf_utilities import amf_xml_date_time
+        from aces_amf_lib.amf_helpers import amf_xml_date_time
 
         amf = minimal_amf()
         now = amf_xml_date_time()

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the ACES Project.
-"""Transform data types."""
+"""Shared ACES data types."""
 
 from __future__ import annotations
 

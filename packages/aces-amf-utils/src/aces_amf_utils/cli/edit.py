@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from aces_amf_lib import cdl_look_transform, load_amf, save_amf
+from aces_amf_utils.aces_amf import ACESAMF
 
 
 @click.command("add-cdl")
@@ -17,23 +17,23 @@ from aces_amf_lib import cdl_look_transform, load_amf, save_amf
 @click.option("--saturation", type=float, default=1.0, help="CDL saturation.")
 @click.option("--description", "-d", help="Look description.")
 @click.option("--output", "-o", type=click.Path(), help="Output path. Defaults to overwriting input.")
-def add_cdl(file, slope, offset, power, saturation, description, output):
+@click.pass_context
+def add_cdl(ctx, file, slope, offset, power, saturation, description, output):
     """Add a CDL look transform to an AMF file."""
+    registry = ctx.obj.get("transform_registry") if ctx.obj else None
     path = Path(file)
-    amf = load_amf(path)
+    amf = ACESAMF.from_file(path, registry=registry)
 
-    lt = cdl_look_transform(
+    amf.add_cdl_look_transform(
         slope=list(slope),
         offset=list(offset),
         power=list(power),
         saturation=saturation,
+        description=description,
     )
-    if description:
-        lt.description = description
-    amf.pipeline.working_location_or_look_transform.append(lt)
 
     out_path = Path(output) if output else path
-    save_amf(amf, out_path)
+    amf.write(out_path, registry=registry)
     click.echo(f"Added CDL look transform to {out_path.name}")
 
 

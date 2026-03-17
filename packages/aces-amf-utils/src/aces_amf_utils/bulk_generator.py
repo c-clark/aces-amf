@@ -13,17 +13,15 @@ import re
 from pathlib import Path
 from typing import Any
 
-from aces_amf_lib import amf_v2, minimal_amf, save_amf
+from aces_amf_lib import amf_v2, save_amf
+from .factories import minimal_amf
+from aces_common.constants import INPUT_TRANSFORM_TYPES, OUTPUT_TRANSFORM_TYPES
 from aces_transforms import ACESTransformRegistry
 
 from .template_registry import REGISTRY
 
 logger = logging.getLogger(__name__)
 
-# Transform types considered as input transforms
-INPUT_TRANSFORM_TYPES = {"IDT", "CSC", "Input"}
-# Transform types considered as output transforms
-OUTPUT_TRANSFORM_TYPES = {"ODT", "Output"}
 
 
 def generate_test_matrix(

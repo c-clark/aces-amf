@@ -10,11 +10,13 @@ import copy
 import datetime
 import json
 import uuid
+from io import BytesIO
 from pathlib import Path
 from typing import Callable, TextIO
 from urllib.parse import quote, unquote
 
 import lxml.etree
+from pydantic import BaseModel
 from xsdata.exceptions import ParserError
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.bindings import JsonParser, JsonSerializer, XmlParser, XmlSerializer
@@ -22,8 +24,6 @@ from xsdata_pydantic.bindings import JsonParser, JsonSerializer, XmlParser, XmlS
 from . import amf_v1
 from . import amf_v2
 
-
-FloatVector = tuple[float, float, float]
 
 """Minimal namespaces for AMF"""
 AMF_NS_MAP = dict(
@@ -41,8 +41,6 @@ DEFAULT_NS_MAP = {**AMF_NS_MAP, **CDL_NS_MAP}
 
 def _walk_file_uris(obj, transform_fn: Callable[[str], str]) -> None:
     """Walk a Pydantic model tree and apply *transform_fn* to all ``file`` string fields."""
-    from pydantic import BaseModel
-
     if not isinstance(obj, BaseModel):
         return
     for field_name in type(obj).model_fields:
@@ -112,23 +110,6 @@ def amf_date_time_now() -> amf_v2.DateTimeType:
     return amf_v2.DateTimeType(creation_date_time=now, modification_date_time=now)
 
 
-def minimal_amf(aces_version: tuple[int, int, int] = (1, 3, 0)) -> amf_v2.AcesMetadataFile:
-    """
-    Create the minimal amf
-    """
-    version_type = amf_v2.VersionType(
-        major_version=aces_version[0], minor_version=aces_version[1], patch_version=aces_version[2]
-    )
-    pipeline_info = amf_v2.PipelineInfoType(
-        date_time=amf_date_time_now(), uuid=uuid.uuid4().urn, system_version=version_type
-    )
-    amf = amf_v2.AcesMetadataFile(
-        amf_info=amf_v2.InfoType(date_time=amf_date_time_now(), uuid=uuid.uuid4().urn),
-        pipeline=amf_v2.PipelineType(pipeline_info=pipeline_info),
-    )
-    return amf
-
-
 def get_working_location_index(pipeline: amf_v2.PipelineType) -> int | None:
     """Return the index of the workingLocation element in the compound field, or None if absent.
 
@@ -140,60 +121,6 @@ def get_working_location_index(pipeline: amf_v2.PipelineType) -> int | None:
         if isinstance(item, amf_v2.WorkingLocationType):
             return idx
     return None
-
-
-def cdl_look_transform(
-    *, slope: FloatVector = None, offset: FloatVector = None, power: FloatVector = None, saturation: float = None
-) -> amf_v2.LookTransformType:
-    """
-    Create a CDL look transform from the provided parameters.
-    """
-    if slope is None:
-        slope = (1.0, 1.0, 1.0)
-    if offset is None:
-        offset = (0.0, 0.0, 0.0)
-    if power is None:
-        power = (1.0, 1.0, 1.0)
-    if saturation is None:
-        saturation = 1.0
-
-    if len(slope) != 3 or len(offset) != 3 or len(power) != 3:
-        raise ValueError("Slope, offset, and power must be 3 element tuples")
-
-    working_space = amf_v2.CdlWorkingSpaceType(
-        from_cdl_working_space=amf_v2.WorkingSpaceTransformType(
-            transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3"
-        ),
-    )
-    sop_node = amf_v2.AscSop(slope=list(slope), offset=list(offset), power=list(power))
-    sat_node = amf_v2.AscSat(saturation=saturation)
-    return amf_v2.LookTransformType(cdl_working_space=working_space, asc_sop=sop_node, asc_sat=sat_node, applied=False)
-
-
-def cdl_look_transform_to_dict(look_transform: amf_v2.LookTransformType) -> dict:
-    """Extract CDL values from a look transform as a plain dict.
-
-    Returns:
-        Dict with ``asc_sop`` (slope/offset/power lists) and ``asc_sat`` (float).
-
-    Raises:
-        ValueError: If the look transform has no ASC SOP node.
-    """
-    if look_transform.asc_sop is None:
-        raise ValueError("Missing ASC SOP node in CDL look transform")
-
-    asc_cdl = {
-        "asc_sop": {
-            "slope": look_transform.asc_sop.slope or [1.0, 1.0, 1.0],
-            "offset": look_transform.asc_sop.offset or [0.0, 0.0, 0.0],
-            "power": look_transform.asc_sop.power or [1.0, 1.0, 1.0],
-        },
-        "asc_sat": 1.0,
-    }
-    if look_transform.asc_sat is not None and look_transform.asc_sat.saturation is not None:
-        asc_cdl["asc_sat"] = look_transform.asc_sat.saturation
-
-    return asc_cdl
 
 
 def from_amf_data(amf_data: bytes) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
@@ -338,11 +265,21 @@ def write_amf(out: TextIO, amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] 
     return serializer.write(out, _encode_file_uris(amf), ns_map=ns_map)
 
 
-def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None) -> None:
+def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None, transform_registry=None) -> None:
     """Run validation and raise AMFValidationError on errors.
 
     Calls schema validation (if path available) + semantic validation directly,
     bypassing validate_semantic() to avoid circular imports.
+
+    Args:
+        amf: The parsed AMF model.
+        amf_path: Optional file path for schema validation.
+        transform_registry: TransformRegistry implementation for validating transform IDs.
+            Required if the 'transform_id_registry' validator is active.
+
+    Raises:
+        RegistryNotConfiguredError: If transform_id_registry validator runs without a registry.
+        AMFValidationError: If validation finds ERROR-level messages.
     """
     from .validation.types import AMFValidationError, ValidationContext, ValidationLevel
     from .validation.schema import validate_schema
@@ -357,7 +294,7 @@ def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None) 
     # Semantic validation — direct registry call, no circular import
     schema_errors = [m for m in messages if m.level == ValidationLevel.ERROR]
     if not schema_errors:
-        context = ValidationContext(amf_path=amf_path)
+        context = ValidationContext(amf_path=amf_path, transform_registry=transform_registry)
         registry = get_default_registry()
         messages.extend(registry.validate(amf, context))
 
@@ -366,52 +303,53 @@ def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None) 
         raise AMFValidationError(messages)
 
 
-def load_amf(path: Path | str, *, validate: bool = True) -> amf_v2.AcesMetadataFile:
+def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None) -> amf_v2.AcesMetadataFile:
     """Load an AMF file. Auto-upgrades v1 to v2.
 
     Args:
         path: Path to the AMF file.
         validate: Run semantic validation on the loaded model. Defaults to True.
+        transform_registry: TransformRegistry for transform ID validation.
+            Required if validate=True and the 'transform_id_registry' validator is active.
 
     Returns:
         Parsed AcesMetadataFile (v2).
 
     Raises:
+        RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
     path = Path(path)
     amf, _ = from_amf_file(path)
     if validate:
-        _run_validation(amf, amf_path=None)  # semantic only — file may be v1
+        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
     return amf
 
 
-def load_amf_data(data: bytes, *, validate: bool = True) -> amf_v2.AcesMetadataFile:
+def load_amf_data(data: bytes, *, validate: bool = True, transform_registry=None) -> amf_v2.AcesMetadataFile:
     """Load AMF from bytes. Auto-upgrades v1 to v2.
 
     Args:
         data: Raw AMF XML bytes.
         validate: Run semantic validation after loading. Defaults to True.
             Schema validation is skipped (no file path available).
+        transform_registry: TransformRegistry for transform ID validation.
 
     Returns:
         Parsed AcesMetadataFile (v2).
 
     Raises:
+        RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
     amf, _ = from_amf_data(data)
     if validate:
-        _run_validation(amf, amf_path=None)
+        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
     return amf
 
 
-def prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
-    """Update modification timestamps and regenerate UUIDs.
-
-    Called automatically by ``save_amf`` and ``render_amf``.
-    Can also be called manually before low-level ``dump_amf``/``write_amf``.
-    """
+def _prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
+    """Update modification timestamps and regenerate UUIDs before serialization."""
     now = amf_xml_date_time()
     if amf.amf_info:
         amf.amf_info.date_time.modification_date_time = now
@@ -419,7 +357,6 @@ def prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
     if amf.pipeline and amf.pipeline.pipeline_info:
         amf.pipeline.pipeline_info.date_time.modification_date_time = now
         amf.pipeline.pipeline_info.uuid = uuid.uuid4().urn
-    # Update archived pipeline modification timestamps (preserve UUIDs — they're historical)
     for archived in amf.archived_pipeline:
         if archived.pipeline_info and archived.pipeline_info.date_time:
             archived.pipeline_info.date_time.modification_date_time = now
@@ -431,6 +368,7 @@ def save_amf(
     *,
     ns_map: dict[str, str] = None,
     validate: bool = True,
+    transform_registry=None,
 ) -> None:
     """Prepare housekeeping fields and write AMF to file.
 
@@ -441,16 +379,18 @@ def save_amf(
         path: Output file path.
         ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
         validate: Run semantic validation after writing. Defaults to True.
+        transform_registry: TransformRegistry for transform ID validation.
 
     Raises:
+        RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
-    prepare_for_write(amf)
+    _prepare_for_write(amf)
     path = Path(path)
     with open(path, "w") as f:
         write_amf(f, amf, ns_map)
     if validate:
-        _run_validation(amf, amf_path=None)
+        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
 
 
 def render_amf(
@@ -458,6 +398,7 @@ def render_amf(
     *,
     ns_map: dict[str, str] = None,
     validate: bool = True,
+    transform_registry=None,
 ) -> str:
     """Prepare housekeeping fields and serialize AMF to an XML string.
 
@@ -468,17 +409,19 @@ def render_amf(
         ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
         validate: Run semantic validation after rendering. Defaults to True.
             Schema validation is skipped (no file path available).
+        transform_registry: TransformRegistry for transform ID validation.
 
     Returns:
         XML string.
 
     Raises:
+        RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
-    prepare_for_write(amf)
+    _prepare_for_write(amf)
     xml_str = dump_amf(amf, ns_map)
     if validate:
-        _run_validation(amf, amf_path=None)
+        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
     return xml_str
 
 
@@ -488,8 +431,6 @@ def get_amf_namespace(amf_data: bytes) -> str:
 
     Uses iterparse for memory-efficient parsing - stops after finding the root element.
     """
-    from io import BytesIO
-
     try:
         # Use iterparse to stream parse - stops after first element
         for event, elem in lxml.etree.iterparse(BytesIO(amf_data), events=('start',)):

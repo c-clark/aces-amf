@@ -13,8 +13,9 @@ import importlib.resources
 import json
 import logging
 
+from aces_common.types import TransformInfo
+
 from ._version_resolver import resolve_version_key
-from .types import TransformInfo
 
 logger = logging.getLogger(__name__)
 
