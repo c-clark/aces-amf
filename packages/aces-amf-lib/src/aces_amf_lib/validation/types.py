@@ -5,9 +5,13 @@ Unified validation types for AMF validation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aces_common.protocols import TransformRegistry
 
 
 class ValidationLevel(Enum):
@@ -93,6 +97,14 @@ class AMFValidationError(Exception):
         super().__init__(f"AMF validation failed: {'; '.join(error_msgs)}")
 
 
+class RegistryNotConfiguredError(Exception):
+    """Raised when transform validation runs but no transform registry has been provided.
+
+    To fix: pass a TransformRegistry implementation to validate_semantic() via the
+    transform_registry parameter, or exclude the 'transform_id_registry' validator.
+    """
+
+
 @dataclass
 class ValidationContext:
     """Shared context passed to validators."""
@@ -100,3 +112,4 @@ class ValidationContext:
     amf_path: Path | None = None
     base_path: Path | None = None
     uuid_pool: set[str] | None = None
+    transform_registry: TransformRegistry | None = field(default=None)

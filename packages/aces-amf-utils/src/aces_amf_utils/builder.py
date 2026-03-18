@@ -16,31 +16,35 @@ Usage:
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Self
 
-from aces_amf_lib import AcesMetadataFile, amf_v2, cdl_look_transform, minimal_amf
+from aces_amf_lib import AcesMetadataFile, amf_v2
+from .factories import cdl_look_transform, minimal_amf
+
+if TYPE_CHECKING:
+    pass
 
 
-class AMFBuilder:
-    """Fluent builder for ACES Metadata Files.
+class _AMFMutatorMixin:
+    """Shared fluent mutation methods for AMFBuilder and ACESAMF.
 
-    Each method returns ``self`` for chaining. Call ``.build()``
-    to get the final ``AcesMetadataFile`` instance.
+    Subclasses must set ``self._amf`` (an ``AcesMetadataFile``) before calling
+    any method. All methods return ``self`` for chaining.
     """
 
-    def __init__(self, aces_version: tuple[int, int, int] = (1, 3, 0)):
-        self._amf = minimal_amf(aces_version=aces_version)
+    _amf: AcesMetadataFile
 
-    def with_description(self, text: str) -> AMFBuilder:
+    def with_description(self, text: str) -> Self:
         """Set the top-level AMF description."""
         self._amf.amf_info.description = text
         return self
 
-    def with_pipeline_description(self, text: str) -> AMFBuilder:
+    def with_pipeline_description(self, text: str) -> Self:
         """Set the pipeline description."""
         self._amf.pipeline.pipeline_info.description = text
         return self
 
-    def author(self, name: str, email: str = "") -> AMFBuilder:
+    def author(self, name: str, email: str = "") -> Self:
         """Add an author."""
         self._amf.amf_info.author.append(amf_v2.AuthorType(name=name, email_address=email))
         return self
@@ -52,7 +56,7 @@ class AMFBuilder:
         file: str | None = None,
         uuid: str | None = None,
         sequence: dict | None = None,
-    ) -> AMFBuilder:
+    ) -> Self:
         """Set clip identification.
 
         Only one of ``file``, ``uuid``, or ``sequence`` should be specified
@@ -91,7 +95,7 @@ class AMFBuilder:
         file: str | None = None,
         description: str | None = None,
         applied: bool = False,
-    ) -> AMFBuilder:
+    ) -> Self:
         """Set the input transform."""
         it = amf_v2.InputTransformType(applied=applied)
         if transform_id:
@@ -111,7 +115,7 @@ class AMFBuilder:
         file: str | None = None,
         applied: bool = False,
         cdl: dict | None = None,
-    ) -> AMFBuilder:
+    ) -> Self:
         """Add a look transform.
 
         If ``cdl`` is provided, creates a CDL look transform.
@@ -147,7 +151,7 @@ class AMFBuilder:
             self._amf.pipeline.working_location_or_look_transform.append(lt)
         return self
 
-    def working_location(self) -> AMFBuilder:
+    def working_location(self) -> Self:
         """Insert a working location delimiter.
 
         Looks added before this call are pre-working-location,
@@ -164,7 +168,7 @@ class AMFBuilder:
         transform_id: str | None = None,
         description: str | None = None,
         applied: bool = False,
-    ) -> AMFBuilder:
+    ) -> Self:
         """Set the output transform."""
         ot = amf_v2.OutputTransformType(applied=applied)
         if transform_id:
@@ -174,7 +178,7 @@ class AMFBuilder:
         self._amf.pipeline.output_transform = ot
         return self
 
-    def set_aces_version(self, major: int, minor: int, patch: int) -> AMFBuilder:
+    def set_aces_version(self, major: int, minor: int, patch: int) -> Self:
         """Set the ACES system version."""
         self._amf.pipeline.pipeline_info.system_version = amf_v2.VersionType(
             major_version=str(major),
@@ -182,6 +186,17 @@ class AMFBuilder:
             patch_version=str(patch),
         )
         return self
+
+
+class AMFBuilder(_AMFMutatorMixin):
+    """Fluent builder for ACES Metadata Files.
+
+    Each method returns ``self`` for chaining. Call ``.build()``
+    to get the final ``AcesMetadataFile`` instance.
+    """
+
+    def __init__(self, aces_version: tuple[int, int, int] = (1, 3, 0)):
+        self._amf = minimal_amf(aces_version=aces_version)
 
     def build(self) -> AcesMetadataFile:
         """Return the constructed AcesMetadataFile instance."""

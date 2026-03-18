@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from aces_amf_lib import AcesMetadataFile, load_amf
-from aces_amf_lib.amf_utilities import cdl_look_transform_to_dict
+from .factories import cdl_look_transform_to_dict
 
 
 def _get_description(amf: AcesMetadataFile) -> str | None:
@@ -90,13 +90,13 @@ def diff_amf(
     """
     if isinstance(amf1, (str, Path)):
         path1 = Path(amf1)
-        amf1 = load_amf(path1)
+        amf1 = load_amf(path1, validate=False)
     else:
         path1 = None
 
     if isinstance(amf2, (str, Path)):
         path2 = Path(amf2)
-        amf2 = load_amf(path2)
+        amf2 = load_amf(path2, validate=False)
     else:
         path2 = None
 

@@ -19,3 +19,10 @@ def test_data_path() -> Path:
 def aces_amf_examples_path() -> Path:
     """Path to ACES example AMF files (from package fixtures)."""
     return get_amf_examples_path()
+
+
+@pytest.fixture
+def transform_registry():
+    """ACESTransformRegistry instance for tests that exercise transform ID validation."""
+    from aces_transforms import ACESTransformRegistry
+    return ACESTransformRegistry()

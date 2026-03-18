@@ -121,9 +121,9 @@ class TestAMFBuilder:
             .author("Tester")
             .build()
         )
-        save_amf(amf, out)
+        save_amf(amf, out, validate=False)
 
-        loaded = load_amf(out)
+        loaded = load_amf(out, validate=False)
         assert loaded.amf_info.description == "Roundtrip test"
         assert len(loaded.amf_info.author) == 1
         assert loaded.amf_info.author[0].name == "Tester"
@@ -167,9 +167,9 @@ class TestAMFBuilder:
             .build()
         )
         out = tmp_path / "wl_test.amf"
-        save_amf(amf, out)
+        save_amf(amf, out, validate=False)
 
-        loaded = load_amf(out)
+        loaded = load_amf(out, validate=False)
         items = loaded.pipeline.working_location_or_look_transform
         assert len(items) == 3
         assert isinstance(items[0], LookTransformType)

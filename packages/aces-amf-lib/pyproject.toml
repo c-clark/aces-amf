@@ -11,6 +11,7 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 dependencies = [
+    "aces-common>=0.1.0",
     "lxml>=4.9.0",
     "xsdata[lxml]>=24.0.0",
     "xsdata-pydantic>=24.5",
@@ -18,7 +19,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-registry = ["aces-transforms>=0.1.0"]
 dev = [
     "pytest>=7.0",
     "ruff>=0.1.0",
@@ -27,6 +27,7 @@ dev = [
 ]
 
 [tool.uv.sources]
+aces-common = { workspace = true }
 aces-transforms = { workspace = true }
 
 [tool.setuptools.packages.find]

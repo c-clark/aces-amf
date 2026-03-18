@@ -6,16 +6,18 @@ from pathlib import Path
 import click
 
 from aces_amf_lib import load_amf
-from aces_amf_lib.amf_utilities import cdl_look_transform_to_dict
+from aces_amf_utils.factories import cdl_look_transform_to_dict
 
 
 @click.command()
 @click.argument("file", type=click.Path(exists=True))
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed transform info.")
-def info(file, verbose):
+@click.pass_context
+def info(ctx, file, verbose):
     """Display information about an AMF file."""
     path = Path(file)
-    amf = load_amf(path)
+    registry = ctx.obj.get("transform_registry") if ctx.obj else None
+    amf = load_amf(path, transform_registry=registry)
 
     click.echo(f"File: {path.name}")
 

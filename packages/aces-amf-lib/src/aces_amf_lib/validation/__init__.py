@@ -18,9 +18,11 @@ Usage:
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .types import (
     AMFValidationError,
+    RegistryNotConfiguredError,
     ValidationContext,
     ValidationLevel,
     ValidationMessage,
@@ -32,6 +34,9 @@ from .registry import ValidatorRegistry, get_default_registry
 # Import core validators to trigger auto-registration
 from . import core_validators  # noqa: F401
 
+if TYPE_CHECKING:
+    from aces_common.protocols import TransformRegistry
+
 
 def validate_semantic(
     amf_path: Path | str,
@@ -41,6 +46,7 @@ def validate_semantic(
     exclude: list[str] | None = None,
     uuid_pool: set[str] | None = None,
     registry: ValidatorRegistry | None = None,
+    transform_registry: TransformRegistry | None = None,
 ) -> list[ValidationMessage]:
     """Run semantic validation on an AMF file.
 
@@ -50,12 +56,20 @@ def validate_semantic(
         validators: If provided, only run these validators (by name).
         exclude: If provided, skip these validators (by name).
         uuid_pool: Set of UUIDs for cross-file duplicate detection.
-        registry: Validator registry to use. Defaults to the global registry.
+        registry: Validator registry (collection of AMFValidator instances) to use.
+            Defaults to the global registry.
+        transform_registry: TransformRegistry implementation for validating transform IDs.
+            Required if the 'transform_id_registry' validator is active. Pass
+            exclude=['transform_id_registry'] to skip transform ID registry validation.
 
     Returns:
         List of validation messages.
+
+    Raises:
+        RegistryNotConfiguredError: If the transform_id_registry validator runs and
+            no transform_registry was provided.
     """
-    from ..amf_utilities import load_amf
+    from ..amf_helpers import load_amf
 
     amf_path = Path(amf_path)
 
@@ -76,6 +90,7 @@ def validate_semantic(
         amf_path=amf_path,
         base_path=base_path,
         uuid_pool=uuid_pool,
+        transform_registry=transform_registry,
     )
 
     reg = registry or get_default_registry()
@@ -90,6 +105,7 @@ def validate_all(
     exclude: list[str] | None = None,
     uuid_pool: set[str] | None = None,
     registry: ValidatorRegistry | None = None,
+    transform_registry: TransformRegistry | None = None,
 ) -> list[ValidationMessage]:
     """Run both schema and semantic validation on an AMF file.
 
@@ -100,6 +116,8 @@ def validate_all(
         exclude: If provided, skip these semantic validators (by name).
         uuid_pool: Set of UUIDs for cross-file duplicate detection.
         registry: Validator registry to use. Defaults to the global registry.
+        transform_registry: TransformRegistry for transform ID validation.
+            See validate_semantic() for details.
 
     Returns:
         Combined list of validation messages (schema first, then semantic).
@@ -117,6 +135,7 @@ def validate_all(
                 exclude=exclude,
                 uuid_pool=uuid_pool,
                 registry=registry,
+                transform_registry=transform_registry,
             )
         )
 
@@ -128,6 +147,7 @@ __all__ = [
     "validate_semantic",
     "validate_all",
     "AMFValidationError",
+    "RegistryNotConfiguredError",
     "ValidatorRegistry",
     "get_default_registry",
     "ValidationContext",

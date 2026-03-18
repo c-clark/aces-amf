@@ -23,8 +23,10 @@ from ..builder import AMFBuilder
     help="ACES version (major.minor.patch). Default: 1.3.0",
 )
 @click.option("--force", "-f", is_flag=True, help="Overwrite output if it exists.")
-def create(output, description, author, author_email, idt_id, odt_id, aces_version, force):
+@click.pass_context
+def create(ctx, output, description, author, author_email, idt_id, odt_id, aces_version, force):
     """Create a new AMF file."""
+    registry = ctx.obj.get("transform_registry") if ctx.obj else None
     out_path = Path(output)
 
     if out_path.exists() and not force:
@@ -47,5 +49,5 @@ def create(output, description, author, author_email, idt_id, odt_id, aces_versi
         builder.output_transform(transform_id=odt_id)
 
     amf = builder.build()
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, transform_registry=registry)
     click.echo(f"Created {out_path}")

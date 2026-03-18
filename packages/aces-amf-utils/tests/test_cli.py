@@ -32,7 +32,7 @@ def sample_amf(tmp_path):
         )
         .build()
     )
-    save_amf(amf, path)
+    save_amf(amf, path, validate=False)
     return path
 
 
@@ -87,7 +87,7 @@ class TestCreateCommand:
         assert result.exit_code == 0
         assert out.exists()
 
-        amf = load_amf(out)
+        amf = load_amf(out, validate=False)
         assert amf.amf_info.description == "New AMF"
 
     def test_create_with_transforms(self, runner, tmp_path):
@@ -131,8 +131,8 @@ class TestConvertCommand:
 class TestDiffCommand:
     def test_diff_identical(self, runner, sample_amf, tmp_path):
         copy = tmp_path / "copy.amf"
-        amf = load_amf(sample_amf)
-        save_amf(amf, copy)
+        amf = load_amf(sample_amf, validate=False)
+        save_amf(amf, copy, validate=False)
         result = runner.invoke(main, ["diff", str(sample_amf), str(copy)])
         assert result.exit_code == 0
         assert "identical" in result.output.lower()
@@ -142,8 +142,8 @@ class TestDiffCommand:
 
         f1 = tmp_path / "a.amf"
         f2 = tmp_path / "b.amf"
-        save_amf(AMFBuilder().with_description("A").build(), f1)
-        save_amf(AMFBuilder().with_description("B").build(), f2)
+        save_amf(AMFBuilder().with_description("A").build(), f1, validate=False)
+        save_amf(AMFBuilder().with_description("B").build(), f2, validate=False)
 
         result = runner.invoke(main, ["diff", str(f1), str(f2)])
         assert result.exit_code == 1
@@ -163,7 +163,7 @@ class TestAddCdlCommand:
         assert result.exit_code == 0
         assert out.exists()
 
-        amf = load_amf(out)
+        amf = load_amf(out, validate=False)
         assert len(amf.pipeline.look_transforms) >= 1
 
 
@@ -196,3 +196,40 @@ class TestTransformsCommand:
         ])
         assert result.exit_code == 0
         assert "ACES" in result.output
+
+
+class TestTemplateCommand:
+    def test_template_list_empty(self, runner):
+        # Registry may be empty in test environment — should not crash
+        result = runner.invoke(main, ["template", "list"])
+        assert result.exit_code == 0
+
+    def test_template_list_verbose(self, runner):
+        result = runner.invoke(main, ["template", "list", "--verbose"])
+        assert result.exit_code == 0
+
+    def test_template_list_by_category(self, runner):
+        result = runner.invoke(main, ["template", "list", "--category", "minimal"])
+        assert result.exit_code == 0
+
+    def test_template_search_no_results(self, runner):
+        result = runner.invoke(main, ["template", "search", "xyzzy_nonexistent"])
+        assert result.exit_code == 0
+        assert "No templates" in result.output
+
+    def test_template_show_not_found(self, runner):
+        result = runner.invoke(main, ["template", "show", "nonexistent.template"])
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower()
+
+    def test_template_validate_no_templates(self, runner):
+        result = runner.invoke(main, ["template", "validate"])
+        assert result.exit_code == 0
+
+    def test_template_help(self, runner):
+        result = runner.invoke(main, ["template", "--help"])
+        assert result.exit_code == 0
+        assert "list" in result.output
+        assert "show" in result.output
+        assert "search" in result.output
+        assert "validate" in result.output

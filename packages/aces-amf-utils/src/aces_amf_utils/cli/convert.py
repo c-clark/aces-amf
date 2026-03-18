@@ -16,13 +16,15 @@ from aces_amf_lib import load_amf, save_amf
     help="Output path. Defaults to <original>_v2.amf.",
 )
 @click.option("--force", "-f", is_flag=True, help="Overwrite output if it exists.")
-def convert(file, output, force):
+@click.pass_context
+def convert(ctx, file, output, force):
     """Convert an AMF v1 file to v2 format.
 
     The file is loaded (v1 is auto-upgraded on read) and re-written as v2.
     """
+    registry = ctx.obj.get("transform_registry") if ctx.obj else None
     path = Path(file)
-    amf = load_amf(path)
+    amf = load_amf(path, transform_registry=registry)
 
     if output:
         out_path = Path(output)
@@ -32,5 +34,5 @@ def convert(file, output, force):
     if out_path.exists() and not force:
         raise click.ClickException(f"Output file exists: {out_path}. Use --force to overwrite.")
 
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, transform_registry=registry)
     click.echo(f"Converted {path.name} -> {out_path.name}")

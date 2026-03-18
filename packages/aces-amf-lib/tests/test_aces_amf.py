@@ -10,10 +10,8 @@ from aces_amf_lib import (
     load_amf_data,
     save_amf,
     render_amf,
-    prepare_for_write,
-    minimal_amf,
-    cdl_look_transform,
 )
+from aces_amf_utils.factories import cdl_look_transform, minimal_amf, prepare_for_write
 from aces_amf_lib import amf_v2
 from aces_amf_lib.amf_v2 import AcesMetadataFile, VersionType
 from aces_amf_lib.validation import validate_schema
@@ -22,7 +20,7 @@ from aces_amf_lib.validation import validate_schema
 def test_load_amf_v2(aces_amf_examples_path):
     """Test loading a v2 AMF file."""
     amf_path = aces_amf_examples_path / "example6.amf"
-    amf = load_amf(amf_path)
+    amf = load_amf(amf_path, validate=False)
     assert isinstance(amf, AcesMetadataFile)
     assert amf.amf_info.uuid == "urn:uuid:afe122be-59d3-4360-ad69-33c10108fa7a"
 
@@ -31,14 +29,14 @@ def test_load_amf_data(aces_amf_examples_path):
     """Test loading AMF from bytes."""
     amf_path = aces_amf_examples_path / "example6.amf"
     with amf_path.open("rb") as f:
-        amf = load_amf_data(f.read())
+        amf = load_amf_data(f.read(), validate=False)
     assert amf.amf_info.uuid == "urn:uuid:afe122be-59d3-4360-ad69-33c10108fa7a"
 
 
 def test_render_amf(aces_amf_examples_path):
     amf_path = aces_amf_examples_path / "example6.amf"
-    amf = load_amf(amf_path)
-    dumped = render_amf(amf)
+    amf = load_amf(amf_path, validate=False)
+    dumped = render_amf(amf, validate=False)
 
     assert isinstance(dumped, str)
     assert "<aces:amfInfo>" in dumped
@@ -50,10 +48,10 @@ def test_render_amf(aces_amf_examples_path):
 
 def test_save_amf(aces_amf_examples_path, tmp_path):
     amf_path = aces_amf_examples_path / "example6.amf"
-    amf = load_amf(amf_path)
+    amf = load_amf(amf_path, validate=False)
 
     out_path = tmp_path / "out.amf"
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, validate=False)
 
     out_data = out_path.read_text()
     assert "<aces:amfInfo>" in out_data
@@ -63,7 +61,7 @@ def test_save_amf(aces_amf_examples_path, tmp_path):
 def test_create_minimal(tmp_path):
     amf = minimal_amf()
     out_path = tmp_path / "out.amf"
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, validate=False)
 
     validation_messages = validate_schema(out_path)
     assert not validation_messages
@@ -81,7 +79,7 @@ def test_create_with_cdl(tmp_path):
     )
 
     out_path = tmp_path / "out.amf"
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, validate=False)
 
     validation_messages = validate_schema(out_path)
     assert not validation_messages
@@ -90,7 +88,7 @@ def test_create_with_cdl(tmp_path):
 def test_housekeeping_updates(tmp_path):
     amf = minimal_amf()
     out_path = tmp_path / "minimal.amf"
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, validate=False)
 
     time.sleep(1.00)
 
@@ -104,10 +102,10 @@ def test_housekeeping_updates(tmp_path):
     )
 
     out_path_updated = tmp_path / "updated_with_cdl.amf"
-    save_amf(amf, out_path_updated)
+    save_amf(amf, out_path_updated, validate=False)
 
-    original = load_amf(out_path)
-    updated = load_amf(out_path_updated)
+    original = load_amf(out_path, validate=False)
+    updated = load_amf(out_path_updated, validate=False)
 
     assert original.amf_info.uuid != updated.amf_info.uuid
     assert original.amf_info.date_time.creation_date_time == updated.amf_info.date_time.creation_date_time
@@ -134,17 +132,17 @@ def test_prepare_for_write():
 def test_roundtrip(aces_amf_examples_path, tmp_path):
     """Test round-trip: load -> write -> validate -> load."""
     amf_path = aces_amf_examples_path / "example6.amf"
-    amf = load_amf(amf_path)
+    amf = load_amf(amf_path, validate=False)
 
     out_path = tmp_path / "roundtrip.amf"
-    save_amf(amf, out_path)
+    save_amf(amf, out_path, validate=False)
 
     # Validate the output
     validation_messages = validate_schema(out_path)
     assert not validation_messages
 
     # Load back and verify
-    amf2 = load_amf(out_path)
+    amf2 = load_amf(out_path, validate=False)
     assert amf2.pipeline is not None
     assert len(amf2.pipeline.look_transforms) == len(amf.pipeline.look_transforms)
 
@@ -163,7 +161,7 @@ def test_set_aces_version():
 
 def test_load_amf_v1(test_data_path):
     """Loading a v1 AMF auto-upgrades to v2 and generates missing UUIDs."""
-    amf = load_amf(test_data_path / "v1_example.amf")
+    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
     assert isinstance(amf, AcesMetadataFile)
     # UUIDs should be generated (not present in v1 fixture)
     assert amf.amf_info.uuid is not None
@@ -174,14 +172,14 @@ def test_load_amf_v1(test_data_path):
 
 def test_load_amf_v1_output_transform_applied(test_data_path):
     """v1 outputTransform (no applied attr) gets applied=False after upgrade."""
-    amf = load_amf(test_data_path / "v1_example.amf")
+    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
     assert amf.pipeline.output_transform is not None
     assert amf.pipeline.output_transform.applied is False
 
 
 def test_load_amf_v1_file_field_preserved(test_data_path):
     """file field stays as str (not converted to list) after v1→v2 upgrade."""
-    amf = load_amf(test_data_path / "v1_example.amf")
+    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
     look = amf.pipeline.look_transforms[0]
     assert look.file == "showLook.clf"
     assert isinstance(look.file, str)
@@ -190,10 +188,17 @@ def test_load_amf_v1_file_field_preserved(test_data_path):
 # --- Auto-validation tests ---
 
 
-def test_load_validates_by_default(aces_amf_examples_path):
-    """Valid AMF files load without raising."""
-    amf = load_amf(aces_amf_examples_path / "example6.amf")
+def test_load_validates_by_default(aces_amf_examples_path, transform_registry):
+    """Valid AMF files load without raising when registry provided."""
+    amf = load_amf(aces_amf_examples_path / "example6.amf", transform_registry=transform_registry)
     assert amf is not None
+
+
+def test_load_no_registry_raises(aces_amf_examples_path):
+    """load_amf with validate=True and no registry raises RegistryNotConfiguredError."""
+    from aces_amf_lib.validation.types import RegistryNotConfiguredError
+    with pytest.raises(RegistryNotConfiguredError):
+        load_amf(aces_amf_examples_path / "example6.amf")
 
 
 def test_load_skip_validation(aces_amf_examples_path):
@@ -202,15 +207,15 @@ def test_load_skip_validation(aces_amf_examples_path):
     assert amf is not None
 
 
-def test_save_validates_by_default(tmp_path):
-    """Valid AMF saves without raising."""
+def test_save_validates_by_default(tmp_path, transform_registry):
+    """Valid AMF saves without raising when registry provided."""
     amf = minimal_amf()
     out = tmp_path / "valid.amf"
-    save_amf(amf, out)
+    save_amf(amf, out, transform_registry=transform_registry)
     assert out.exists()
 
 
-def test_save_raises_on_invalid(tmp_path):
+def test_save_raises_on_invalid(tmp_path, transform_registry):
     """save_amf with validate=True raises on ERROR-level issues."""
     from aces_amf_lib.validation.types import AMFValidationError
 
@@ -220,7 +225,7 @@ def test_save_raises_on_invalid(tmp_path):
     )
     out = tmp_path / "invalid.amf"
     with pytest.raises(AMFValidationError):
-        save_amf(amf, out)
+        save_amf(amf, out, transform_registry=transform_registry)
 
 
 def test_save_skip_validation(tmp_path):
@@ -234,17 +239,17 @@ def test_save_skip_validation(tmp_path):
     assert out.exists()
 
 
-def test_v1_upgrade_validates(test_data_path):
+def test_v1_upgrade_validates(test_data_path, transform_registry):
     """v1→v2 upgrade runs semantic validation on the upgraded model."""
-    amf = load_amf(test_data_path / "v1_example.amf")
+    amf = load_amf(test_data_path / "v1_example.amf", transform_registry=transform_registry)
     assert isinstance(amf, AcesMetadataFile)
 
 
 def test_roundtrip_file_paths(aces_amf_examples_path):
     """Round-tripping a file with <file> elements produces no percent-encoding."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf_path = aces_amf_examples_path / "example5.amf"
-    amf = load_amf(amf_path)
+    amf = load_amf(amf_path, validate=False)
     xml_out = dump_amf(amf)
     # The file element value should be plain text, not percent-encoded
     assert "showLook.clf" in xml_out
@@ -294,7 +299,7 @@ def test_load_decodes_percent_encoded_file_paths():
 
 def test_save_encodes_file_paths_to_valid_uris(tmp_path):
     """File paths with spaces are percent-encoded in serialized XML."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     # In-memory should be decoded
     assert amf.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
@@ -305,8 +310,8 @@ def test_save_encodes_file_paths_to_valid_uris(tmp_path):
 
 def test_roundtrip_preserves_plain_paths(aces_amf_examples_path):
     """Plain paths with no special characters survive round-trip unchanged."""
-    from aces_amf_lib.amf_utilities import dump_amf
-    amf = load_amf(aces_amf_examples_path / "example5.amf")
+    from aces_amf_lib.amf_helpers import dump_amf
+    amf = load_amf(aces_amf_examples_path / "example5.amf", validate=False)
     # Second look is file-based (first is CDL)
     assert amf.pipeline.look_transforms[1].file == "showLook.clf"
     xml_out = dump_amf(amf)
@@ -315,7 +320,7 @@ def test_roundtrip_preserves_plain_paths(aces_amf_examples_path):
 
 def test_roundtrip_encoded_paths():
     """Encoded input -> decoded in memory -> re-encoded on save."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     xml_out = dump_amf(amf)
     assert "my%20show/Camera%20Files/A001.clf" in xml_out
@@ -333,14 +338,14 @@ def test_decode_does_not_double_decode():
     amf2.pipeline.input_transform = amf_v2.InputTransformType(
         file="plain_file.clf", applied=False,
     )
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     xml_out = dump_amf(amf2)
     assert "plain_file.clf" in xml_out
 
 
 def test_encode_does_not_mutate_original():
     """dump_amf does not alter the in-memory model's file paths."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     original_path = amf.pipeline.input_transform.file
     dump_amf(amf)  # should deep-copy internally
@@ -350,7 +355,7 @@ def test_encode_does_not_mutate_original():
 
 def test_clip_id_file_uri_roundtrip(tmp_path):
     """ClipIdType.file is decoded on load and encoded on save."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf = minimal_amf()
     amf.clip_id = amf_v2.ClipIdType(clip_name="A001", file="my show/A001.ari")
     xml_out = dump_amf(amf)
@@ -364,7 +369,7 @@ def test_clip_id_file_uri_roundtrip(tmp_path):
 
 def test_nested_output_transform_file_uri():
     """File fields nested inside OutputTransformType are encoded/decoded."""
-    from aces_amf_lib.amf_utilities import dump_amf
+    from aces_amf_lib.amf_helpers import dump_amf
     amf = minimal_amf()
     amf.pipeline.output_transform = amf_v2.OutputTransformType(
         applied=False,
@@ -479,7 +484,7 @@ def test_look_transforms_property_filters(test_data_path):
 
 def test_v1_upgrade_look_transforms_preserved(test_data_path):
     """v1→v2 upgrade preserves lookTransform in the compound field."""
-    amf = load_amf(test_data_path / "v1_example.amf")
+    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
     # v1 lookTransform should end up in working_location_or_look_transform
     assert len(amf.pipeline.look_transforms) == 1
     assert amf.pipeline.look_transforms[0].file == "showLook.clf"

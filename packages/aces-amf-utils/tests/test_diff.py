@@ -50,8 +50,8 @@ class TestDiffAmf:
 
         amf1 = AMFBuilder().with_description("File A").build()
         amf2 = AMFBuilder().with_description("File B").build()
-        save_amf(amf1, f1)
-        save_amf(amf2, f2)
+        save_amf(amf1, f1, validate=False)
+        save_amf(amf2, f2, validate=False)
 
         result = diff_amf(f1, f2)
         assert result.has_differences

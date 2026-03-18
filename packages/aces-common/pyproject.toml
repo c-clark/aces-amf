@@ -4,22 +4,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aces-transforms"
+name = "aces-common"
 version = "0.1.0"
-description = "ACES transform URN registry — lookup, validation, and version mapping"
+description = "ACES shared protocols and data types"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["aces-common>=0.1.0"]
+dependencies = []
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-aces_transforms = ["data/*.json"]
-
-[tool.uv.sources]
-aces-common = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

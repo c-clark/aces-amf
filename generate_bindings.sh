@@ -5,17 +5,25 @@
 #   ./generate_bindings.sh          # regenerate both v1 and v2
 #   ./generate_bindings.sh v1       # regenerate v1 only
 #   ./generate_bindings.sh v2       # regenerate v2 only
+#   ./generate_bindings.sh --gen-patches  # regenerate patch files from current committed bindings
+#
+# Post-generation patches live in packages/aces-amf-lib/patches/.
+# Each patch is a standard unified diff applied with `patch --fuzz=2`.
+# See patches/README.md for details on what each patch does and why.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 LIB_SRC="$REPO_ROOT/packages/aces-amf-lib/src"
 SCHEMA_DIR="$LIB_SRC/aces_amf_lib/data/amf-schema"
+PATCHES_DIR="$REPO_ROOT/packages/aces-amf-lib/patches"
 
-# Resolve xsdata to an absolute path so subshells can find it
-XSDATA="$(command -v xsdata 2>/dev/null || echo "$REPO_ROOT/.venv/bin/xsdata")"
-XSDATA="$(realpath "$XSDATA")"
-if [[ ! -x "$XSDATA" ]]; then
+# Prefer the project venv xsdata (has cli extras) over any system-level install
+if [[ -x "$REPO_ROOT/.venv/bin/xsdata" ]]; then
+    XSDATA="$(realpath "$REPO_ROOT/.venv/bin/xsdata")"
+elif command -v xsdata &>/dev/null; then
+    XSDATA="$(realpath "$(command -v xsdata)")"
+else
     echo "ERROR: xsdata not found. Install with: uv pip install 'xsdata[cli]'" >&2
     exit 1
 fi
@@ -59,164 +67,99 @@ generate() {
     # Clear the RETURN trap since we cleaned up manually
     trap - RETURN
 
-    # Post-generation patches
-    if [[ "$version" == "v1" ]]; then
-        _patch_v1_bindings "$outdir"
-    elif [[ "$version" == "v2" ]]; then
-        _patch_v2_bindings "$outdir"
-    fi
+    _apply_patches "$version" "$outdir"
 
     echo "  -> $outdir"
 }
 
-_patch_v1_bindings() {
-    local outdir="$1"
-    local target="$outdir/aces_metadata_file.py"
+_apply_patches() {
+    local version="$1"
+    local target_dir="$2"
 
-    if [[ ! -f "$target" ]]; then
-        echo "WARNING: Cannot patch — $target not found" >&2
-        return
-    fi
-
-    echo "  Patching $target: making system_version optional for legacy v1 files ..."
-
-    # Make PipelineInfoType.system_version optional so that legacy v1 files
-    # that omit <systemVersion> can still be parsed (the upgrade function
-    # will inject a default before converting to v2).
-    python3 - "$target" << 'PYSCRIPT'
-import re, sys
-
-target = sys.argv[1]
-with open(target, "r") as f:
-    content = f.read()
-
-# Match the required system_version field and make it optional
-old = "    system_version: VersionType = field(\n"
-new = "    system_version: None | VersionType = field(\n        default=None,\n"
-
-if old not in content:
-    print("WARNING: Could not find system_version field to patch", file=sys.stderr)
-    sys.exit(1)
-
-content = content.replace(old, new, 1)
-
-with open(target, "w") as f:
-    f.write(content)
-
-print(f"  Patched {target} successfully")
-PYSCRIPT
+    for patch_file in "$PATCHES_DIR"/${version}_*.patch; do
+        [[ -f "$patch_file" ]] || continue
+        echo "  Applying $(basename "$patch_file") ..."
+        patch -d "$target_dir" -p0 --fuzz=2 < "$patch_file" || {
+            echo "ERROR: $(basename "$patch_file") failed to apply." >&2
+            echo "  The xsdata output may have changed. Regenerate patches with:" >&2
+            echo "    ./generate_bindings.sh --gen-patches" >&2
+            exit 1
+        }
+    done
 }
 
-_patch_v2_bindings() {
-    local outdir="$1"
-    local target="$outdir/aces_metadata_file.py"
+# --gen-patches: regenerate patch files from current committed bindings.
+# Run this after manually editing the generated files to capture the changes.
+gen_patches() {
+    local tmpdir
+    tmpdir="$(mktemp -d)"
+    trap "rm -rf '$tmpdir'" RETURN
 
-    if [[ ! -f "$target" ]]; then
-        echo "WARNING: Cannot patch — $target not found" >&2
-        return
-    fi
+    echo "Generating raw (unpatched) bindings for diffing ..."
+    for version in v1 v2; do
+        local schema="$SCHEMA_DIR/$version/acesMetadataFile.xsd"
+        (cd "$tmpdir" && "$XSDATA" generate \
+            --output pydantic \
+            --package "aces_amf_lib.amf_${version}" \
+            --include-header \
+            "$schema") || true
+    done
 
-    echo "  Patching $target: merging working_location + look_transform into compound field ..."
+    mkdir -p "$PATCHES_DIR"
 
-    # Use Python for reliable AST-safe patching of the generated bindings.
-    # This replaces the separate working_location and look_transform fields
-    # on PipelineType with a single compound field that preserves element
-    # ordering (required for workingLocation positional semantics).
-    python3 - "$target" << 'PYSCRIPT'
-import re, sys
+    _write_patch "$tmpdir/aces_amf_lib/amf_v1/aces_metadata_file.py" \
+                 "$LIB_SRC/aces_amf_lib/amf_v1/aces_metadata_file.py" \
+                 "$PATCHES_DIR/v1_system_version_optional.patch"
 
-target = sys.argv[1]
-with open(target, "r") as f:
-    content = f.read()
+    _write_patch "$tmpdir/aces_amf_lib/amf_v2/aces_metadata_file.py" \
+                 "$LIB_SRC/aces_amf_lib/amf_v2/aces_metadata_file.py" \
+                 "$PATCHES_DIR/v2_compound_fields.patch"
 
-# --- 1. Replace the two separate fields with one compound field ---
-# Match the working_location field definition (multiline)
-wl_pattern = re.compile(
-    r'    working_location: list\[EmptyType\] = field\(\n'
-    r'        default_factory=list,\n'
-    r'        metadata=\{[^}]+\},?\n'
-    r'    \)\n',
-    re.DOTALL,
-)
-# Match the look_transform field definition (multiline)
-lt_pattern = re.compile(
-    r'    look_transform: list\[LookTransformType\] = field\(\n'
-    r'        default_factory=list,\n'
-    r'        metadata=\{[^}]+\},?\n'
-    r'    \)\n',
-    re.DOTALL,
-)
+    _write_patch "$tmpdir/aces_amf_lib/amf_v2/__init__.py" \
+                 "$LIB_SRC/aces_amf_lib/amf_v2/__init__.py" \
+                 "$PATCHES_DIR/v2_init_exports.patch"
 
-compound_field = '''\
-    working_location_or_look_transform: list[EmptyType | LookTransformType] = (
-        field(
-            default_factory=list,
-            metadata={
-                "type": "Elements",
-                "choices": (
-                    {
-                        "name": "workingLocation",
-                        "type": EmptyType,
-                        "namespace": "urn:ampas:aces:amf:v2.0",
-                    },
-                    {
-                        "name": "lookTransform",
-                        "type": LookTransformType,
-                        "namespace": "urn:ampas:aces:amf:v2.0",
-                    },
-                ),
-            },
-        )
-    )
-'''
-
-# Replace working_location with the compound field, remove look_transform
-if not wl_pattern.search(content):
-    print("WARNING: Could not find working_location field to patch", file=sys.stderr)
-    sys.exit(1)
-if not lt_pattern.search(content):
-    print("WARNING: Could not find look_transform field to patch", file=sys.stderr)
-    sys.exit(1)
-
-content = wl_pattern.sub(compound_field, content, count=1)
-content = lt_pattern.sub("", content, count=1)
-
-# --- 2. Append the look_transforms convenience property ---
-content += '''
-
-# --- Post-generation additions (applied by generate_bindings.sh) ---
-
-
-def _pipeline_get_look_transforms(self) -> list["LookTransformType"]:
-    """Read-only filtered view: only LookTransformType items from the
-    compound working_location_or_look_transform field."""
-    return [
-        x
-        for x in self.working_location_or_look_transform
-        if isinstance(x, LookTransformType)
-    ]
-
-
-PipelineType.look_transforms = property(_pipeline_get_look_transforms)
-
-WorkingLocationType = EmptyType
-'''
-
-with open(target, "w") as f:
-    f.write(content)
-
-print(f"  Patched {target} successfully")
-PYSCRIPT
-
-    # Patch __init__.py to import and export WorkingLocationType
-    local initpy="$outdir/__init__.py"
-    if [[ -f "$initpy" ]]; then
-        echo "  Patching $initpy with WorkingLocationType import ..."
-        sed -i '' '/^    EmptyType,$/a\
-    WorkingLocationType,' "$initpy"
-        sed -i '' 's/^    "EmptyType",$/    "WorkingLocationType",/' "$initpy"
-    fi
+    echo "Patches written to $PATCHES_DIR"
+    echo "NOTE: Add a header comment to each patch explaining what and why."
+    echo "      See existing patches for the expected format."
 }
+
+_write_patch() {
+    local raw="$1"
+    local patched="$2"
+    local output="$3"
+    local fname
+    fname="$(basename "$raw")"
+    # Generate diff with basename-only paths, then strip timestamp-only hunks
+    # (the xsdata header timestamp changes on every generation and is not meaningful).
+    diff -u "$raw" "$patched" | \
+        sed "1s|.*|--- ${fname}|; 2s|.*|+++ ${fname}|" | \
+        python3 -c "
+import re, sys
+text = sys.stdin.read()
+# Split off file header (lines before first @@)
+m = re.search(r'^@@', text, re.MULTILINE)
+if not m:
+    sys.stdout.write(text)
+    sys.exit(0)
+header = text[:m.start()]
+body = text[m.start():]
+hunks = re.split(r'(?=^@@ )', body, flags=re.MULTILINE)
+ts_re = re.compile(r'\"\"\"This file was generated by xsdata')
+def keep(h):
+    changed = [l for l in h.splitlines() if l.startswith('+') or l.startswith('-')]
+    return any(not ts_re.search(l) for l in changed)
+sys.stdout.write(header + ''.join(h for h in hunks if not h or keep(h)))
+" > "$output" || true
+    echo "  Written $(basename "$output")"
+}
+
+# --- Main ---
+
+if [[ "${1:-}" == "--gen-patches" ]]; then
+    gen_patches
+    exit 0
+fi
 
 targets=("${@:-v1 v2}")
 [[ $# -eq 0 ]] && targets=(v1 v2)
