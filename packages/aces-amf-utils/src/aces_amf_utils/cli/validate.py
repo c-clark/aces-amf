@@ -30,8 +30,10 @@ PROFILES = {
 @click.option("--schema-only", is_flag=True, help="Only run XSD schema validation.")
 @click.option("--semantic-only", is_flag=True, help="Only run semantic validation.")
 @click.option("--verbose", "-v", is_flag=True, help="Show all messages including INFO.")
-def validate(files, profile, schema_only, semantic_only, verbose):
+@click.pass_context
+def validate(ctx, files, profile, schema_only, semantic_only, verbose):
     """Validate one or more AMF files."""
+    registry = ctx.obj.get("transform_registry") if ctx.obj else None
     profile_opts = PROFILES[profile]
     exit_code = 0
     uuid_pool: set[str] = set()
@@ -46,12 +48,14 @@ def validate(files, profile, schema_only, semantic_only, verbose):
             messages = validate_semantic(
                 path,
                 uuid_pool=uuid_pool,
+                transform_registry=registry,
                 **profile_opts,
             )
         else:
             messages = validate_all(
                 path,
                 uuid_pool=uuid_pool,
+                transform_registry=registry,
                 **profile_opts,
             )
 

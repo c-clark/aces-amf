@@ -9,7 +9,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from ..protocols import AMFValidator
-from .types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from .types import RegistryNotConfiguredError, ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
     from ..amf_v2 import AcesMetadataFile
@@ -94,6 +94,9 @@ class ValidatorRegistry:
                     if msg.validator_name is None:
                         msg.validator_name = validator.name
                 messages.extend(results)
+            except RegistryNotConfiguredError:
+                # Configuration error — propagate immediately, do not swallow
+                raise
             except Exception:
                 logger.warning("Validator %r raised an exception", validator.name, exc_info=True)
                 messages.append(

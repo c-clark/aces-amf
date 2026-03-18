@@ -13,14 +13,9 @@ from .file_paths import FilePathValidator
 from .metadata import MetadataValidator
 from .temporal import TemporalValidator
 from .transform_ids import TransformIdFormatValidator
+from .transform_registry import TransformRegistryValidator
 from .uuid_validator import UUIDValidator
 from .working_space import WorkingSpaceValidator
-
-# Optional: registry-enhanced transform validation (requires aces-transforms)
-from .transform_registry import _REGISTRY_AVAILABLE
-
-if _REGISTRY_AVAILABLE:
-    from .transform_registry import TransformRegistryValidator
 
 
 def _register_core_validators():
@@ -35,11 +30,9 @@ def _register_core_validators():
         WorkingSpaceValidator,
         TransformIdFormatValidator,
         FileHashValidator,
+        TransformRegistryValidator,
     ]:
         registry.register(validator_cls())
-
-    if _REGISTRY_AVAILABLE:
-        registry.register(TransformRegistryValidator())
 
 
 _register_core_validators()
