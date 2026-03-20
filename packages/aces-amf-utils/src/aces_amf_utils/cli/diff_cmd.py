@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from ..diff import diff_amf
+from aces_amf_utils.diff import diff_amf
 
 
 @click.command()

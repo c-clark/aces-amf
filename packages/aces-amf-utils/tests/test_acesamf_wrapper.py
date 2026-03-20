@@ -3,9 +3,16 @@
 
 import pytest
 from aces_amf_lib import AcesMetadataFile
-from aces_amf_lib.amf_v2 import LookTransformType, WorkingLocationType
-
-from aces_amf_utils import ACESAMF
+from aces_amf_lib.amf_v2 import (
+    AuthorType,
+    ClipIdType,
+    InputTransformType,
+    LookTransformType,
+    OutputTransformType,
+    VersionType,
+    WorkingLocationType,
+)
+from aces_amf_utils import ACESAMF, cdl_look_transform
 
 
 class TestACESAMFConstruction:
@@ -45,13 +52,13 @@ class TestACESAMFProperties:
         amf = ACESAMF.new(aces_version=(1, 3, 0))
         assert amf.aces_version == (1, 3, 0)
 
-    def test_amf_description_initially_none(self):
+    def test_description_initially_none(self):
         amf = ACESAMF.new()
-        assert amf.amf_description is None
+        assert amf.description is None
 
-    def test_amf_description_after_set(self):
+    def test_description_after_set(self):
         amf = ACESAMF.new().with_description("My Show")
-        assert amf.amf_description == "My Show"
+        assert amf.description == "My Show"
 
     def test_pipeline_description_initially_none(self):
         amf = ACESAMF.new()
@@ -61,23 +68,45 @@ class TestACESAMFProperties:
         amf = ACESAMF.new().with_pipeline_description("Camera to Rec.709")
         assert amf.pipeline_description == "Camera to Rec.709"
 
-    def test_amf_authors_initially_empty(self):
+    def test_authors_initially_empty(self):
         amf = ACESAMF.new()
-        assert amf.amf_authors == []
+        assert amf.authors == []
 
     def test_aces_major_version(self):
         assert ACESAMF.new(aces_version=(1, 3, 0)).aces_major_version == 1
         assert ACESAMF.new(aces_version=(2, 0, 0)).aces_major_version == 2
 
-    def test_amf_description_setter(self):
+    def test_description_setter(self):
         amf = ACESAMF.new()
-        amf.amf_description = "Set via setter"
-        assert amf.amf_description == "Set via setter"
+        amf.description = "Set via setter"
+        assert amf.description == "Set via setter"
 
     def test_pipeline_description_setter(self):
         amf = ACESAMF.new()
         amf.pipeline_description = "Pipeline via setter"
         assert amf.pipeline_description == "Pipeline via setter"
+
+    def test_input_transform_property(self):
+        amf = ACESAMF.new()
+        assert amf.input_transform is None
+        it = InputTransformType(transform_id="urn:test", applied=False)
+        amf.input_transform = it
+        assert amf.input_transform is it
+
+    def test_output_transform_property(self):
+        amf = ACESAMF.new()
+        assert amf.output_transform is None
+        ot = OutputTransformType(transform_id="urn:test", applied=True)
+        amf.output_transform = ot
+        assert amf.output_transform is ot
+
+    def test_clip_id_property(self):
+        amf = ACESAMF.new()
+        assert amf.clip_id is None
+        cid = ClipIdType(clip_name="A001C012", file="A001C012.ari")
+        amf.clip_id = cid
+        assert amf.clip_id is cid
+        assert amf.clip_name == "A001C012"
 
 
 class TestACESAMFFluentMutators:
@@ -89,49 +118,49 @@ class TestACESAMFFluentMutators:
         amf = ACESAMF.new().with_pipeline_description("Pipeline desc")
         assert amf.amf.pipeline.pipeline_info.description == "Pipeline desc"
 
-    def test_set_aces_version(self):
-        amf = ACESAMF.new().set_aces_version(2, 0, 0)
+    def test_with_aces_system_version(self):
+        amf = ACESAMF.new().with_aces_system_version(
+            VersionType(major_version="2", minor_version="0", patch_version="0")
+        )
         assert amf.aces_version == (2, 0, 0)
 
-    def test_clip_id(self):
-        amf = ACESAMF.new().clip_id("A001C012", file="A001C012.ari")
+    def test_with_clip_id(self):
+        amf = ACESAMF.new().with_clip_id(ClipIdType(clip_name="A001C012", file="A001C012.ari"))
         assert amf.amf.clip_id is not None
         assert amf.amf.clip_id.clip_name == "A001C012"
 
-    def test_input_transform(self):
+    def test_with_input_transform(self):
         tid = "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1"
-        amf = ACESAMF.new().input_transform(transform_id=tid)
-        it = amf.amf.pipeline.input_transform
-        assert it is not None
-        assert it.transform_id == tid
-        assert it.applied is False
+        amf = ACESAMF.new().with_input_transform(InputTransformType(transform_id=tid, applied=False))
+        assert amf.input_transform is not None
+        assert amf.input_transform.transform_id == tid
+        assert amf.input_transform.applied is False
 
-    def test_output_transform(self):
+    def test_with_output_transform(self):
         tid = "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
-        amf = ACESAMF.new().output_transform(transform_id=tid, applied=True)
-        ot = amf.amf.pipeline.output_transform
-        assert ot is not None
-        assert ot.transform_id == tid
-        assert ot.applied is True
+        amf = ACESAMF.new().with_output_transform(OutputTransformType(transform_id=tid, applied=True))
+        assert amf.output_transform is not None
+        assert amf.output_transform.transform_id == tid
+        assert amf.output_transform.applied is True
 
-    def test_look_transform_file(self):
-        amf = ACESAMF.new().look_transform(file="grade.clf", description="Primary")
+    def test_with_look_transform_file(self):
+        amf = ACESAMF.new().with_look_transform(
+            LookTransformType(file="grade.clf", description="Primary", applied=False)
+        )
         assert amf.count_looks() == 1
         assert amf.get_look(0).file == "grade.clf"
 
-    def test_look_transform_cdl(self):
-        amf = ACESAMF.new().look_transform(
-            cdl={"asc_sop": {"slope": [1.1, 1.0, 0.9], "offset": [0, 0, 0], "power": [1, 1, 1]}, "asc_sat": 0.9}
-        )
+    def test_with_look_transform_cdl(self):
+        lt = cdl_look_transform(slope=(1.1, 1.0, 0.9), saturation=0.9)
+        amf = ACESAMF.new().with_look_transform(lt)
         assert amf.count_looks() == 1
-        lt = amf.get_look(0)
-        assert lt.asc_sop is not None
+        assert amf.get_look(0).asc_sop is not None
 
-    def test_working_location_inserts_marker(self):
+    def test_with_working_location_inserts_marker(self):
         amf = (ACESAMF.new()
-               .look_transform(file="pre.clf")
-               .working_location()
-               .look_transform(file="post.clf"))
+               .with_look_transform(LookTransformType(file="pre.clf", applied=False))
+               .with_working_location()
+               .with_look_transform(LookTransformType(file="post.clf", applied=False)))
         compound = amf.amf.pipeline.working_location_or_look_transform
         assert len(compound) == 3
         assert isinstance(compound[1], WorkingLocationType)
@@ -140,48 +169,43 @@ class TestACESAMFFluentMutators:
         amf = (ACESAMF.new()
                .with_description("Show")
                .with_pipeline_description("Pipeline")
-               .author("Alice", "alice@example.com")
-               .input_transform(file="idt.clf")
-               .look_transform(file="lmt.clf")
-               .output_transform(description="Output"))
+               .with_author(AuthorType(name="Alice", email_address="alice@example.com"))
+               .with_input_transform(InputTransformType(file="idt.clf", applied=False))
+               .with_look_transform(LookTransformType(file="lmt.clf", applied=False))
+               .with_output_transform(OutputTransformType(description="Output", applied=False)))
         assert isinstance(amf, ACESAMF)
         assert amf.count_looks() == 1
 
 
 class TestACESAMFAuthorManagement:
-    def test_add_amf_author(self):
-        amf = ACESAMF.new().add_amf_author("Jane", "jane@example.com")
-        assert len(amf.amf_authors) == 1
-        assert amf.amf_authors[0].name == "Jane"
-        assert amf.amf_authors[0].email_address == "jane@example.com"
+    def test_with_author(self):
+        amf = ACESAMF.new().with_author(AuthorType(name="Jane", email_address="jane@example.com"))
+        assert len(amf.authors) == 1
+        assert amf.authors[0].name == "Jane"
+        assert amf.authors[0].email_address == "jane@example.com"
 
-    def test_add_amf_author_no_email(self):
-        amf = ACESAMF.new().add_amf_author("Jane")
-        assert amf.amf_authors[0].email_address == ""
+    def test_with_author_no_email(self):
+        amf = ACESAMF.new().with_author(AuthorType(name="Jane", email_address=""))
+        assert amf.authors[0].name == "Jane"
 
-    def test_add_multiple_authors(self):
+    def test_multiple_authors(self):
         amf = (ACESAMF.new()
-               .add_amf_author("Alice", "alice@example.com")
-               .add_amf_author("Bob", "bob@example.com"))
-        assert len(amf.amf_authors) == 2
+               .with_author(AuthorType(name="Alice", email_address="alice@example.com"))
+               .with_author(AuthorType(name="Bob", email_address="bob@example.com")))
+        assert len(amf.authors) == 2
 
-    def test_clear_amf_authors(self):
+    def test_clear_authors_via_list(self):
         amf = (ACESAMF.new()
-               .add_amf_author("Alice", "alice@example.com")
-               .clear_amf_authors())
-        assert amf.amf_authors == []
-
-    def test_author_fluent_method(self):
-        # author() is inherited from _AMFMutatorMixin
-        amf = ACESAMF.new().author("Jane", "jane@example.com")
-        assert len(amf.amf_authors) == 1
+               .with_author(AuthorType(name="Alice", email_address="alice@example.com")))
+        amf.authors.clear()
+        assert amf.authors == []
 
 
 class TestACESAMFLookStack:
     def _amf_with_looks(self, n: int) -> ACESAMF:
         amf = ACESAMF.new()
         for i in range(n):
-            amf.look_transform(file=f"look_{i}.clf", description=f"Look {i}")
+            amf.with_look_transform(LookTransformType(file=f"look_{i}.clf", description=f"Look {i}", applied=False))
         return amf
 
     def test_get_looks_empty(self):
@@ -212,20 +236,6 @@ class TestACESAMFLookStack:
         assert [(i, lt.description) for i, lt in pairs] == [
             (0, "Look 0"), (1, "Look 1"), (2, "Look 2")
         ]
-
-    def test_add_look_transform(self):
-        amf = ACESAMF.new().add_look_transform(file="grade.clf", description="Grade")
-        assert amf.count_looks() == 1
-        assert amf.get_look(0).file == "grade.clf"
-
-    def test_add_cdl_look_transform(self):
-        amf = ACESAMF.new().add_cdl_look_transform(
-            slope=(1.1, 1.0, 0.9), description="CDL grade"
-        )
-        assert amf.count_looks() == 1
-        lt = amf.get_look(0)
-        assert lt.asc_sop is not None
-        assert lt.description == "CDL grade"
 
     def test_insert_look_at_start(self):
         amf = self._amf_with_looks(2)
@@ -259,9 +269,9 @@ class TestACESAMFLookStack:
 
     def test_remove_look_preserves_working_location(self):
         amf = (ACESAMF.new()
-               .look_transform(file="pre.clf")
-               .working_location()
-               .look_transform(file="post.clf"))
+               .with_look_transform(LookTransformType(file="pre.clf", applied=False))
+               .with_working_location()
+               .with_look_transform(LookTransformType(file="post.clf", applied=False)))
         amf.remove_look(0)
         compound = amf.amf.pipeline.working_location_or_look_transform
         # WorkingLocationType marker must survive
@@ -289,9 +299,9 @@ class TestACESAMFLookStack:
 
     def test_clear_looks_preserves_working_location(self):
         amf = (ACESAMF.new()
-               .look_transform(file="pre.clf")
-               .working_location()
-               .look_transform(file="post.clf"))
+               .with_look_transform(LookTransformType(file="pre.clf", applied=False))
+               .with_working_location()
+               .with_look_transform(LookTransformType(file="post.clf", applied=False)))
         amf.clear_looks()
         assert amf.count_looks() == 0
         compound = amf.amf.pipeline.working_location_or_look_transform
@@ -301,9 +311,9 @@ class TestACESAMFLookStack:
     def test_insert_before_working_location(self):
         # [look_0, WL, look_1] → insert at 0 → [NEW, look_0, WL, look_1]
         amf = (ACESAMF.new()
-               .look_transform(file="look_0.clf")
-               .working_location()
-               .look_transform(file="look_1.clf"))
+               .with_look_transform(LookTransformType(file="look_0.clf", applied=False))
+               .with_working_location()
+               .with_look_transform(LookTransformType(file="look_1.clf", applied=False)))
         new_lt = LookTransformType(applied=False, description="Before")
         amf.insert_look(0, new_lt)
         assert amf.count_looks() == 3
@@ -315,9 +325,9 @@ class TestACESAMFLookStack:
     def test_insert_after_working_location(self):
         # [look_0, WL, look_1] → insert at 1 → [look_0, WL, NEW, look_1]
         amf = (ACESAMF.new()
-               .look_transform(file="look_0.clf")
-               .working_location()
-               .look_transform(file="look_1.clf"))
+               .with_look_transform(LookTransformType(file="look_0.clf", applied=False))
+               .with_working_location()
+               .with_look_transform(LookTransformType(file="look_1.clf", applied=False)))
         new_lt = LookTransformType(applied=False, description="After WL")
         amf.insert_look(1, new_lt)
         assert amf.get_look(1).description == "After WL"
@@ -335,7 +345,7 @@ class TestACESAMFIO:
         amf = ACESAMF.new().with_description("Roundtrip test")
         amf.write(path, validate=False)
         loaded = ACESAMF.from_file(path, validate=False)
-        assert loaded.amf_description == "Roundtrip test"
+        assert loaded.description == "Roundtrip test"
 
     def test_rev_up_returns_self(self):
         amf = ACESAMF.new()
@@ -351,36 +361,36 @@ class TestACESAMFIO:
         # but the call must not raise)
         assert after is not None
 
+
 class TestACESAMFDirectSetters:
-    def test_set_input_transform(self):
-        from aces_amf_lib.amf_v2 import InputTransformType
-        it = InputTransformType(applied=True, file="idt.clf")
-        amf = ACESAMF.new().set_input_transform(it)
-        assert amf.amf.pipeline.input_transform is it
-        assert amf.amf.pipeline.input_transform.applied is True
+    """Test property-based direct set/get for transforms."""
 
-    def test_set_output_transform(self):
-        from aces_amf_lib.amf_v2 import OutputTransformType
-        ot = OutputTransformType(applied=True, description="Display")
-        amf = ACESAMF.new().set_output_transform(ot)
-        assert amf.amf.pipeline.output_transform is ot
-        assert amf.amf.pipeline.output_transform.description == "Display"
-
-    def test_set_input_transform_returns_self(self):
-        from aces_amf_lib.amf_v2 import InputTransformType
+    def test_set_input_transform_via_property(self):
+        it = InputTransformType(file="idt.clf", applied=True)
         amf = ACESAMF.new()
-        result = amf.set_input_transform(InputTransformType(applied=False))
+        amf.input_transform = it
+        assert amf.input_transform is it
+        assert amf.input_transform.applied is True
+
+    def test_set_output_transform_via_property(self):
+        ot = OutputTransformType(description="Display", applied=True)
+        amf = ACESAMF.new()
+        amf.output_transform = ot
+        assert amf.output_transform is ot
+        assert amf.output_transform.description == "Display"
+
+    def test_with_input_transform_returns_self(self):
+        amf = ACESAMF.new()
+        result = amf.with_input_transform(InputTransformType(file="idt.clf", applied=False))
         assert result is amf
 
-    def test_set_output_transform_returns_self(self):
-        from aces_amf_lib.amf_v2 import OutputTransformType
+    def test_with_output_transform_returns_self(self):
         amf = ACESAMF.new()
-        result = amf.set_output_transform(OutputTransformType(applied=False))
+        result = amf.with_output_transform(OutputTransformType(description="Output", applied=False))
         assert result is amf
 
     def test_set_input_transform_overrides_existing(self):
-        from aces_amf_lib.amf_v2 import InputTransformType
-        amf = ACESAMF.new().input_transform(file="first.clf")
-        new_it = InputTransformType(applied=False, file="second.clf")
-        amf.set_input_transform(new_it)
-        assert amf.amf.pipeline.input_transform.file == "second.clf"
+        amf = ACESAMF.new()
+        amf.input_transform = InputTransformType(file="first.clf", applied=False)
+        amf.input_transform = InputTransformType(file="second.clf", applied=False)
+        assert amf.input_transform.file == "second.clf"
