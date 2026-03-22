@@ -5,9 +5,9 @@ from pathlib import Path
 
 import click
 
-from aces_amf_lib import save_amf
+from aces_amf_lib import amf_v2, save_amf
 
-from ..builder import AMFBuilder
+from aces_amf_utils.builder import AMFBuilder
 
 
 @click.command()
@@ -42,11 +42,11 @@ def create(ctx, output, description, author, author_email, idt_id, odt_id, aces_
     if description:
         builder.with_description(description)
     if author:
-        builder.author(author, author_email or "")
+        builder.with_author(amf_v2.AuthorType(name=author, email_address=author_email or ""))
     if idt_id:
-        builder.input_transform(transform_id=idt_id)
+        builder.with_input_transform(amf_v2.InputTransformType(transform_id=idt_id, applied=False))
     if odt_id:
-        builder.output_transform(transform_id=odt_id)
+        builder.with_output_transform(amf_v2.OutputTransformType(transform_id=odt_id, applied=False))
 
     amf = builder.build()
     save_amf(amf, out_path, transform_registry=registry)

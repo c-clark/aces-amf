@@ -6,6 +6,7 @@ from click.testing import CliRunner
 from pathlib import Path
 
 from aces_amf_lib import load_amf, save_amf
+from aces_amf_lib.amf_v2 import AuthorType, InputTransformType, OutputTransformType
 from aces_amf_utils.cli import main
 
 
@@ -23,13 +24,15 @@ def sample_amf(tmp_path):
     amf = (
         AMFBuilder()
         .with_description("CLI Test")
-        .author("Tester", "test@example.com")
-        .input_transform(
-            transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1"
-        )
-        .output_transform(
-            transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
-        )
+        .with_author(AuthorType(name="Tester", email_address="test@example.com"))
+        .with_input_transform(InputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+            applied=False,
+        ))
+        .with_output_transform(OutputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+            applied=False,
+        ))
         .build()
     )
     save_amf(amf, path, validate=False)

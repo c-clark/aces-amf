@@ -27,6 +27,76 @@ This directory includes:
 For details on the AMF format and its use cases, see the [ACES
 Documentation](https://docs.acescentral.com/amf/specification/).
 
+## Python Packages
+
+This repository includes a suite of Python packages for working with AMF files programmatically. The packages are organized as a [uv workspace](https://docs.astral.sh/uv/concepts/workspaces/) monorepo under `packages/`.
+
+### Getting Started
+
+```bash
+# Install the high-level CLI and utilities (pulls in all dependencies)
+pip install aces-amf-utils
+
+# Or install individual packages
+pip install aces-amf-lib        # core library only
+pip install aces-transforms     # transform registry only
+```
+
+### Package Overview
+
+| Package | Description |
+|---------|-------------|
+| [**aces-amf-utils**](./packages/aces-amf-utils/) | CLI, builder, and utilities for creating, modifying, and analyzing AMF files |
+| [**aces-amf-lib**](./packages/aces-amf-lib/) | Reference library for reading, writing, and validating AMF files |
+| [**aces-transforms**](./packages/aces-transforms/) | ACES transform ID registry with offline lookup and version mapping |
+| [**aces-common**](./packages/aces-common/) | Shared protocols and types |
+
+### Dependency Graph
+
+```
+aces-common          (shared protocols, zero dependencies)
+  |
+  +-- aces-transforms   (transform ID registry)
+  |
+  +-- aces-amf-lib      (AMF I/O, schema bindings, validation)
+        |
+        +-- aces-amf-utils  (CLI, builder, high-level API)
+```
+
+### Quick Example
+
+```python
+from aces_amf_lib import amf_v2
+from aces_amf_utils import ACESAMF
+
+# Build a new AMF
+amf = (ACESAMF.new()
+    .with_description("My Show - Ep 1")
+    .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+    .with_input_transform(amf_v2.InputTransformType(
+        transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+        applied=False))
+    .with_output_transform(amf_v2.OutputTransformType(
+        transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+        applied=False)))
+
+amf.write("output.amf")
+```
+
+### Development Setup
+
+```bash
+# Clone and set up the workspace
+git clone https://github.com/ampas/aces-amf.git
+cd aces-amf
+uv sync
+
+# Run all tests
+uv run pytest
+```
+
+Requires Python >= 3.10.
+
 ## Contributing
 
 ACES depends on community participation. Developers, manufacturers, and end
