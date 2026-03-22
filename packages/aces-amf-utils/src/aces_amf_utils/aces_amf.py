@@ -6,6 +6,7 @@ Provides a fluent API for loading, inspecting, mutating, and saving AMF files.
 
 Usage:
     from aces_amf_utils import ACESAMF
+    from aces_amf_lib import amf_v2
 
     # Load and modify an existing AMF
     amf = ACESAMF.from_file("input.amf")
@@ -14,16 +15,20 @@ Usage:
     # Build a new AMF from scratch
     amf = (ACESAMF.new()
         .with_description("My Show - Ep 1")
-        .author("Jane Doe", "jane@example.com")
-        .input_transform(transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI...")
-        .look_transform(file="grade.clf", description="Primary grade")
-        .output_transform(transform_id="urn:ampas:aces:transformId:v1.5:RRTODT..."))
+        .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+        .with_input_transform(amf_v2.InputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+            applied=False))
+        .with_look_transform(amf_v2.LookTransformType(file="grade.clf", applied=True))
+        .with_output_transform(amf_v2.OutputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:RRTODT...",
+            applied=False)))
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterator, Self
+from typing import Self
 
 from aces_amf_lib import (
     AcesMetadataFile,
@@ -35,9 +40,9 @@ from aces_amf_lib import (
     render_amf,
     save_amf,
 )
-from .factories import minimal_amf, prepare_for_write
+from aces_amf_utils.factories import minimal_amf, prepare_for_write
 
-from .builder import _AMFMutatorMixin
+from aces_amf_utils.builder import _AMFMutatorMixin
 
 
 def _default_registry():
@@ -49,9 +54,8 @@ def _default_registry():
 class ACESAMF(_AMFMutatorMixin):
     """High-level wrapper around an ``AcesMetadataFile``.
 
-    Inherits all fluent mutation methods from ``_AMFMutatorMixin``
-    (``input_transform``, ``look_transform``, ``output_transform``, etc.).
-    All mutation methods return ``self`` for chaining.
+    Inherits property access and fluent mutation methods from ``_AMFMutatorMixin``.
+    Adds I/O, construction helpers, and derived read-only properties.
     """
 
     def __init__(self, amf: AcesMetadataFile, registry=None):
@@ -185,7 +189,7 @@ class ACESAMF(_AMFMutatorMixin):
         return results
 
     # ------------------------------------------------------------------
-    # Read-only properties
+    # Derived read-only properties (ACESAMF-specific)
     # ------------------------------------------------------------------
 
     @property
@@ -204,228 +208,3 @@ class ACESAMF(_AMFMutatorMixin):
         """Major version of the ACES system, or None if not set."""
         v = self.aces_version
         return v[0] if v is not None else None
-
-    @property
-    def amf_description(self) -> str | None:
-        """Top-level AMF description."""
-        return self._amf.amf_info.description
-
-    @amf_description.setter
-    def amf_description(self, value: str) -> None:
-        self._amf.amf_info.description = value
-
-    @property
-    def pipeline_description(self) -> str | None:
-        """Pipeline description."""
-        pi = self._amf.pipeline.pipeline_info
-        return pi.description if pi else None
-
-    @pipeline_description.setter
-    def pipeline_description(self, value: str) -> None:
-        self._amf.pipeline.pipeline_info.description = value
-
-    @property
-    def amf_authors(self) -> list[amf_v2.AuthorType]:
-        """List of AMF authors."""
-        return self._amf.amf_info.author
-
-    # ------------------------------------------------------------------
-    # Author management
-    # ------------------------------------------------------------------
-
-    def add_amf_author(self, name: str, email: str = "") -> Self:
-        """Append an author to the AMF.
-
-        Args:
-            name: Author name.
-            email: Author email address.
-        """
-        self._amf.amf_info.author.append(
-            amf_v2.AuthorType(name=name, email_address=email)
-        )
-        return self
-
-    def clear_amf_authors(self) -> Self:
-        """Remove all authors from the AMF."""
-        self._amf.amf_info.author.clear()
-        return self
-
-    # ------------------------------------------------------------------
-    # Direct transform setters
-    # ------------------------------------------------------------------
-
-    def set_input_transform(self, input_transform: amf_v2.InputTransformType) -> Self:
-        """Set the input transform directly from an InputTransformType object.
-
-        Use this when you already have a constructed ``InputTransformType``.
-        For building inline, use the fluent ``input_transform()`` method instead.
-
-        Args:
-            input_transform: The input transform to set.
-        """
-        self._amf.pipeline.input_transform = input_transform
-        return self
-
-    def set_output_transform(self, output_transform: amf_v2.OutputTransformType) -> Self:
-        """Set the output transform directly from an OutputTransformType object.
-
-        Use this when you already have a constructed ``OutputTransformType``.
-        For building inline, use the fluent ``output_transform()`` method instead.
-
-        Args:
-            output_transform: The output transform to set.
-        """
-        self._amf.pipeline.output_transform = output_transform
-        return self
-
-    # ------------------------------------------------------------------
-    # Look stack management
-    # ------------------------------------------------------------------
-
-    def _look_positions(self) -> list[int]:
-        """Return compound-list indices of all LookTransformType items."""
-        return [
-            i
-            for i, item in enumerate(
-                self._amf.pipeline.working_location_or_look_transform
-            )
-            if isinstance(item, amf_v2.LookTransformType)
-        ]
-
-    def get_looks(self) -> list[amf_v2.LookTransformType]:
-        """Return all look transforms (excludes working location markers)."""
-        return self._amf.pipeline.look_transforms
-
-    def get_look(self, idx: int) -> amf_v2.LookTransformType:
-        """Return the look transform at logical index ``idx``.
-
-        Supports negative indices.
-
-        Args:
-            idx: Logical look index.
-        """
-        return self.get_looks()[idx]
-
-    def count_looks(self) -> int:
-        """Return the number of look transforms."""
-        return len(self.get_looks())
-
-    def iter_looks(self) -> Iterator[tuple[int, amf_v2.LookTransformType]]:
-        """Yield ``(index, look)`` pairs for all look transforms."""
-        return enumerate(self.get_looks())
-
-    def insert_look(self, idx: int, lt: amf_v2.LookTransformType) -> Self:
-        """Insert a look transform at logical index ``idx``.
-
-        Working location markers are preserved. If ``idx`` is beyond the
-        current number of looks, the look is appended.
-
-        Args:
-            idx: Logical look index at which to insert.
-            lt: The look transform to insert.
-        """
-        compound = self._amf.pipeline.working_location_or_look_transform
-        positions = self._look_positions()
-        if idx >= len(positions):
-            compound.append(lt)
-        else:
-            compound.insert(positions[idx], lt)
-        return self
-
-    def remove_look(self, idx: int) -> Self:
-        """Remove the look transform at logical index ``idx``.
-
-        Working location markers are preserved. Supports negative indices.
-
-        Args:
-            idx: Logical look index to remove.
-        """
-        compound = self._amf.pipeline.working_location_or_look_transform
-        positions = self._look_positions()
-        del compound[positions[idx]]
-        return self
-
-    def move_look(self, from_idx: int, to_idx: int) -> Self:
-        """Move a look transform from one logical index to another.
-
-        Indices are evaluated before the move (``to_idx`` is applied after
-        the item at ``from_idx`` is removed).
-
-        Args:
-            from_idx: Source logical look index.
-            to_idx: Destination logical look index.
-        """
-        lt = self.get_look(from_idx)
-        self.remove_look(from_idx)
-        self.insert_look(to_idx, lt)
-        return self
-
-    def clear_looks(self) -> Self:
-        """Remove all look transforms, preserving working location markers."""
-        self._amf.pipeline.working_location_or_look_transform = [
-            item
-            for item in self._amf.pipeline.working_location_or_look_transform
-            if not isinstance(item, amf_v2.LookTransformType)
-        ]
-        return self
-
-    def add_look_transform(
-        self,
-        *,
-        description: str | None = None,
-        transform_id: str | None = None,
-        file: str | None = None,
-        applied: bool = False,
-    ) -> Self:
-        """Append a file/ID-based look transform.
-
-        Convenience alias for ``look_transform()`` without CDL.
-
-        Args:
-            description: Description of the look.
-            transform_id: Transform URN.
-            file: File reference.
-            applied: Whether this transform has been applied.
-        """
-        return self.look_transform(
-            description=description,
-            transform_id=transform_id,
-            file=file,
-            applied=applied,
-        )
-
-    def add_cdl_look_transform(
-        self,
-        *,
-        slope: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        offset: tuple[float, float, float] = (0.0, 0.0, 0.0),
-        power: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        saturation: float = 1.0,
-        description: str | None = None,
-        applied: bool = False,
-    ) -> Self:
-        """Append a CDL look transform.
-
-        Convenience alias for ``look_transform()`` with a CDL payload.
-
-        Args:
-            slope: ASC SOP slope (R, G, B).
-            offset: ASC SOP offset (R, G, B).
-            power: ASC SOP power (R, G, B).
-            saturation: ASC SAT saturation value.
-            description: Description of the look.
-            applied: Whether this transform has been applied.
-        """
-        return self.look_transform(
-            description=description,
-            applied=applied,
-            cdl={
-                "asc_sop": {
-                    "slope": list(slope),
-                    "offset": list(offset),
-                    "power": list(power),
-                },
-                "asc_sat": saturation,
-            },
-        )
-

@@ -7,6 +7,7 @@ from pathlib import Path
 import click
 
 from aces_amf_utils.aces_amf import ACESAMF
+from aces_amf_utils.factories import cdl_look_transform
 
 
 @click.command("add-cdl")
@@ -24,13 +25,10 @@ def add_cdl(ctx, file, slope, offset, power, saturation, description, output):
     path = Path(file)
     amf = ACESAMF.from_file(path, registry=registry)
 
-    amf.add_cdl_look_transform(
-        slope=list(slope),
-        offset=list(offset),
-        power=list(power),
-        saturation=saturation,
-        description=description,
-    )
+    lt = cdl_look_transform(slope=list(slope), offset=list(offset), power=list(power), saturation=saturation)
+    if description:
+        lt.description = description
+    amf.with_look_transform(lt)
 
     out_path = Path(output) if output else path
     amf.write(out_path, registry=registry)

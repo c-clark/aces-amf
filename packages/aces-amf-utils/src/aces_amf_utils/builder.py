@@ -4,154 +4,165 @@ Fluent builder for constructing AMF files.
 
 Usage:
     from aces_amf_utils import AMFBuilder
+    from aces_amf_lib import amf_v2
 
     amf = (AMFBuilder()
         .with_description("My Show - Ep 1")
-        .author("Jane Doe", "jane@example.com")
-        .input_transform(transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI...")
-        .look_transform(file="grade.clf", description="Primary grade")
-        .output_transform(transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy...")
+        .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+        .with_input_transform(amf_v2.InputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+            applied=False))
+        .with_look_transform(amf_v2.LookTransformType(file="grade.clf", applied=True))
+        .with_output_transform(amf_v2.OutputTransformType(
+            transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+            applied=False))
         .build())
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Iterator, Self
 
-from aces_amf_lib import AcesMetadataFile, amf_v2
-from .factories import cdl_look_transform, minimal_amf
-
-if TYPE_CHECKING:
-    pass
+from aces_amf_lib import AcesMetadataFile, amf_v2, get_working_location_index
+from aces_amf_utils.factories import minimal_amf
 
 
 class _AMFMutatorMixin:
-    """Shared fluent mutation methods for AMFBuilder and ACESAMF.
+    """Shared property access and fluent mutation methods for AMFBuilder and ACESAMF.
 
-    Subclasses must set ``self._amf`` (an ``AcesMetadataFile``) before calling
-    any method. All methods return ``self`` for chaining.
+    Provides:
+    - **Properties** for Pythonic get/set of AMF fields using pre-built Pydantic types.
+    - **``with_X()`` methods** that wrap property setters and return ``self`` for chaining.
+    - **Look stack management** for ordered look transform manipulation.
+
+    Subclasses must set ``self._amf`` (an ``AcesMetadataFile``) before use.
     """
 
     _amf: AcesMetadataFile
 
+    # ------------------------------------------------------------------
+    # Properties — get/set
+    # ------------------------------------------------------------------
+
+    @property
+    def description(self) -> str | None:
+        """Top-level AMF description."""
+        return self._amf.amf_info.description
+
+    @description.setter
+    def description(self, value: str | None) -> None:
+        self._amf.amf_info.description = value
+
+    @property
+    def pipeline_description(self) -> str | None:
+        """Pipeline description."""
+        pi = self._amf.pipeline.pipeline_info
+        return pi.description if pi else None
+
+    @pipeline_description.setter
+    def pipeline_description(self, value: str | None) -> None:
+        self._amf.pipeline.pipeline_info.description = value
+
+    @property
+    def input_transform(self) -> amf_v2.InputTransformType | None:
+        """The pipeline's input transform, or None."""
+        return self._amf.pipeline.input_transform
+
+    @input_transform.setter
+    def input_transform(self, value: amf_v2.InputTransformType | None) -> None:
+        self._amf.pipeline.input_transform = value
+
+    @property
+    def output_transform(self) -> amf_v2.OutputTransformType | None:
+        """The pipeline's output transform, or None."""
+        return self._amf.pipeline.output_transform
+
+    @output_transform.setter
+    def output_transform(self, value: amf_v2.OutputTransformType | None) -> None:
+        self._amf.pipeline.output_transform = value
+
+    @property
+    def clip_id(self) -> amf_v2.ClipIdType | None:
+        """Clip identification."""
+        return self._amf.clip_id
+
+    @clip_id.setter
+    def clip_id(self, value: amf_v2.ClipIdType | None) -> None:
+        self._amf.clip_id = value
+
+    @property
+    def aces_system_version(self) -> amf_v2.VersionType | None:
+        """ACES system version."""
+        return self._amf.pipeline.pipeline_info.system_version
+
+    @aces_system_version.setter
+    def aces_system_version(self, value: amf_v2.VersionType | None) -> None:
+        self._amf.pipeline.pipeline_info.system_version = value
+
+    # ------------------------------------------------------------------
+    # Properties — read-only
+    # ------------------------------------------------------------------
+
+    @property
+    def clip_name(self) -> str | None:
+        """Clip name, or None if no clipId is set."""
+        return self._amf.clip_id.clip_name if self._amf.clip_id else None
+
+    @property
+    def amf_uuid(self) -> str:
+        """Top-level AMF UUID."""
+        return self._amf.amf_info.uuid
+
+    @property
+    def modification_date_time(self):
+        """Last modification timestamp."""
+        return self._amf.amf_info.date_time.modification_date_time
+
+    @property
+    def creation_date_time(self):
+        """Creation timestamp."""
+        return self._amf.amf_info.date_time.creation_date_time
+
+    @property
+    def authors(self) -> list[amf_v2.AuthorType]:
+        """List of AMF authors."""
+        return self._amf.amf_info.author
+
+    @property
+    def has_working_location(self) -> bool:
+        """Whether the pipeline has a working location marker."""
+        return get_working_location_index(self._amf.pipeline) is not None
+
+    # ------------------------------------------------------------------
+    # Chainable with_X() wrappers
+    # ------------------------------------------------------------------
+
     def with_description(self, text: str) -> Self:
         """Set the top-level AMF description."""
-        self._amf.amf_info.description = text
+        self.description = text
         return self
 
     def with_pipeline_description(self, text: str) -> Self:
         """Set the pipeline description."""
-        self._amf.pipeline.pipeline_info.description = text
+        self.pipeline_description = text
         return self
 
-    def author(self, name: str, email: str = "") -> Self:
-        """Add an author."""
-        self._amf.amf_info.author.append(amf_v2.AuthorType(name=name, email_address=email))
-        return self
-
-    def clip_id(
-        self,
-        clip_name: str,
-        *,
-        file: str | None = None,
-        uuid: str | None = None,
-        sequence: dict | None = None,
-    ) -> Self:
-        """Set clip identification.
-
-        Only one of ``file``, ``uuid``, or ``sequence`` should be specified
-        (per XSD choice constraint).
-
-        Args:
-            clip_name: The clip name.
-            file: File reference for the clip.
-            uuid: UUID for the clip.
-            sequence: Sequence info dict with keys: idx, min, max.
-        """
-        clip_id_obj = amf_v2.ClipIdType(clip_name=clip_name)
-
-        if file:
-            clip_id_obj.file = file
-        elif uuid:
-            clip_id_obj.uuid = uuid
-        elif sequence:
-            seq = amf_v2.SequenceType(
-                idx=str(sequence.get("idx", "#")),
-                value=str(sequence.get("min", "")),
-            )
-            if "min" in sequence:
-                seq.min_value = str(sequence["min"])
-            if "max" in sequence:
-                seq.max_value = str(sequence["max"])
-            clip_id_obj.sequence = seq
-
-        self._amf.clip_id = clip_id_obj
-        return self
-
-    def input_transform(
-        self,
-        *,
-        transform_id: str | None = None,
-        file: str | None = None,
-        description: str | None = None,
-        applied: bool = False,
-    ) -> Self:
+    def with_input_transform(self, value: amf_v2.InputTransformType) -> Self:
         """Set the input transform."""
-        it = amf_v2.InputTransformType(applied=applied)
-        if transform_id:
-            it.transform_id = transform_id
-        if file:
-            it.file = file
-        if description:
-            it.description = description
-        self._amf.pipeline.input_transform = it
+        self.input_transform = value
         return self
 
-    def look_transform(
-        self,
-        *,
-        description: str | None = None,
-        transform_id: str | None = None,
-        file: str | None = None,
-        applied: bool = False,
-        cdl: dict | None = None,
-    ) -> Self:
-        """Add a look transform.
-
-        If ``cdl`` is provided, creates a CDL look transform.
-        Otherwise creates a file/transform_id reference look transform.
-
-        Args:
-            description: Description of the look.
-            transform_id: Transform URN.
-            file: File reference.
-            applied: Whether this transform has been applied.
-            cdl: CDL dict with keys: asc_sop (slope/offset/power), asc_sat.
-        """
-        if cdl:
-            sop = cdl.get("asc_sop", {})
-            lt = cdl_look_transform(
-                slope=sop.get("slope"),
-                offset=sop.get("offset"),
-                power=sop.get("power"),
-                saturation=cdl.get("asc_sat"),
-            )
-            if description:
-                lt.description = description
-            lt.applied = applied
-            self._amf.pipeline.working_location_or_look_transform.append(lt)
-        else:
-            lt = amf_v2.LookTransformType(applied=applied)
-            if description:
-                lt.description = description
-            if transform_id:
-                lt.transform_id = transform_id
-            if file:
-                lt.file = file
-            self._amf.pipeline.working_location_or_look_transform.append(lt)
+    def with_output_transform(self, value: amf_v2.OutputTransformType) -> Self:
+        """Set the output transform."""
+        self.output_transform = value
         return self
 
-    def working_location(self) -> Self:
+    def with_look_transform(self, value: amf_v2.LookTransformType) -> Self:
+        """Append a look transform to the pipeline."""
+        self._amf.pipeline.working_location_or_look_transform.append(value)
+        return self
+
+    def with_working_location(self) -> Self:
         """Insert a working location delimiter.
 
         Looks added before this call are pre-working-location,
@@ -162,36 +173,141 @@ class _AMFMutatorMixin:
         )
         return self
 
-    def output_transform(
-        self,
-        *,
-        transform_id: str | None = None,
-        description: str | None = None,
-        applied: bool = False,
-    ) -> Self:
-        """Set the output transform."""
-        ot = amf_v2.OutputTransformType(applied=applied)
-        if transform_id:
-            ot.transform_id = transform_id
-        if description:
-            ot.description = description
-        self._amf.pipeline.output_transform = ot
+    def with_author(self, author: amf_v2.AuthorType) -> Self:
+        """Append an author."""
+        self._amf.amf_info.author.append(author)
         return self
 
-    def set_aces_version(self, major: int, minor: int, patch: int) -> Self:
-        """Set the ACES system version."""
-        self._amf.pipeline.pipeline_info.system_version = amf_v2.VersionType(
-            major_version=str(major),
-            minor_version=str(minor),
-            patch_version=str(patch),
-        )
+    def with_clip_id(self, value: amf_v2.ClipIdType) -> Self:
+        """Set clip identification."""
+        self.clip_id = value
         return self
+
+    def with_aces_system_version(self, value: amf_v2.VersionType) -> Self:
+        """Set the ACES system version."""
+        self.aces_system_version = value
+        return self
+
+    # ------------------------------------------------------------------
+    # Look stack management
+    # ------------------------------------------------------------------
+
+    def _look_positions(self) -> list[int]:
+        """Return compound-list indices of all LookTransformType items."""
+        return [
+            i
+            for i, item in enumerate(
+                self._amf.pipeline.working_location_or_look_transform
+            )
+            if isinstance(item, amf_v2.LookTransformType)
+        ]
+
+    def get_looks(self) -> list[amf_v2.LookTransformType]:
+        """Return all look transforms (excludes working location markers)."""
+        return self._amf.pipeline.look_transforms
+
+    def get_look(self, idx: int) -> amf_v2.LookTransformType:
+        """Return the look transform at logical index ``idx``.
+
+        Supports negative indices.
+
+        Args:
+            idx: Logical look index.
+        """
+        return self.get_looks()[idx]
+
+    def count_looks(self) -> int:
+        """Return the number of look transforms."""
+        return len(self.get_looks())
+
+    def iter_looks(self) -> Iterator[tuple[int, amf_v2.LookTransformType]]:
+        """Yield ``(index, look)`` pairs for all look transforms."""
+        return enumerate(self.get_looks())
+
+    def insert_look(self, idx: int, lt: amf_v2.LookTransformType) -> Self:
+        """Insert a look transform at logical index ``idx``.
+
+        Working location markers are preserved. If ``idx`` is beyond the
+        current number of looks, the look is appended.
+
+        Args:
+            idx: Logical look index at which to insert.
+            lt: The look transform to insert.
+        """
+        compound = self._amf.pipeline.working_location_or_look_transform
+        positions = self._look_positions()
+        if idx >= len(positions):
+            compound.append(lt)
+        else:
+            compound.insert(positions[idx], lt)
+        return self
+
+    def remove_look(self, idx: int) -> Self:
+        """Remove the look transform at logical index ``idx``.
+
+        Working location markers are preserved. Supports negative indices.
+
+        Args:
+            idx: Logical look index to remove.
+        """
+        compound = self._amf.pipeline.working_location_or_look_transform
+        positions = self._look_positions()
+        del compound[positions[idx]]
+        return self
+
+    def move_look(self, from_idx: int, to_idx: int) -> Self:
+        """Move a look transform from one logical index to another.
+
+        Indices are evaluated before the move (``to_idx`` is applied after
+        the item at ``from_idx`` is removed).
+
+        Args:
+            from_idx: Source logical look index.
+            to_idx: Destination logical look index.
+        """
+        lt = self.get_look(from_idx)
+        self.remove_look(from_idx)
+        self.insert_look(to_idx, lt)
+        return self
+
+    def clear_looks(self) -> Self:
+        """Remove all look transforms, preserving working location markers."""
+        self._amf.pipeline.working_location_or_look_transform = [
+            item
+            for item in self._amf.pipeline.working_location_or_look_transform
+            if not isinstance(item, amf_v2.LookTransformType)
+        ]
+        return self
+
+    # ------------------------------------------------------------------
+    # Pre/post working-location look split
+    # ------------------------------------------------------------------
+
+    def get_pre_working_looks(self) -> list[amf_v2.LookTransformType]:
+        """Look transforms before the working location marker.
+        Returns empty list if no working location exists."""
+        compound = self._amf.pipeline.working_location_or_look_transform
+        wl_idx = get_working_location_index(self._amf.pipeline)
+        if wl_idx is None:
+            return []
+        return [item for i, item in enumerate(compound)
+                if i < wl_idx and isinstance(item, amf_v2.LookTransformType)]
+
+    def get_post_working_looks(self) -> list[amf_v2.LookTransformType]:
+        """Look transforms after the working location marker.
+        Returns all looks if no working location exists."""
+        compound = self._amf.pipeline.working_location_or_look_transform
+        wl_idx = get_working_location_index(self._amf.pipeline)
+        if wl_idx is None:
+            return self.get_looks()
+        return [item for i, item in enumerate(compound)
+                if i > wl_idx and isinstance(item, amf_v2.LookTransformType)]
 
 
 class AMFBuilder(_AMFMutatorMixin):
     """Fluent builder for ACES Metadata Files.
 
-    Each method returns ``self`` for chaining. Call ``.build()``
+    Each ``with_X()`` method returns ``self`` for chaining. Call ``.build()``
     to get the final ``AcesMetadataFile`` instance.
     """
 

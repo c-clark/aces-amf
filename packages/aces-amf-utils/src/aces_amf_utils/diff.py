@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from aces_amf_lib import AcesMetadataFile, load_amf
-from .factories import cdl_look_transform_to_dict
+from aces_amf_utils.factories import cdl_look_transform_to_dict
 
 
 def _get_description(amf: AcesMetadataFile) -> str | None:

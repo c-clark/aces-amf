@@ -5,14 +5,14 @@ import importlib
 
 import click
 
-from .validate import validate
-from .info import info
-from .convert import convert
-from .create import create
-from .edit import add_cdl, compute_hashes
-from .diff_cmd import diff
-from .transforms import transforms
-from .templates import template
+from aces_amf_utils.cli.validate import validate
+from aces_amf_utils.cli.info import info
+from aces_amf_utils.cli.convert import convert
+from aces_amf_utils.cli.create import create
+from aces_amf_utils.cli.edit import add_cdl, compute_hashes
+from aces_amf_utils.cli.diff_cmd import diff
+from aces_amf_utils.cli.transforms import transforms
+from aces_amf_utils.cli.templates import template
 
 
 def _load_registry(dotted_path: str):

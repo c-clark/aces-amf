@@ -3,7 +3,8 @@
 
 import pytest
 from aces_amf_lib import load_amf, save_amf
-from aces_amf_utils import AMFBuilder, diff_amf, DiffResult, FieldDiff
+from aces_amf_lib.amf_v2 import InputTransformType, LookTransformType
+from aces_amf_utils import AMFBuilder, cdl_look_transform, diff_amf, DiffResult, FieldDiff
 
 
 class TestDiffAmf:
@@ -34,7 +35,7 @@ class TestDiffAmf:
     def test_different_input_transform(self):
         amf1 = (
             AMFBuilder()
-            .input_transform(transform_id="urn:test:idt1")
+            .with_input_transform(InputTransformType(transform_id="urn:test:idt1", applied=False))
             .build()
         )
         amf2 = AMFBuilder().build()  # No input transform
@@ -73,27 +74,15 @@ class TestDiffAmf:
 
     def test_look_transform_count_diff(self):
         amf1 = AMFBuilder().build()
-        amf2 = (
-            AMFBuilder()
-            .look_transform(
-                cdl={
-                    "asc_sop": {
-                        "slope": [1.0, 1.0, 1.0],
-                        "offset": [0.0, 0.0, 0.0],
-                        "power": [1.0, 1.0, 1.0],
-                    },
-                    "asc_sat": 1.0,
-                }
-            )
-            .build()
-        )
+        lt = cdl_look_transform()
+        amf2 = AMFBuilder().with_look_transform(lt).build()
         result = diff_amf(amf1, amf2)
         lt_diffs = [d for d in result.differences if "look_transform" in d.field]
         assert len(lt_diffs) >= 1
 
     def test_verbose_transform_details(self):
-        amf1 = AMFBuilder().input_transform(transform_id="urn:a").build()
-        amf2 = AMFBuilder().input_transform(transform_id="urn:b").build()
+        amf1 = AMFBuilder().with_input_transform(InputTransformType(transform_id="urn:a", applied=False)).build()
+        amf2 = AMFBuilder().with_input_transform(InputTransformType(transform_id="urn:b", applied=False)).build()
         result = diff_amf(amf1, amf2, verbose=True)
         id_diffs = [d for d in result.differences if "transform_id" in d.field]
         assert len(id_diffs) >= 1
