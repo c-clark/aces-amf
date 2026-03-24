@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from aces_common.types import TransformURN
+
 from ..types import (
     RegistryNotConfiguredError,
     ValidationContext,
@@ -27,6 +29,9 @@ if TYPE_CHECKING:
 
 class TransformRegistryValidator:
     """Validates transform IDs against an injected TransformRegistry.
+
+    Detects version mismatches (e.g. v1.5 URN in v2.0 AMF) and reports
+    whether an equivalent transform exists in the target version.
 
     Requires context.transform_registry to be set. If it is None,
     RegistryNotConfiguredError is raised — this is a configuration error,
@@ -62,11 +67,49 @@ class TransformRegistryValidator:
 
         # Extract ACES system version for version-scoped registry lookups
         version_str = None
+        sys_major = None
         sv = getattr(getattr(pipeline, "pipeline_info", None), "system_version", None)
         if sv is not None:
             version_str = f"v{sv.major_version}.{sv.minor_version}"
+            sys_major = sv.major_version
 
         def _check_id(transform_id: str, label: str) -> None:
+            parsed = TransformURN.parse(transform_id)
+
+            # Version mismatch detection
+            if parsed and sys_major is not None and parsed.spec_major_version != sys_major:
+                current_id = registry.get_equivalent_id(transform_id)
+                if current_id and current_id != transform_id:
+                    # Equivalent exists in target version → WARNING
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.WARNING,
+                            validation_type=ValidationType.VERSION_MISMATCH_TRANSFORM_ID,
+                            message=(
+                                f"{label} uses {transform_id} (ACES {parsed.spec_version}) "
+                                f"but AMF declares ACES {version_str}. "
+                                f"Equivalent available: {current_id}"
+                            ),
+                            file_path=context.amf_path,
+                        )
+                    )
+                else:
+                    # No equivalent → ERROR
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.ERROR,
+                            validation_type=ValidationType.VERSION_MISMATCH_TRANSFORM_ID,
+                            message=(
+                                f"{label} uses {transform_id} (ACES {parsed.spec_version}) "
+                                f"but AMF declares ACES {version_str} "
+                                f"and no equivalent transform exists"
+                            ),
+                            file_path=context.amf_path,
+                        )
+                    )
+                return
+
+            # Normal unknown-ID check (same version or unparseable URN)
             if not registry.is_valid_transform_id(transform_id, version=version_str):
                 scope = f" for ACES {version_str}" if version_str else ""
                 messages.append(

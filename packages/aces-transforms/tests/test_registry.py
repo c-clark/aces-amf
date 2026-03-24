@@ -83,26 +83,26 @@ class TestACESTransformRegistry:
             "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
         )
 
-    def test_get_current_id(self, registry):
-        # A previous equivalent ID should resolve to the latest canonical one
-        current = registry.get_current_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
-        assert current is not None
-        assert current == "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
+    def test_get_equivalent_id(self, registry):
+        # A legacy ID should resolve to its canonical equivalent
+        equivalent = registry.get_equivalent_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
+        assert equivalent is not None
+        assert equivalent == "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
 
-    def test_get_current_id_already_current(self, registry):
+    def test_get_equivalent_id_already_canonical(self, registry):
         tid = "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
-        assert registry.get_current_id(tid) == tid
+        assert registry.get_equivalent_id(tid) == tid
 
-    def test_get_current_id_unknown(self, registry):
-        assert registry.get_current_id("totally.fake.id") is None
+    def test_get_equivalent_id_unknown(self, registry):
+        assert registry.get_equivalent_id("totally.fake.id") is None
 
-    def test_get_previous_ids(self, registry):
-        prev = registry.get_previous_ids(
+    def test_get_equivalent_ids(self, registry):
+        ids = registry.get_equivalent_ids(
             "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
         )
-        assert isinstance(prev, list)
-        assert len(prev) > 0
+        assert isinstance(ids, list)
+        assert len(ids) > 0
 
-    def test_get_previous_ids_none(self, registry):
-        prev = registry.get_previous_ids("totally.fake.id")
-        assert prev == []
+    def test_get_equivalent_ids_unknown(self, registry):
+        ids = registry.get_equivalent_ids("totally.fake.id")
+        assert ids == []

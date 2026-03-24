@@ -13,6 +13,7 @@ from aces_amf_utils.cli.edit import add_cdl, compute_hashes
 from aces_amf_utils.cli.diff_cmd import diff
 from aces_amf_utils.cli.transforms import transforms
 from aces_amf_utils.cli.templates import template
+from aces_amf_utils.cli.resolve import resolve_urns
 
 
 def _load_registry(dotted_path: str):
@@ -57,3 +58,4 @@ main.add_command(compute_hashes)
 main.add_command(diff)
 main.add_command(transforms)
 main.add_command(template)
+main.add_command(resolve_urns)
