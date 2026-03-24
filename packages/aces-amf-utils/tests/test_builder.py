@@ -52,7 +52,7 @@ class TestAMFBuilder:
         assert it.applied is False
 
     def test_output_transform(self):
-        tid = "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
+        tid = "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3"
         amf = AMFBuilder().with_output_transform(OutputTransformType(transform_id=tid, applied=True)).build()
         ot = amf.pipeline.output_transform
         assert ot is not None
@@ -91,7 +91,7 @@ class TestAMFBuilder:
             ))
             .with_look_transform(lt)
             .with_output_transform(OutputTransformType(
-                transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+                transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
                 applied=False,
             ))
             .build()

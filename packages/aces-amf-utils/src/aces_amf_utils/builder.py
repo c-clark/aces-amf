@@ -14,7 +14,7 @@ Usage:
             applied=False))
         .with_look_transform(amf_v2.LookTransformType(file="grade.clf", applied=True))
         .with_output_transform(amf_v2.OutputTransformType(
-            transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+            transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
             applied=False))
         .build())
 """
