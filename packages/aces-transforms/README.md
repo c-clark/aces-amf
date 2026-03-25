@@ -52,15 +52,15 @@ registry.is_valid_transform_id("urn:ampas:aces:transformId:v1.5:IDT.ARRI...")
 
 ## Version migration
 
-Resolve legacy transform IDs to their current canonical form:
+Resolve legacy transform IDs to their canonical equivalent:
 
 ```python
-# Old v1.x ID -> current v2.0 ID
-registry.get_current_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
+# Old v1.x ID -> canonical v2.0 equivalent
+registry.get_equivalent_id("ACEScsc.ACES_to_ACEScc.a1.0.3")
 # -> "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
 
-# What were the previous names for this transform?
-registry.get_previous_ids(
+# What are the equivalent IDs for this transform?
+registry.get_equivalent_ids(
     "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScc.a2.v1"
 )
 # -> ["urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScc.a1.0.3", ...]
@@ -78,8 +78,8 @@ registry.get_previous_ids(
 | `get_transform_categories(*, version=None)` | Get sorted list of transform types (e.g., CSC, Output, IDT) |
 | `are_transforms_inverses(id1, id2, *, version=None)` | Check if two transforms are declared inverses |
 | `list_versions()` | List all available ACES version keys |
-| `get_current_id(id)` | Resolve a legacy ID to its current canonical form |
-| `get_previous_ids(id)` | Get previous equivalent IDs for a transform |
+| `get_equivalent_id(id)` | Resolve a legacy ID to its canonical equivalent |
+| `get_equivalent_ids(id)` | Get all equivalent IDs for a transform |
 | `transform_count` | Total unique transforms across all versions |
 | `schema_version` | Schema version of the bundled data |
 
