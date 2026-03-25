@@ -52,6 +52,9 @@ class ValidationType(Enum):
     # Transform IDs (format only, no registry)
     INVALID_TRANSFORM_ID = auto()
 
+    # Transform ID version mismatch (URN version != AMF system version)
+    VERSION_MISMATCH_TRANSFORM_ID = auto()
+
     # Transform Application Order
     INVALID_APPLIED_ORDER = auto()
 

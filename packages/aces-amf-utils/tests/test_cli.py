@@ -236,3 +236,56 @@ class TestTemplateCommand:
         assert "show" in result.output
         assert "search" in result.output
         assert "validate" in result.output
+
+
+class TestResolveUrnsCommand:
+    """Tests for the resolve-urns CLI command."""
+
+    @pytest.fixture
+    def test_data_path(self):
+        return Path(__file__).parent / "../../aces-amf-lib/tests/data"
+
+    def test_resolve_urns_auto(self, runner, test_data_path, tmp_path):
+        """--auto resolves all v1.5 CSC URNs to v2.0 equivalents."""
+        src = test_data_path / "mixed_urns_with_equivalent_csc.amf"
+        out = tmp_path / "resolved.amf"
+        result = runner.invoke(main, ["resolve-urns", str(src), "--auto", "--output", str(out)])
+        assert result.exit_code == 0
+        assert "Resolved 2 URN(s)" in result.output
+        # Verify the output file has v2.0 URNs
+        amf = load_amf(out, validate=False)
+        for lt in amf.pipeline.look_transforms:
+            if lt.cdl_working_space:
+                ws = lt.cdl_working_space
+                if ws.to_cdl_working_space:
+                    assert "v2.0" in ws.to_cdl_working_space.transform_id
+                if ws.from_cdl_working_space:
+                    assert "v2.0" in ws.from_cdl_working_space.transform_id
+
+    def test_resolve_urns_explicit(self, runner, test_data_path, tmp_path):
+        """--urn flag applies specific replacement."""
+        src = test_data_path / "mixed_urns_with_equivalent_csc.amf"
+        out = tmp_path / "resolved.amf"
+        old_urn = "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3"
+        new_urn = "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1"
+        result = runner.invoke(main, [
+            "resolve-urns", str(src),
+            "--urn", f"{old_urn}={new_urn}",
+            "--output", str(out),
+        ])
+        assert result.exit_code == 0
+        assert "Resolved 1 URN(s)" in result.output
+
+    def test_resolve_urns_unresolvable(self, runner, test_data_path, tmp_path):
+        """--auto on file with no-equivalent URN reports it."""
+        src = test_data_path / "mixed_urns_no_equivalent_logc.amf"
+        out = tmp_path / "resolved.amf"
+        result = runner.invoke(main, ["resolve-urns", str(src), "--auto", "--output", str(out)])
+        assert result.exit_code == 0
+        assert "1 unresolved" in result.output
+        assert "LogC_EI800_AWG" in result.output
+
+    def test_resolve_urns_help(self, runner):
+        result = runner.invoke(main, ["resolve-urns", "--help"])
+        assert result.exit_code == 0
+        assert "resolve-urns" in result.output.lower() or "Resolve" in result.output

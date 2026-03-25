@@ -195,15 +195,14 @@ class ACESTransformRegistry:
 
     # -- Version equivalence methods --
 
-    def get_current_id(self, transform_id: str) -> str | None:
-        """Resolve a transform ID to its latest canonical ID.
+    def get_equivalent_id(self, transform_id: str) -> str | None:
+        """Resolve a transform ID to its canonical equivalent.
 
-        If the ID is listed as a previous equivalent of a newer transform,
-        returns the newer canonical ID. If the ID is already the latest
-        canonical form, returns it as-is. Returns None if not found.
+        If the ID is a legacy form of a newer transform, returns the
+        canonical ID. If the ID is already canonical, returns it as-is.
+        Returns None if not found in the registry.
         """
         self._ensure_loaded()
-        # Prefer previous_id_map — resolves old IDs to their newer canonical form
         canonical = self._previous_id_map.get(transform_id)
         if canonical is not None:
             return canonical
@@ -211,10 +210,10 @@ class ACESTransformRegistry:
             return transform_id
         return None
 
-    def get_previous_ids(self, transform_id: str) -> list[str]:
-        """Get the list of previous equivalent IDs for a transform.
+    def get_equivalent_ids(self, transform_id: str) -> list[str]:
+        """Get all equivalent IDs for a transform (legacy and current forms).
 
-        Returns an empty list if the transform is not found or has no previous IDs.
+        Returns an empty list if the transform is not found or has no equivalents.
         """
         info = self.get_transform_info(transform_id)
         if info is None:

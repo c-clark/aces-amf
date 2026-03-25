@@ -734,3 +734,45 @@ class TestMultipleWorkingLocations:
         wl_msgs = [m for m in msgs if m.validation_type == ValidationType.MULTIPLE_WORKING_LOCATIONS]
         assert len(wl_msgs) == 1
         assert "Archived pipeline #1" in wl_msgs[0].message
+
+
+class TestVersionMismatchValidation:
+    """Tests for URN version mismatch detection in TransformRegistryValidator."""
+
+    def test_version_mismatch_with_equivalents_csc(self, test_data_path, transform_registry):
+        """v1.5 CSC URNs in v2.0 AMF → WARNINGs with equivalent suggestions."""
+        path = test_data_path / "mixed_urns_with_equivalent_csc.amf"
+        msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
+        mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
+        assert len(mismatch_msgs) == 2  # toCdlWorkingSpace + fromCdlWorkingSpace
+        for m in mismatch_msgs:
+            assert m.level == ValidationLevel.WARNING
+            assert "Equivalent available" in m.message
+            assert "v1.5" in m.message
+
+    def test_version_mismatch_rgc_all_resolvable(self, test_data_path, transform_registry):
+        """v1.5 RGC + CSC URNs in v2.0 AMF → all WARNINGs (all have equivalents)."""
+        path = test_data_path / "mixed_urns_no_equivalent_rgc.amf"
+        msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
+        mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
+        assert len(mismatch_msgs) == 3  # RGC + 2 CSCs
+        for m in mismatch_msgs:
+            assert m.level == ValidationLevel.WARNING
+            assert "Equivalent available" in m.message
+
+    def test_version_mismatch_no_equivalent_error(self, test_data_path, transform_registry):
+        """v1.5 LogC URN with no v2.0 equivalent → ERROR."""
+        path = test_data_path / "mixed_urns_no_equivalent_logc.amf"
+        msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
+        mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
+        errors = [m for m in mismatch_msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 1
+        assert "no equivalent transform exists" in errors[0].message
+        assert "LogC_EI800_AWG" in errors[0].message
+
+    def test_clean_v2_amf_no_mismatch(self, aces_amf_examples_path, transform_registry):
+        """A pure v2.0 AMF should produce no version mismatch messages."""
+        path = aces_amf_examples_path / "example1.amf"
+        msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
+        mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
+        assert len(mismatch_msgs) == 0
