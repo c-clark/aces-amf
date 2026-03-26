@@ -1,0 +1,79 @@
+# Patch: v2_transform_type_validators
+#
+# What: Adds transform type placement validators to v2 transform type classes.
+#       Wraps __init__ on InputTransformType, OutputTransformType,
+#       LookTransformType, and WorkingSpaceTransformType to reject misplaced
+#       transform ID URN prefixes at construction time.
+#
+# Why: The v2 XSD pattern facets restrict transform ID prefixes per container
+#      (e.g., IDT/ACEScsc/Input/CSC for Input, RRTODT/Output for Output,
+#      LMT/Look for Look, ACEScsc/CSC for WorkingSpace), but Pydantic doesn't
+#      enforce these at construction time. This patch adds that enforcement
+#      using V2_* prefix constants (accepting both v1.5 and v2.0 URNs).
+#
+# Note: Sub-transform types (RRT, ODT, etc.) are intentionally NOT validated.
+#       Real-world v1 files sometimes place RRTODT in RRT slots, and the
+#       v1->v2 upgrade path needs to load these without error.
+#
+# Depends on: v2_compound_fields.patch (must be applied first)
+#
+# If this patch fails: regenerate with ./generate_bindings.sh --gen-patches
+
+--- aces_metadata_file.py
++++ aces_metadata_file.py
+@@ -795,3 +795,55 @@
+ PipelineType.look_transforms = property(_pipeline_get_look_transforms)
+ 
+ WorkingLocationType = EmptyType
++
++
++# --- Post-generation: transform type placement validators ---
++# Enforces that transform_id URN prefixes match their container type.
++# Uses TransformURN.parse() from aces_common for centralized URN parsing.
++# Prefixes are from the v2 XSD (accepts both v1.5 and v2.0 URNs).
++
++from aces_common.types import TransformURN as _TransformURN
++from aces_common.constants import (
++    V2_INPUT_TRANSFORM_PREFIXES as _INPUT_PFX,
++    V2_OUTPUT_TRANSFORM_PREFIXES as _OUTPUT_PFX,
++    V2_LOOK_TRANSFORM_PREFIXES as _LOOK_PFX,
++    V2_CSC_TRANSFORM_PREFIXES as _CSC_PFX,
++)
++
++
++def _check_transform_type_prefix(
++    transform_id: str | None, allowed: frozenset[str], label: str
++) -> None:
++    """Validate that a transform_id URN prefix is allowed for the given container."""
++    if transform_id is None:
++        return
++    parsed = _TransformURN.parse(transform_id)
++    if parsed and parsed.transform_type not in allowed:
++        raise ValueError(
++            f"Transform ID '{transform_id}' has type '{parsed.transform_type}' "
++            f"which is not valid for {label}. "
++            f"Allowed: {sorted(allowed)}"
++        )
++
++
++def _wrap_init_with_type_check(cls, allowed: frozenset[str], label: str) -> None:
++    """Wrap a Pydantic model's __init__ to validate transform_id placement."""
++    original_init = cls.__init__
++
++    def __init__(self, *args, **kwargs):
++        original_init(self, *args, **kwargs)
++        _check_transform_type_prefix(self.transform_id, allowed, label)
++
++    cls.__init__ = __init__
++
++
++# Top-level transform containers — these are what users directly construct.
++_wrap_init_with_type_check(InputTransformType, _INPUT_PFX, "InputTransform")
++_wrap_init_with_type_check(OutputTransformType, _OUTPUT_PFX, "OutputTransform")
++_wrap_init_with_type_check(LookTransformType, _LOOK_PFX, "LookTransform")
++_wrap_init_with_type_check(WorkingSpaceTransformType, _CSC_PFX, "WorkingSpaceTransform")
++
++# Sub-transform types (RRT, ODT, InverseRRT, InverseODT, InverseOutput) are
++# intentionally NOT validated here. Real-world v1 AMF files often place RRTODT
++# in ReferenceRenderingTransform slots, violating the strict XSD pattern.
++# The v1->v2 upgrade path needs to load these files without error.

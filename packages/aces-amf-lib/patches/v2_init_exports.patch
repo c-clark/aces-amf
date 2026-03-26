@@ -1,15 +1,3 @@
-# Patch: v2_init_exports
-#
-# What: Adds WorkingLocationType to the __init__.py imports and __all__ list.
-#
-# Why: WorkingLocationType is added as an alias for EmptyType by the
-#      v2_compound_fields patch. Consumers should be able to import it from
-#      aces_amf_lib.amf_v2 without knowing the alias relationship.
-#      xsdata does not generate this alias, so it must be exported manually.
-#
-# If this patch fails: the __init__.py export order has changed. Regenerate:
-#      ./generate_bindings.sh --gen-patches
-
 --- __init__.py
 +++ __init__.py
 @@ -11,6 +11,7 @@

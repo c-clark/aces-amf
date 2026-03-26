@@ -2,12 +2,21 @@
 
 These patch files are applied to the xsdata-generated Python bindings immediately after generation. Each patch is a standard unified diff and is applied with `patch -p0 --fuzz=2`.
 
+Patches are applied in alphabetical order per version prefix (`v1_*`, `v2_*`).
+
 ## Patches
 
 ### `v1_system_version_optional.patch`
 **Target:** `amf_v1/aces_metadata_file.py`
 
 Makes `PipelineInfoType.system_version` optional (`None | VersionType`). Legacy v1 AMF files often omit `<systemVersion>`, which causes parse failures when the field is required. The v1→v2 upgrade function in `amf_helpers.py` injects a default value before conversion.
+
+### `v1_transform_type_validators.patch`
+**Target:** `amf_v1/aces_metadata_file.py`
+
+Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V1_*` prefix constants (v1.5 URNs only: `IDT` for Input, `RRTODT` for Output, `LMT` for Look, `ACEScsc` for WorkingSpace).
+
+Sub-transform types (RRT, ODT, etc.) are intentionally not validated because real-world v1 AMF files sometimes violate strict XSD patterns.
 
 ### `v2_compound_fields.patch`
 **Target:** `amf_v2/aces_metadata_file.py`
@@ -26,6 +35,14 @@ Also appends the `look_transforms` convenience property and `WorkingLocationType
 **Target:** `amf_v2/__init__.py`
 
 Adds `WorkingLocationType` to the module's imports and `__all__` so that consumers can import it from `aces_amf_lib.amf_v2` directly.
+
+### `v2_transform_type_validators.patch`
+**Target:** `amf_v2/aces_metadata_file.py`
+**Depends on:** `v2_compound_fields.patch` (must be applied first for correct line offsets)
+
+Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V2_*` prefix constants (accepts both v1.5 and v2.0 URNs: `IDT/ACEScsc/Input/CSC` for Input, `RRTODT/Output` for Output, `LMT/Look` for Look, `ACEScsc/CSC` for WorkingSpace).
+
+Sub-transform types (RRT, ODT, etc.) are intentionally not validated because real-world v1 AMF files sometimes violate strict XSD patterns, and the v1→v2 upgrade path needs to load them.
 
 ---
 
