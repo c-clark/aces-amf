@@ -1,15 +1,12 @@
 # Patch: v1_system_version_optional
 #
-# What: Makes PipelineInfoType.system_version optional (None | VersionType)
+# What: Makes PipelineInfoType.system_version optional (None | VersionType).
 #
-# Why: Legacy v1 AMF files often omit the <systemVersion> element. xsdata
-#      generates this field as required, which causes parse failures on
-#      real-world v1 files. The v1->v2 upgrade function in amf_helpers.py
-#      injects a default systemVersion before conversion, so None is safe.
+# Why: Legacy v1 AMF files often omit <systemVersion>, which causes parse
+#      failures when the field is required. The v1->v2 upgrade function in
+#      amf_helpers.py injects a default value before conversion.
 #
-# If this patch fails: the xsdata-generated PipelineInfoType.system_version
-#      field definition has changed. Regenerate this patch by running:
-#      ./generate_bindings.sh --gen-patches
+# If this patch fails: regenerate with ./generate_bindings.sh --gen-patches
 
 --- aces_metadata_file.py
 +++ aces_metadata_file.py

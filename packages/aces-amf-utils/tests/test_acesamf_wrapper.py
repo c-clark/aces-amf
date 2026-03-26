@@ -137,7 +137,7 @@ class TestACESAMFFluentMutators:
         assert amf.input_transform.applied is False
 
     def test_with_output_transform(self):
-        tid = "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
+        tid = "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3"
         amf = ACESAMF.new().with_output_transform(OutputTransformType(transform_id=tid, applied=True))
         assert amf.output_transform is not None
         assert amf.output_transform.transform_id == tid

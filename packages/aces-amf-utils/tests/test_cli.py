@@ -30,7 +30,7 @@ def sample_amf(tmp_path):
             applied=False,
         ))
         .with_output_transform(OutputTransformType(
-            transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+            transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
             applied=False,
         ))
         .build()
@@ -98,7 +98,7 @@ class TestCreateCommand:
         result = runner.invoke(main, [
             "create", str(out),
             "--idt", "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
-            "--odt", "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+            "--odt", "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
         ])
         assert result.exit_code == 0
         assert out.exists()
