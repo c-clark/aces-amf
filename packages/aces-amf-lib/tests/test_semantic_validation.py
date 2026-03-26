@@ -776,3 +776,63 @@ class TestVersionMismatchValidation:
         msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
         mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
         assert len(mismatch_msgs) == 0
+
+    def test_unknown_ocio_urn_is_error(self, transform_registry):
+        """An OCIO transform URN not in the ACES registry must produce an ERROR."""
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(
+            transform_id="urn:aswf:ocio:transformId:1.0:ARRI:Input:ARRI_LogC3_EI800_to_ACES2065-1:1.0",
+            applied=False,
+        )
+        context = ValidationContext(transform_registry=transform_registry)
+        from aces_amf_lib.validation.registry import get_default_registry
+        registry = get_default_registry()
+        msgs = registry.validate(amf, context)
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) >= 1
+        assert any("malformed transform ID" in e.message for e in errors)
+
+
+class TestTransformIDFormatValidation:
+    """Tests for URN format validation in TransformRegistryValidator."""
+
+    def _validate_with_idt(self, transform_id, aces_version, transform_registry):
+        """Helper: create a minimal AMF with given IDT and validate."""
+        amf = minimal_amf(aces_version=aces_version)
+        amf.pipeline.input_transform = amf_v2.InputTransformType(
+            transform_id=transform_id, applied=False,
+        )
+        context = ValidationContext(transform_registry=transform_registry)
+        from aces_amf_lib.validation.registry import get_default_registry
+        registry = get_default_registry()
+        return registry.validate(amf, context)
+
+    def test_malformed_id_is_error(self, transform_registry):
+        """A completely invalid string produces MALFORMED_TRANSFORM_ID ERROR."""
+        msgs = self._validate_with_idt("not-a-valid-id", (1, 3, 0), transform_registry)
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 1
+        assert errors[0].validation_type == ValidationType.MALFORMED_TRANSFORM_ID
+
+    def test_short_form_in_v1_amf_ok(self, transform_registry):
+        """A valid short-form ID in a v1.x AMF is accepted (parsed + in registry)."""
+        msgs = self._validate_with_idt("RRT.a1.0.3", (1, 0, 0), transform_registry)
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_short_form_in_v2_amf_is_error(self, transform_registry):
+        """A short-form ID in a v2.x AMF produces MALFORMED_TRANSFORM_ID ERROR."""
+        msgs = self._validate_with_idt("RRT.a1.0.3", (2, 0, 0), transform_registry)
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) >= 1
+        assert any(m.validation_type == ValidationType.MALFORMED_TRANSFORM_ID for m in errors)
+        assert any("requires full URN form" in m.message for m in errors)
+
+    def test_full_urn_in_v2_amf_ok(self, transform_registry):
+        """A valid full URN in a v2.x AMF passes format validation."""
+        msgs = self._validate_with_idt(
+            "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
+            (2, 0, 0), transform_registry,
+        )
+        malformed = [m for m in msgs if m.validation_type == ValidationType.MALFORMED_TRANSFORM_ID]
+        assert len(malformed) == 0

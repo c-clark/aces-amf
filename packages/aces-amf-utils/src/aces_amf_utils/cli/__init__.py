@@ -7,7 +7,6 @@ import click
 
 from aces_amf_utils.cli.validate import validate
 from aces_amf_utils.cli.info import info
-from aces_amf_utils.cli.convert import convert
 from aces_amf_utils.cli.create import create
 from aces_amf_utils.cli.edit import add_cdl, compute_hashes
 from aces_amf_utils.cli.diff_cmd import diff
@@ -51,7 +50,6 @@ def main(ctx, registry):
 
 main.add_command(validate)
 main.add_command(info)
-main.add_command(convert)
 main.add_command(create)
 main.add_command(add_cdl)
 main.add_command(compute_hashes)

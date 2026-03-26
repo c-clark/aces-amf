@@ -2,21 +2,9 @@
 
 These patch files are applied to the xsdata-generated Python bindings immediately after generation. Each patch is a standard unified diff and is applied with `patch -p0 --fuzz=2`.
 
-Patches are applied in alphabetical order per version prefix (`v1_*`, `v2_*`).
+Patches are applied in alphabetical order with `v2_*` prefix.
 
 ## Patches
-
-### `v1_system_version_optional.patch`
-**Target:** `amf_v1/aces_metadata_file.py`
-
-Makes `PipelineInfoType.system_version` optional (`None | VersionType`). Legacy v1 AMF files often omit `<systemVersion>`, which causes parse failures when the field is required. The v1→v2 upgrade function in `amf_helpers.py` injects a default value before conversion.
-
-### `v1_transform_type_validators.patch`
-**Target:** `amf_v1/aces_metadata_file.py`
-
-Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V1_*` prefix constants (v1.5 URNs only: `IDT` for Input, `RRTODT` for Output, `LMT` for Look, `ACEScsc` for WorkingSpace).
-
-Sub-transform types (RRT, ODT, etc.) are intentionally not validated because real-world v1 AMF files sometimes violate strict XSD patterns.
 
 ### `v2_compound_fields.patch`
 **Target:** `amf_v2/aces_metadata_file.py`
@@ -40,9 +28,7 @@ Adds `WorkingLocationType` to the module's imports and `__all__` so that consume
 **Target:** `amf_v2/aces_metadata_file.py`
 **Depends on:** `v2_compound_fields.patch` (must be applied first for correct line offsets)
 
-Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V2_*` prefix constants (accepts both v1.5 and v2.0 URNs: `IDT/ACEScsc/Input/CSC` for Input, `RRTODT/Output` for Output, `LMT/Look` for Look, `ACEScsc/CSC` for WorkingSpace).
-
-Sub-transform types (RRT, ODT, etc.) are intentionally not validated because real-world v1 AMF files sometimes violate strict XSD patterns, and the v1→v2 upgrade path needs to load them.
+Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V2_*` prefix constants (accepts both v1.5 and v2.0 URNs).
 
 ---
 
@@ -51,12 +37,11 @@ Sub-transform types (RRT, ODT, etc.) are intentionally not validated because rea
 If xsdata, the XSD schemas, or the manually-applied changes evolve, regenerate the patches:
 
 ```bash
-# 1. Make your edits to the generated files under src/aces_amf_lib/amf_v1/ or amf_v2/
+# 1. Make your edits to the generated files under src/aces_amf_lib/amf_v2/
 # 2. Regenerate patch files from the current committed state
 ./generate_bindings.sh --gen-patches
-# 3. Restore the header comments that document what/why (they are not preserved by --gen-patches)
-# 4. Verify: wipe generated files and regenerate from scratch
-rm -rf packages/aces-amf-lib/src/aces_amf_lib/amf_v{1,2}
+# 3. Verify: wipe generated files and regenerate from scratch
+rm -rf packages/aces-amf-lib/src/aces_amf_lib/amf_v2
 ./generate_bindings.sh
 uv run pytest packages/ -q
 ```

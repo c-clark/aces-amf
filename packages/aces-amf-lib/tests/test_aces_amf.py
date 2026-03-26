@@ -156,35 +156,6 @@ def test_set_aces_version():
     assert (sv.major_version, sv.minor_version, sv.patch_version) == (2, 0, 0)
 
 
-# --- v1 loading and upgrade tests ---
-
-
-def test_load_amf_v1(test_data_path):
-    """Loading a v1 AMF auto-upgrades to v2 and generates missing UUIDs."""
-    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
-    assert isinstance(amf, AcesMetadataFile)
-    # UUIDs should be generated (not present in v1 fixture)
-    assert amf.amf_info.uuid is not None
-    assert amf.amf_info.uuid.startswith("urn:uuid:")
-    assert amf.pipeline.pipeline_info.uuid is not None
-    assert amf.pipeline.pipeline_info.uuid.startswith("urn:uuid:")
-
-
-def test_load_amf_v1_output_transform_applied(test_data_path):
-    """v1 outputTransform (no applied attr) gets applied=False after upgrade."""
-    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
-    assert amf.pipeline.output_transform is not None
-    assert amf.pipeline.output_transform.applied is False
-
-
-def test_load_amf_v1_file_field_preserved(test_data_path):
-    """file field stays as str (not converted to list) after v1→v2 upgrade."""
-    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
-    look = amf.pipeline.look_transforms[0]
-    assert look.file == "showLook.clf"
-    assert isinstance(look.file, str)
-
-
 # --- Auto-validation tests ---
 
 
@@ -237,12 +208,6 @@ def test_save_skip_validation(tmp_path):
     out = tmp_path / "invalid.amf"
     save_amf(amf, out, validate=False)
     assert out.exists()
-
-
-def test_v1_upgrade_validates(test_data_path, transform_registry):
-    """v1→v2 upgrade runs semantic validation on the upgraded model."""
-    amf = load_amf(test_data_path / "v1_example.amf", transform_registry=transform_registry)
-    assert isinstance(amf, AcesMetadataFile)
 
 
 def test_roundtrip_file_paths(aces_amf_examples_path):
@@ -385,46 +350,6 @@ def test_nested_output_transform_file_uri():
     assert "path%20with%20spaces/odt.clf" in xml_out
 
 
-_V1_AMF_WITH_ENCODED_PATH = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v1.0"
-  xmlns:cdl="urn:ASC:CDL:v1.01" version="1.0">
-  <aces:amfInfo>
-    <aces:dateTime>
-      <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
-      <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
-    </aces:dateTime>
-  </aces:amfInfo>
-  <aces:pipeline>
-    <aces:pipelineInfo>
-      <aces:dateTime>
-        <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
-        <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
-      </aces:dateTime>
-      <aces:systemVersion>
-        <aces:majorVersion>1</aces:majorVersion>
-        <aces:minorVersion>3</aces:minorVersion>
-        <aces:patchVersion>0</aces:patchVersion>
-      </aces:systemVersion>
-    </aces:pipelineInfo>
-    <aces:lookTransform applied="true">
-      <aces:file>my%20show/look%20grade.clf</aces:file>
-    </aces:lookTransform>
-    <aces:outputTransform>
-      <aces:referenceRenderingTransform>
-        <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7.2nits_ST2084.a1.1.0</aces:transformId>
-      </aces:referenceRenderingTransform>
-    </aces:outputTransform>
-  </aces:pipeline>
-</aces:acesMetadataFile>"""
-
-
-def test_v1_with_encoded_file_paths():
-    """V1→V2 upgrade decodes percent-encoded file paths."""
-    amf = load_amf_data(_V1_AMF_WITH_ENCODED_PATH.encode(), validate=False)
-    assert amf.pipeline.look_transforms[0].file == "my show/look grade.clf"
-
-
 def test_render_amf_encodes_file_paths():
     """render_amf() encodes file paths just like dump_amf()."""
     amf = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
@@ -482,44 +407,3 @@ def test_look_transforms_property_filters(test_data_path):
     assert amf.pipeline.look_transforms[1].description == "Post-working-location look"
 
 
-def test_v1_upgrade_look_transforms_preserved(test_data_path):
-    """v1→v2 upgrade preserves lookTransform in the compound field."""
-    amf = load_amf(test_data_path / "v1_example.amf", validate=False)
-    # v1 lookTransform should end up in working_location_or_look_transform
-    assert len(amf.pipeline.look_transforms) == 1
-    assert amf.pipeline.look_transforms[0].file == "showLook.clf"
-
-
-_V1_AMF_NO_SYSTEM_VERSION = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v1.0"
-  xmlns:cdl="urn:ASC:CDL:v1.01" version="1.0">
-  <aces:amfInfo>
-    <aces:dateTime>
-      <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
-      <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
-    </aces:dateTime>
-  </aces:amfInfo>
-  <aces:pipeline>
-    <aces:pipelineInfo>
-      <aces:dateTime>
-        <aces:creationDateTime>2024-01-01T00:00:00Z</aces:creationDateTime>
-        <aces:modificationDateTime>2024-01-01T00:00:00Z</aces:modificationDateTime>
-      </aces:dateTime>
-    </aces:pipelineInfo>
-    <aces:outputTransform>
-      <aces:referenceRenderingTransform>
-        <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7.2nits_ST2084.a1.1.0</aces:transformId>
-      </aces:referenceRenderingTransform>
-    </aces:outputTransform>
-  </aces:pipeline>
-</aces:acesMetadataFile>"""
-
-
-def test_v1_missing_system_version():
-    """Legacy v1 files without systemVersion get a default during upgrade."""
-    amf = load_amf_data(_V1_AMF_NO_SYSTEM_VERSION.encode(), validate=False)
-    assert isinstance(amf, AcesMetadataFile)
-    sv = amf.pipeline.pipeline_info.system_version
-    assert sv is not None
-    assert (int(sv.major_version), int(sv.minor_version), int(sv.patch_version)) == (1, 3, 0)
