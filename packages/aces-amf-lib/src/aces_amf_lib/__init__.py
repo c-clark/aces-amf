@@ -5,7 +5,7 @@ aces-amf-lib — Lightweight reference library for ACES Metadata Files (AMF).
 Example usage:
     from aces_amf_lib import load_amf, save_amf
 
-    # Read an AMF file (automatically upgrades v1 to v2)
+    # Read an AMF file
     amf = load_amf("example.amf")
 
     # Access metadata
@@ -42,7 +42,6 @@ from .validation import (
 from .protocols import AMFValidator, TransformRegistry
 from .validation.core_validators.file_hashes import compute_file_hash, DEFAULT_HASH_ALGORITHM
 from . import amf_helpers
-from . import amf_v1
 from . import amf_v2
 
 __version__ = "0.1.0"
@@ -73,6 +72,5 @@ __all__ = [
     "compute_file_hash",
     "DEFAULT_HASH_ALGORITHM",
     "amf_helpers",
-    "amf_v1",
     "amf_v2",
 ]
