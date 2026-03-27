@@ -811,6 +811,14 @@ class TestTransformIDFormatValidation:
         assert len(errors) == 1
         assert errors[0].validation_type == ValidationType.MALFORMED_TRANSFORM_ID
 
+    def test_short_form_in_v2_amf_is_error(self, transform_registry):
+        """A short-form ID in a v2.x AMF produces MALFORMED_TRANSFORM_ID ERROR."""
+        msgs = self._validate_with_idt("RRT.a1.0.3", (2, 0, 0), transform_registry)
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) >= 1
+        assert any(m.validation_type == ValidationType.MALFORMED_TRANSFORM_ID for m in errors)
+        assert any("malformed transform ID" in m.message for m in errors)
+
     def test_full_urn_in_v2_amf_ok(self, transform_registry):
         """A valid full URN in a v2.x AMF passes format validation."""
         msgs = self._validate_with_idt(
