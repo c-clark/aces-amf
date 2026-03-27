@@ -65,6 +65,12 @@ class ValidationType(Enum):
     # File Paths
     UNSAFE_FILE_PATH = auto()
     NON_PORTABLE_PATH = auto()
+    NON_CLF_TRANSFORM_FILE = auto()
+
+    # File References (deep validation — requires base_path)
+    MISSING_REFERENCED_FILE = auto()
+    CCC_MISSING_ID = auto()
+    CCC_PARSE_ERROR = auto()
 
     # File Hashes
     HASH_MISMATCH = auto()

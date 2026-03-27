@@ -10,6 +10,7 @@ from .applied_order import AppliedOrderValidator
 from .cdl import CDLValidator
 from .file_hashes import FileHashValidator
 from .file_paths import FilePathValidator
+from .file_references import FileReferenceValidator
 from .metadata import MetadataValidator
 from .temporal import TemporalValidator
 from .transform_ids import TransformIdFormatValidator
@@ -27,6 +28,7 @@ def _register_core_validators():
         MetadataValidator,
         AppliedOrderValidator,
         FilePathValidator,
+        FileReferenceValidator,
         WorkingSpaceValidator,
         TransformIdFormatValidator,
         FileHashValidator,

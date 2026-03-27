@@ -58,8 +58,25 @@ def _validate_pipeline_file_paths(pipeline: PipelineType, prefix: str, amf_path)
     return messages
 
 
+# TODO Clarify this in the spec as to what is actuall supported and whats not, we should handle this at schema level
+CLF_EXTENSIONS = {".clf"}
+NON_CLF_LUT_EXTENSIONS = {".cube", ".3dl", ".spi3d", ".lut", ".csp", ".spi1d"}
+
+
 def _check_path_security(file_ref: str, label: str, amf_path) -> list[ValidationMessage]:
     messages = []
+
+    # Check for non-CLF LUT formats
+    ext = file_ref.rsplit(".", 1)[-1].lower() if "." in file_ref else ""
+    if f".{ext}" in NON_CLF_LUT_EXTENSIONS:
+        messages.append(
+            ValidationMessage(
+                level=ValidationLevel.WARNING,
+                validation_type=ValidationType.NON_CLF_TRANSFORM_FILE,
+                message=f"{label} uses non-CLF format (.{ext}): {file_ref}. CLF (.clf) is the preferred format for ACES transform files.",
+                file_path=amf_path,
+            )
+        )
 
     if ".." in file_ref:
         messages.append(
