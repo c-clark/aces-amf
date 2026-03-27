@@ -14,7 +14,6 @@ from .types import ValidationLevel, ValidationMessage, ValidationType
 # Location of acesMetadataFile.xsd for each AMF version
 _data_dir = importlib.resources.files("aces_amf_lib") / "data"
 AMF_XSD_PATH_MAP = {
-    "urn:ampas:aces:amf:v1.0": _data_dir / "amf-schema" / "v1",
     "urn:ampas:aces:amf:v2.0": _data_dir / "amf-schema" / "v2",
 }
 

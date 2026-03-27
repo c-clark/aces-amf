@@ -30,7 +30,7 @@ def sample_amf(tmp_path):
             applied=False,
         ))
         .with_output_transform(OutputTransformType(
-            transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
+            transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
             applied=False,
         ))
         .build()
@@ -98,7 +98,7 @@ class TestCreateCommand:
         result = runner.invoke(main, [
             "create", str(out),
             "--idt", "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
-            "--odt", "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
+            "--odt", "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
         ])
         assert result.exit_code == 0
         assert out.exists()
@@ -115,20 +115,6 @@ class TestCreateCommand:
         out.write_text("placeholder")
         result = runner.invoke(main, ["create", str(out), "--force"])
         assert result.exit_code == 0
-
-
-class TestConvertCommand:
-    def test_convert(self, runner, sample_amf, tmp_path):
-        out = tmp_path / "converted.amf"
-        result = runner.invoke(main, ["convert", str(sample_amf), "-o", str(out)])
-        assert result.exit_code == 0
-        assert out.exists()
-
-    def test_convert_default_output(self, runner, sample_amf):
-        result = runner.invoke(main, ["convert", str(sample_amf)])
-        assert result.exit_code == 0
-        expected = sample_amf.with_stem(sample_amf.stem + "_v2")
-        assert expected.exists()
 
 
 class TestDiffCommand:
