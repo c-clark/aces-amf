@@ -193,7 +193,8 @@ def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None, 
     # Semantic validation — direct registry call, no circular import
     schema_errors = [m for m in messages if m.level == ValidationLevel.ERROR]
     if not schema_errors:
-        context = ValidationContext(amf_path=amf_path, transform_registry=transform_registry)
+        base_path = amf_path.parent if amf_path is not None else None
+        context = ValidationContext(amf_path=amf_path, base_path=base_path, transform_registry=transform_registry)
         registry = get_default_registry()
         messages.extend(registry.validate(amf, context))
 

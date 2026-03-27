@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cdl="urn:ASC:CDL:v1.01" version="2.0">
+    <aces:amfInfo>
+        <aces:description>INVALID: Missing Transform Descriptions</aces:description>
+        <aces:author>
+            <aces:name>Test Suite</aces:name>
+            <aces:emailAddress>test@example.com</aces:emailAddress>
+        </aces:author>
+        <aces:dateTime>
+            <aces:creationDateTime>2026-03-26T19:19:50Z</aces:creationDateTime>
+            <aces:modificationDateTime>2026-03-26T19:19:50Z</aces:modificationDateTime>
+        </aces:dateTime>
+        <aces:uuid>urn:uuid:10aaa581-e418-4587-9a6c-bce61a12e87b</aces:uuid>
+    </aces:amfInfo>
+    <aces:pipeline>
+        <aces:pipelineInfo>
+            <aces:description>Transforms without descriptions</aces:description>
+            <aces:dateTime>
+                <aces:creationDateTime>2026-03-26T19:19:50Z</aces:creationDateTime>
+                <aces:modificationDateTime>2026-03-26T19:19:50Z</aces:modificationDateTime>
+            </aces:dateTime>
+            <aces:uuid>urn:uuid:a280900a-03e5-4b20-9299-499c9cbfbe9b</aces:uuid>
+            <aces:systemVersion>
+                <aces:majorVersion>2</aces:majorVersion>
+                <aces:minorVersion>0</aces:minorVersion>
+                <aces:patchVersion>0</aces:patchVersion>
+            </aces:systemVersion>
+        </aces:pipelineInfo>
+        <aces:inputTransform applied="false">
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
+        </aces:inputTransform>
+        <aces:lookTransform applied="false">
+            <aces:cdlWorkingSpace>
+                <aces:toCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                </aces:toCdlWorkingSpace>
+                <aces:fromCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                </aces:fromCdlWorkingSpace>
+            </aces:cdlWorkingSpace>
+            <cdl:ASC_SOP>
+                <cdl:Slope>1.1 1.0 0.95</cdl:Slope>
+                <cdl:Offset>0.0 0.0 0.0</cdl:Offset>
+                <cdl:Power>1.0 1.0 1.0</cdl:Power>
+            </cdl:ASC_SOP>
+            <cdl:ASC_SAT>
+                <cdl:Saturation>1.05</cdl:Saturation>
+            </cdl:ASC_SAT>
+        </aces:lookTransform>
+        <aces:outputTransform applied="false">
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1</aces:transformId>
+        </aces:outputTransform>
+    </aces:pipeline>
+</aces:acesMetadataFile>
