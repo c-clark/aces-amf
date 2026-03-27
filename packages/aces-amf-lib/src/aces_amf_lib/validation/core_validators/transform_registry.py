@@ -3,7 +3,9 @@
 """
 Transform ID registry validation.
 
-Validates transform IDs against a caller-provided TransformRegistry.
+Validates transform IDs against a caller-provided TransformRegistry,
+scoped to the ACES system version declared by the AMF pipeline.
+
 The registry must be injected via ValidationContext.transform_registry.
 If no registry is provided, RegistryNotConfiguredError is raised.
 """
@@ -30,12 +32,14 @@ if TYPE_CHECKING:
 class TransformRegistryValidator:
     """Validates transform IDs against an injected TransformRegistry.
 
-    Detects version mismatches (e.g. v1.5 URN in v2.0 AMF) and reports
-    whether an equivalent transform exists in the target version.
+    For each transform ID in the AMF pipeline:
 
-    Requires context.transform_registry to be set. If it is None,
-    RegistryNotConfiguredError is raised — this is a configuration error,
-    not a validation failure.
+    a) Resolve the AMF system version to the correct registry version key
+    b) Validate the URN string is parseable
+    c) Check if the URN exists as a transformId in the version-scoped set
+    d) If not, check previousEquivalentTransformIds in that set
+    e) If found as previousEquivalent, recommend the canonical ID (WARNING)
+    f) If not found anywhere, ERROR
 
     To skip this validator, pass exclude=["transform_id_registry"] to validate_semantic().
     """
@@ -65,61 +69,67 @@ class TransformRegistryValidator:
     ) -> None:
         registry = context.transform_registry
 
-        # Extract ACES system version for version-scoped registry lookups
+        # (a) Resolve the AMF system version to a registry version string
         version_str = None
-        sys_major = None
         sv = getattr(getattr(pipeline, "pipeline_info", None), "system_version", None)
         if sv is not None:
             version_str = f"v{sv.major_version}.{sv.minor_version}"
-            sys_major = sv.major_version
 
         def _check_id(transform_id: str, label: str) -> None:
+            # Validation flow:
+            #
+            # (b) Parse URN → fails → ERROR: malformed
+            # (c) Exists as transformId in version set? → VALID
+            # (d) Exists as previousEquivalentTransformId? → no → ERROR: unknown
+            # (e) Found as previousEquivalent → WARNING: recommend canonical ID
+
+            # (b) Validate URN format
             parsed = TransformURN.parse(transform_id)
-
-            # Version mismatch detection
-            if parsed and sys_major is not None and parsed.spec_major_version != sys_major:
-                current_id = registry.get_equivalent_id(transform_id)
-                if current_id and current_id != transform_id:
-                    # Equivalent exists in target version → WARNING
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.WARNING,
-                            validation_type=ValidationType.VERSION_MISMATCH_TRANSFORM_ID,
-                            message=(
-                                f"{label} uses {transform_id} (ACES {parsed.spec_version}) "
-                                f"but AMF declares ACES {version_str}. "
-                                f"Equivalent available: {current_id}"
-                            ),
-                            file_path=context.amf_path,
-                        )
-                    )
-                else:
-                    # No equivalent → ERROR
-                    messages.append(
-                        ValidationMessage(
-                            level=ValidationLevel.ERROR,
-                            validation_type=ValidationType.VERSION_MISMATCH_TRANSFORM_ID,
-                            message=(
-                                f"{label} uses {transform_id} (ACES {parsed.spec_version}) "
-                                f"but AMF declares ACES {version_str} "
-                                f"and no equivalent transform exists"
-                            ),
-                            file_path=context.amf_path,
-                        )
-                    )
-                return
-
-            # Normal unknown-ID check (same version or unparseable URN)
-            if not registry.is_valid_transform_id(transform_id, version=version_str):
-                scope = f" for ACES {version_str}" if version_str else ""
+            if parsed is None:
                 messages.append(
                     ValidationMessage(
-                        level=ValidationLevel.WARNING,
-                        validation_type=ValidationType.INVALID_TRANSFORM_ID,
-                        message=f"{label} uses unknown transform ID{scope}: {transform_id}",
+                        level=ValidationLevel.ERROR,
+                        validation_type=ValidationType.MALFORMED_TRANSFORM_ID,
+                        message=f"{label} has malformed transform ID: {transform_id}",
                         file_path=context.amf_path,
                     )
                 )
+                return
+
+            # (c) Check if transform ID exists directly in the version-scoped set
+            info = registry.get_transform_info(transform_id, version=version_str)
+            if info is not None and info["transform_id"] == transform_id:
+                # Direct match — valid
+                return
+
+            # (d) If get_transform_info returned a result, it was found via
+            #     previousEquivalentTransformIds (the canonical entry that
+            #     lists this ID as a previous equivalent).
+            if info is not None:
+                # (e) Found as previousEquivalent — recommend the canonical ID
+                messages.append(
+                    ValidationMessage(
+                        level=ValidationLevel.WARNING,
+                        validation_type=ValidationType.VERSION_MISMATCH_TRANSFORM_ID,
+                        message=(
+                            f"{label} uses {transform_id} which is a previous equivalent of "
+                            f"{info['transform_id']}. Consider updating to the canonical ID."
+                        ),
+                        file_path=context.amf_path,
+                    )
+                )
+                return
+
+            # (f/g) Not found in version-scoped set at all — ERROR
+            scope = f" for ACES {version_str}" if version_str else ""
+            messages.append(
+                ValidationMessage(
+                    level=ValidationLevel.ERROR,
+                    validation_type=ValidationType.INVALID_TRANSFORM_ID,
+                    message=f"{label} uses unknown transform ID{scope}: {transform_id}",
+                    file_path=context.amf_path,
+                )
+            )
 
         # Input transform + nested sub-transforms
         if pipeline.input_transform:

@@ -740,34 +740,31 @@ class TestVersionMismatchValidation:
     """Tests for URN version mismatch detection in TransformRegistryValidator."""
 
     def test_version_mismatch_with_equivalents_csc(self, test_data_path, transform_registry):
-        """v1.5 CSC URNs in v2.0 AMF → WARNINGs with equivalent suggestions."""
+        """v1.5 CSC URNs in v2.0 AMF → WARNINGs recommending canonical IDs."""
         path = test_data_path / "mixed_urns_with_equivalent_csc.amf"
         msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
         mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
         assert len(mismatch_msgs) == 2  # toCdlWorkingSpace + fromCdlWorkingSpace
         for m in mismatch_msgs:
             assert m.level == ValidationLevel.WARNING
-            assert "Equivalent available" in m.message
-            assert "v1.5" in m.message
+            assert "previous equivalent" in m.message
 
     def test_version_mismatch_rgc_all_resolvable(self, test_data_path, transform_registry):
-        """v1.5 RGC + CSC URNs in v2.0 AMF → all WARNINGs (all have equivalents)."""
+        """v1.5 RGC + CSC URNs in v2.0 AMF → all WARNINGs (all found as previous equivalents)."""
         path = test_data_path / "mixed_urns_no_equivalent_rgc.amf"
         msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
         mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
         assert len(mismatch_msgs) == 3  # RGC + 2 CSCs
         for m in mismatch_msgs:
             assert m.level == ValidationLevel.WARNING
-            assert "Equivalent available" in m.message
 
     def test_version_mismatch_no_equivalent_error(self, test_data_path, transform_registry):
-        """v1.5 LogC URN with no v2.0 equivalent → ERROR."""
+        """v1.5 LogC URN with no v2.0 equivalent → ERROR (unknown for this version)."""
         path = test_data_path / "mixed_urns_no_equivalent_logc.amf"
         msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
-        mismatch_msgs = [m for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
-        errors = [m for m in mismatch_msgs if m.level == ValidationLevel.ERROR]
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
         assert len(errors) == 1
-        assert "no equivalent transform exists" in errors[0].message
+        assert "unknown transform ID" in errors[0].message
         assert "LogC_EI800_AWG" in errors[0].message
 
     def test_clean_v2_amf_no_mismatch(self, aces_amf_examples_path, transform_registry):
@@ -814,19 +811,13 @@ class TestTransformIDFormatValidation:
         assert len(errors) == 1
         assert errors[0].validation_type == ValidationType.MALFORMED_TRANSFORM_ID
 
-    def test_short_form_in_v1_amf_ok(self, transform_registry):
-        """A valid short-form ID in a v1.x AMF is accepted (parsed + in registry)."""
-        msgs = self._validate_with_idt("RRT.a1.0.3", (1, 0, 0), transform_registry)
-        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
-        assert len(errors) == 0
-
     def test_short_form_in_v2_amf_is_error(self, transform_registry):
         """A short-form ID in a v2.x AMF produces MALFORMED_TRANSFORM_ID ERROR."""
         msgs = self._validate_with_idt("RRT.a1.0.3", (2, 0, 0), transform_registry)
         errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
         assert len(errors) >= 1
         assert any(m.validation_type == ValidationType.MALFORMED_TRANSFORM_ID for m in errors)
-        assert any("requires full URN form" in m.message for m in errors)
+        assert any("malformed transform ID" in m.message for m in errors)
 
     def test_full_urn_in_v2_amf_ok(self, transform_registry):
         """A valid full URN in a v2.x AMF passes format validation."""
@@ -836,3 +827,22 @@ class TestTransformIDFormatValidation:
         )
         malformed = [m for m in msgs if m.validation_type == ValidationType.MALFORMED_TRANSFORM_ID]
         assert len(malformed) == 0
+
+    def test_valid_v15_urn_in_v13_amf(self, transform_registry):
+        """A valid v1.5 URN in a v1.3 AMF passes validation."""
+        msgs = self._validate_with_idt(
+            "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+            (1, 3, 0), transform_registry,
+        )
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_unknown_urn_in_v2_amf_is_error(self, transform_registry):
+        """A well-formed URN not in the v2.0 registry set is an ERROR."""
+        msgs = self._validate_with_idt(
+            "urn:ampas:aces:transformId:v2.0:Input.FakeVendor.FakeCamera.a2.v1",
+            (2, 0, 0), transform_registry,
+        )
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 1
+        assert errors[0].validation_type == ValidationType.INVALID_TRANSFORM_ID

@@ -49,10 +49,9 @@ class ValidationType(Enum):
     CDL_WORKING_SPACE_MISMATCH = auto()
     MULTIPLE_WORKING_LOCATIONS = auto()
 
-    # Transform IDs (format only, no registry)
+    # Transform IDs
+    MALFORMED_TRANSFORM_ID = auto()
     INVALID_TRANSFORM_ID = auto()
-
-    # Transform ID version mismatch (URN version != AMF system version)
     VERSION_MISMATCH_TRANSFORM_ID = auto()
 
     # Transform Application Order
