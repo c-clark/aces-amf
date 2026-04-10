@@ -41,9 +41,9 @@ class TestValidAMFs:
     def valid_amf(self, request):
         return request.param
 
-    def test_loads_without_error(self, valid_amf):
-        """Valid AMF loads successfully (no parse errors)."""
-        amf = load_amf(valid_amf, validate=False)
+    def test_loads_without_error(self, valid_amf, transform_registry):
+        """Valid AMF loads and passes full validation."""
+        amf = load_amf(valid_amf, validate=True, transform_registry=transform_registry)
         assert amf is not None
         assert amf.pipeline is not None
 
