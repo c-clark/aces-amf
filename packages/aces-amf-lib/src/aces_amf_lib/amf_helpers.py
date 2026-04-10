@@ -222,7 +222,7 @@ def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None
     path = Path(path)
     amf, _ = from_amf_file(path)
     if validate:
-        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
+        _run_validation(amf, amf_path=path, transform_registry=transform_registry)
     return amf
 
 
@@ -290,7 +290,7 @@ def save_amf(
     with open(path, "w") as f:
         write_amf(f, amf, ns_map)
     if validate:
-        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
+        _run_validation(amf, amf_path=path, transform_registry=transform_registry)
 
 
 def render_amf(

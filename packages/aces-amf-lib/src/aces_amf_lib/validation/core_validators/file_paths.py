@@ -44,7 +44,8 @@ def _validate_pipeline_file_paths(pipeline: PipelineType, prefix: str, amf_path)
     for idx, lt in enumerate(pipeline.look_transforms):
         desc = f"{prefix}{lt.description or f'Look transform #{idx + 1}'}"
         if lt.file:
-            messages.extend(_check_path_security(lt.file, desc, amf_path))
+            has_ccc_ref = getattr(lt, "color_correction_ref", None) is not None
+            messages.extend(_check_path_security(lt.file, desc, amf_path, is_cdl_collection=has_ccc_ref))
 
     if pipeline.output_transform:
         file_ref = getattr(pipeline.output_transform, "file", None)
@@ -58,25 +59,31 @@ def _validate_pipeline_file_paths(pipeline: PipelineType, prefix: str, amf_path)
     return messages
 
 
-# TODO Clarify this in the spec as to what is actuall supported and whats not, we should handle this at schema level
-CLF_EXTENSIONS = {".clf"}
-NON_CLF_LUT_EXTENSIONS = {".cube", ".3dl", ".spi3d", ".lut", ".csp", ".spi1d"}
+ALLOWED_TRANSFORM_EXTENSIONS = {".clf"}
+ALLOWED_CDL_COLLECTION_EXTENSIONS = {".cc", ".ccc", ".cdl"}
 
 
-def _check_path_security(file_ref: str, label: str, amf_path) -> list[ValidationMessage]:
+def _check_path_security(
+    file_ref: str, label: str, amf_path, *, is_cdl_collection: bool = False
+) -> list[ValidationMessage]:
     messages = []
 
-    # Check for non-CLF LUT formats
-    ext = file_ref.rsplit(".", 1)[-1].lower() if "." in file_ref else ""
-    if f".{ext}" in NON_CLF_LUT_EXTENSIONS:
-        messages.append(
-            ValidationMessage(
-                level=ValidationLevel.WARNING,
-                validation_type=ValidationType.NON_CLF_TRANSFORM_FILE,
-                message=f"{label} uses non-CLF format (.{ext}): {file_ref}. CLF (.clf) is the preferred format for ACES transform files.",
-                file_path=amf_path,
+    ext = f".{file_ref.rsplit('.', 1)[-1].lower()}" if "." in file_ref else ""
+    if ext:
+        allowed = ALLOWED_CDL_COLLECTION_EXTENSIONS if is_cdl_collection else ALLOWED_TRANSFORM_EXTENSIONS
+        if ext not in allowed:
+            if is_cdl_collection:
+                fmt_desc = "CDL collection formats (.cc, .ccc, .cdl) are the supported formats for CDL collection files"
+            else:
+                fmt_desc = "CLF (.clf) is the supported format for ACES transform files"
+            messages.append(
+                ValidationMessage(
+                    level=ValidationLevel.ERROR,
+                    validation_type=ValidationType.NON_CLF_TRANSFORM_FILE,
+                    message=f"{label} uses unsupported format ({ext}): {file_ref}. {fmt_desc}.",
+                    file_path=amf_path,
+                )
             )
-        )
 
     if ".." in file_ref:
         messages.append(

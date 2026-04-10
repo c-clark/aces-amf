@@ -169,16 +169,16 @@ def resolve_urns(ctx, file, auto_resolve, urn_mappings, output_path, in_place):
     # Save
     if replaced > 0:
         if in_place:
-            save_amf(amf, path, validate=False)
+            save_amf(amf, path, transform_registry=registry)
             click.echo(f"Saved: {path}")
         elif output_path:
-            save_amf(amf, Path(output_path), validate=False)
+            save_amf(amf, Path(output_path), transform_registry=registry)
             click.echo(f"Saved: {output_path}")
         elif not explicit_map and not auto_resolve:
             # Interactive mode without --output: ask
             if click.confirm("Save changes?", default=False):
                 dest = click.prompt("Output path", default=str(path))
-                save_amf(amf, Path(dest), validate=False)
+                save_amf(amf, Path(dest), transform_registry=registry)
                 click.echo(f"Saved: {dest}")
         else:
             click.echo("Use --output or --in-place to save changes.")

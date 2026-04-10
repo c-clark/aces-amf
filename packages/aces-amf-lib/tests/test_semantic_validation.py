@@ -84,6 +84,37 @@ class TestDateLogicValidation:
         date_errors = [m for m in messages if m.validation_type == ValidationType.INVALID_DATE_LOGIC]
         assert len(date_errors) == 0
 
+    def test_creation_after_modification_error(self, tmp_path):
+        """Creation date after modification date produces an ERROR."""
+        amf = minimal_amf()
+        amf.amf_info.date_time.creation_date_time = "2026-06-01T00:00:00Z"
+        amf.amf_info.date_time.modification_date_time = "2026-01-01T00:00:00Z"
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["temporal"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.INVALID_DATE_LOGIC]
+        assert len(errors) >= 1
+        assert "after modification" in errors[0].message
+
+    def test_future_modification_warning(self, tmp_path):
+        """Modification date in the future produces a WARNING."""
+        from xsdata.models.datatype import XmlDateTime
+        from aces_amf_lib.validation.core_validators.temporal import TemporalValidator
+
+        amf = minimal_amf()
+        amf.amf_info.date_time.creation_date_time = XmlDateTime(2026, 1, 1, 0, 0, 0, 0, 0)
+        amf.amf_info.date_time.modification_date_time = XmlDateTime(2099, 1, 1, 0, 0, 0, 0, 0)
+        amf.pipeline.pipeline_info.date_time.creation_date_time = XmlDateTime(2026, 1, 1, 0, 0, 0, 0, 0)
+        amf.pipeline.pipeline_info.date_time.modification_date_time = XmlDateTime(2026, 1, 1, 0, 0, 0, 0, 0)
+
+        validator = TemporalValidator()
+        context = ValidationContext()
+        msgs = validator.validate(amf, context)
+        warnings = [m for m in msgs if m.validation_type == ValidationType.FUTURE_TIMESTAMP]
+        assert len(warnings) >= 1
+        assert "future" in warnings[0].message.lower()
+
 
 class TestUUIDValidation:
     def test_unique_uuids(self, temp_amf_file):
@@ -280,6 +311,75 @@ class TestFilePathValidation:
             ValidationType.NON_PORTABLE_PATH,
         ]]
         assert len(path_warnings) == 0
+
+
+    def test_backslash_path_warning(self, tmp_path):
+        """Backslash in file path produces a WARNING."""
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="looks\\grade.clf")
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["file_paths"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.NON_PORTABLE_PATH and "backslash" in m.message.lower()]
+        assert len(warnings) == 1
+
+    def test_non_clf_format_warning(self, tmp_path):
+        """Non-CLF LUT format on a transform produces a WARNING."""
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="look.cube")
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["file_paths"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.NON_CLF_TRANSFORM_FILE]
+        assert len(warnings) == 1
+        assert ".cube" in warnings[0].message
+        assert "CLF (.clf)" in warnings[0].message
+
+    def test_clf_format_no_warning(self, tmp_path):
+        """CLF format on a transform produces no warnings."""
+        amf = minimal_amf()
+        amf.pipeline.input_transform = amf_v2.InputTransformType(applied=True, file="look.clf")
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["file_paths"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.NON_CLF_TRANSFORM_FILE]
+        assert len(warnings) == 0
+
+    def test_cdl_collection_valid_extension(self, tmp_path):
+        """CCC file on a CDL look transform produces no warnings."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="grades.ccc",
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="shot_001"),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["file_paths"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.NON_CLF_TRANSFORM_FILE]
+        assert len(warnings) == 0
+
+    def test_cdl_collection_wrong_extension(self, tmp_path):
+        """Non-CDL file on a CDL look transform produces a WARNING."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="grades.clf",
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="shot_001"),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["file_paths"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.NON_CLF_TRANSFORM_FILE]
+        assert len(warnings) == 1
+        assert "CDL collection" in warnings[0].message
 
 
 class TestCDLBoundaryFixes:
@@ -735,6 +835,48 @@ class TestMultipleWorkingLocations:
         assert len(wl_msgs) == 1
         assert "Archived pipeline #1" in wl_msgs[0].message
 
+    def test_cdl_without_working_space_warning(self, tmp_path):
+        """CDL with no working space specified produces a WARNING."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            asc_sop=amf_v2.AscSop(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            asc_sat=amf_v2.AscSat(saturation=1.0),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(warnings) == 1
+        assert "no working space" in warnings[0].message.lower()
+
+    def test_missing_from_cdl_working_space_error(self, tmp_path):
+        """CDL with toCdlWorkingSpace but no fromCdlWorkingSpace produces an ERROR."""
+        from aces_amf_lib.validation.core_validators.working_space import WorkingSpaceValidator
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            asc_sop=amf_v2.AscSop(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            asc_sat=amf_v2.AscSat(saturation=1.0),
+            cdl_working_space=amf_v2.CdlWorkingSpaceType.model_construct(
+                to_cdl_working_space=amf_v2.WorkingSpaceTransformType(
+                    transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3"
+                ),
+                from_cdl_working_space=None,
+            ),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+
+        validator = WorkingSpaceValidator()
+        context = ValidationContext()
+        msgs = validator.validate(amf, context)
+        errors = [m for m in msgs if m.validation_type == ValidationType.CDL_WORKING_SPACE_MISMATCH]
+        assert len(errors) == 1
+        assert "fromCdlWorkingSpace" in errors[0].message
+
 
 class TestVersionMismatchValidation:
     """Tests for URN version mismatch detection in TransformRegistryValidator."""
@@ -838,3 +980,198 @@ class TestTransformIDFormatValidation:
         errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
         assert len(errors) == 1
         assert errors[0].validation_type == ValidationType.INVALID_TRANSFORM_ID
+
+
+class TestFileHashValidator:
+    """Tests for file_hashes validator: compute and verify hashes for referenced files."""
+
+    def _make_amf_with_hash(self, tmp_path, hash_value, algorithm=None):
+        """Helper: create AMF with a look transform referencing a file with a hash."""
+        import hashlib
+
+        # Create a real file to reference
+        clf_file = tmp_path / "test_look.clf"
+        clf_file.write_bytes(b"<ProcessList/>")
+
+        if algorithm is None:
+            algorithm = amf_v2.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="test_look.clf",
+            hash=amf_v2.HashType(value=hash_value, algorithm=algorithm),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+        return amf_path
+
+    def test_valid_hash_passes(self, tmp_path):
+        """Correct hash produces no errors."""
+        import hashlib
+
+        clf_content = b"<ProcessList/>"
+        correct_hash = hashlib.md5(clf_content).digest()
+
+        amf_path = self._make_amf_with_hash(tmp_path, correct_hash)
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_hashes"])
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_hash_mismatch_error(self, tmp_path):
+        """Wrong hash produces an ERROR."""
+        amf_path = self._make_amf_with_hash(tmp_path, b"\x00" * 16)
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_hashes"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+        assert len(errors) == 1
+        assert "mismatch" in errors[0].message.lower()
+
+    def test_hash_file_not_found_warning(self, tmp_path):
+        """Missing file produces a WARNING."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="nonexistent.clf",
+            hash=amf_v2.HashType(
+                value=b"\x00" * 16,
+                algorithm=amf_v2.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+            ),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_hashes"])
+        warnings = [m for m in msgs if m.validation_type == ValidationType.HASH_FILE_NOT_FOUND]
+        assert len(warnings) == 1
+
+    def test_unsupported_hash_algorithm_warning(self, tmp_path):
+        """Unknown hash algorithm produces a WARNING."""
+        from aces_amf_lib.validation.core_validators.file_hashes import FileHashValidator
+
+        clf_file = tmp_path / "test_look.clf"
+        clf_file.write_bytes(b"<ProcessList/>")
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="test_look.clf",
+            hash=amf_v2.HashType.model_construct(
+                value=b"\x00" * 16,
+                algorithm="http://example.com/unknown-algo",
+            ),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+
+        validator = FileHashValidator()
+        context = ValidationContext(base_path=tmp_path)
+        msgs = validator.validate(amf, context)
+        warnings = [m for m in msgs if m.validation_type == ValidationType.HASH_ALGORITHM_UNSUPPORTED]
+        assert len(warnings) == 1
+
+
+class TestFileReferenceValidator:
+    """Tests for file_references validator: existence, hashes, CCC cross-refs."""
+
+    def test_valid_file_reference(self, tmp_path):
+        """Existing file produces no errors."""
+        clf_file = tmp_path / "look.clf"
+        clf_file.write_bytes(b"<ProcessList/>")
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(file="look.clf", applied=False)
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_references"])
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_missing_file_error(self, tmp_path):
+        """Non-existent file produces an ERROR."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(file="nonexistent.clf", applied=False)
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_references"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_REFERENCED_FILE]
+        assert len(errors) == 1
+        assert "nonexistent.clf" in errors[0].message
+
+    def test_ccc_valid_ref(self, tmp_path):
+        """Valid ColorCorrection ID in CCC file produces no errors."""
+        ccc_file = tmp_path / "grades.ccc"
+        ccc_file.write_text(
+            '<?xml version="1.0"?>\n'
+            '<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.01">\n'
+            '  <ColorCorrection id="shot_001">\n'
+            '    <SOPNode><Slope>1.0 1.0 1.0</Slope><Offset>0.0 0.0 0.0</Offset>'
+            '<Power>1.0 1.0 1.0</Power></SOPNode>\n'
+            '    <SatNode><Saturation>1.0</Saturation></SatNode>\n'
+            '  </ColorCorrection>\n'
+            '</ColorCorrectionCollection>\n'
+        )
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="grades.ccc",
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="shot_001"),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_references"])
+        errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
+        assert len(errors) == 0
+
+    def test_ccc_missing_id_error(self, tmp_path):
+        """Wrong ColorCorrection ID produces an ERROR."""
+        ccc_file = tmp_path / "grades.ccc"
+        ccc_file.write_text(
+            '<?xml version="1.0"?>\n'
+            '<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.01">\n'
+            '  <ColorCorrection id="shot_001">\n'
+            '    <SOPNode><Slope>1.0 1.0 1.0</Slope><Offset>0.0 0.0 0.0</Offset>'
+            '<Power>1.0 1.0 1.0</Power></SOPNode>\n'
+            '    <SatNode><Saturation>1.0</Saturation></SatNode>\n'
+            '  </ColorCorrection>\n'
+            '</ColorCorrectionCollection>\n'
+        )
+
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(
+            file="grades.ccc",
+            color_correction_ref=amf_v2.ColorCorrectionRef(ref="wrong_id"),
+            applied=False,
+        )
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, base_path=tmp_path, validators=["file_references"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.CCC_MISSING_ID]
+        assert len(errors) == 1
+        assert "wrong_id" in errors[0].message
+
+    def test_no_base_path_skips(self, tmp_path):
+        """Without base_path, file_references validator produces no messages."""
+        amf = minimal_amf()
+        lt = amf_v2.LookTransformType(file="nonexistent.clf", applied=False)
+        amf.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf, amf_path, validate=False)
+
+        # Run validation without base_path
+        context = ValidationContext(amf_path=amf_path)
+        from aces_amf_lib.validation.core_validators.file_references import FileReferenceValidator
+        validator = FileReferenceValidator()
+        amf_obj = load_amf(amf_path, validate=False)
+        msgs = validator.validate(amf_obj, context)
+        assert len(msgs) == 0
