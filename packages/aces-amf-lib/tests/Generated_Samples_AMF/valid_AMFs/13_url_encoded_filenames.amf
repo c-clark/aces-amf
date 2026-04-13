@@ -28,7 +28,7 @@
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
             <aces:description>Sony Venice 2 to ACES</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3.a1.v1</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Sony.Venice_SLog3_SGamut3_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>LUT with Special Characters in Path</aces:description>

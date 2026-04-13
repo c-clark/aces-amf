@@ -28,11 +28,11 @@
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
             <aces:description>ARRI Alexa LF LogC4 EI800 to ACES2065-1</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Input.ARRI.AlexaLF.LogC4-800.a1.v1</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:outputTransform applied="false">
             <aces:description>ACES2065-1 to Rec.709 100 nits</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Rec709.100nits.a1.v1</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>

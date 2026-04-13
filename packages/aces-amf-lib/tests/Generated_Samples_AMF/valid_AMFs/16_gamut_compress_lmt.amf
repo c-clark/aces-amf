@@ -32,7 +32,7 @@
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>ACES Gamut Compress for Out-of-Gamut Protection</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:LMT.Academy.GamutCompress.a1.3.0</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Look.Academy.ReferenceGamutCompress.a2.v1</aces:transformId>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
             <aces:description>ACES to Rec.709</aces:description>

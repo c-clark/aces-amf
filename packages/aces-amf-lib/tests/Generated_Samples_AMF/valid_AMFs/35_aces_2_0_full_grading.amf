@@ -28,18 +28,18 @@
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
             <aces:description>ARRI Alexa LF LogC4 EI800 to ACES2065-1</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Input.ARRI.AlexaLF.LogC4-800.a1.v1</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>Hero Grade in ACEScct</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
                     <aces:description>ACES2065-1 to ACEScct</aces:description>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
                 </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
                     <aces:description>ACEScct to ACES2065-1</aces:description>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
