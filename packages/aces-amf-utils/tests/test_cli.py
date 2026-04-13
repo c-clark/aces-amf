@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from pathlib import Path
 
 from aces_amf_lib import load_amf, save_amf
-from aces_amf_lib.amf_v2 import AuthorType, InputTransformType, OutputTransformType
+from aces_amf_lib.amf import AuthorType, InputTransformType, OutputTransformType
 from aces_amf_utils.cli import main
 
 

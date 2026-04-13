@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from aces_common.protocols import TransformRegistry
 
 if TYPE_CHECKING:
-    from aces_amf_lib.amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf import AcesMetadataFile
     from aces_amf_lib.validation.types import ValidationContext, ValidationMessage
 
 

@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.bindings import XmlParser, XmlSerializer
 
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 
 
 """Minimal namespaces for AMF"""
@@ -50,14 +50,14 @@ def _walk_file_uris(obj, transform_fn: Callable[[str], str]) -> None:
                 _walk_file_uris(item, transform_fn)
 
 
-def _decode_file_uris(amf) -> None:
+def _decode_file_uris(amf_obj) -> None:
     """Decode percent-encoded file paths in-place after parsing."""
-    _walk_file_uris(amf, unquote)
+    _walk_file_uris(amf_obj, unquote)
 
 
-def _encode_file_uris(amf):
+def _encode_file_uris(amf_obj):
     """Return a deep copy with file paths URI-encoded for serialization."""
-    amf_copy = copy.deepcopy(amf)
+    amf_copy = copy.deepcopy(amf_obj)
     _walk_file_uris(amf_copy, lambda v: quote(v, safe="/"))
     return amf_copy
 
@@ -96,15 +96,15 @@ def amf_xml_date_time(time: datetime.datetime | None = None) -> XmlDateTime:
     )
 
 
-def amf_date_time_now() -> amf_v2.DateTimeType:
+def amf_date_time_now() -> amf.DateTimeType:
     """
     Create a DateTimeType with the current time.
     """
     now = amf_xml_date_time()
-    return amf_v2.DateTimeType(creation_date_time=now, modification_date_time=now)
+    return amf.DateTimeType(creation_date_time=now, modification_date_time=now)
 
 
-def get_working_location_index(pipeline: amf_v2.PipelineType) -> int | None:
+def get_working_location_index(pipeline: amf.PipelineType) -> int | None:
     """Return the index of the workingLocation element in the compound field, or None if absent.
 
     The v2 schema merges workingLocation and lookTransform into a single
@@ -112,25 +112,25 @@ def get_working_location_index(pipeline: amf_v2.PipelineType) -> int | None:
     workingLocation (a ``WorkingLocationType`` instance) within that list.
     """
     for idx, item in enumerate(pipeline.working_location_or_look_transform):
-        if isinstance(item, amf_v2.WorkingLocationType):
+        if isinstance(item, amf.WorkingLocationType):
             return idx
     return None
 
 
-def from_amf_data(amf_data: bytes) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
+def from_amf_data(amf_data: bytes) -> tuple[amf.AcesMetadataFile, dict[str, str]]:
     """Parse AMF XML bytes into a v2 model and namespace map."""
     parser = XmlParser()
     ns_map: dict[str, str] = {}
-    parsed = parser.from_bytes(amf_data, amf_v2.AcesMetadataFile, ns_map)
+    parsed = parser.from_bytes(amf_data, amf.AcesMetadataFile, ns_map)
     _decode_file_uris(parsed)
     return parsed, ns_map
 
 
-def from_amf_file(amf_path: Path | str) -> tuple[amf_v2.AcesMetadataFile, dict[str, str]]:
+def from_amf_file(amf_path: Path | str) -> tuple[amf.AcesMetadataFile, dict[str, str]]:
     """Parse an AMF file into a v2 model and namespace map."""
     parser = XmlParser()
     ns_map: dict[str, str] = {}
-    parsed = parser.from_path(Path(amf_path), amf_v2.AcesMetadataFile, ns_map)
+    parsed = parser.from_path(Path(amf_path), amf.AcesMetadataFile, ns_map)
     _decode_file_uris(parsed)
     return parsed, ns_map
 
@@ -146,32 +146,32 @@ def _amf_serializer() -> XmlSerializer:
 
 
 
-def dump_amf(amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
+def dump_amf(amf_obj: amf.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
     """Serialize the provided AMF data to an XML string."""
     if ns_map is None:
         ns_map = DEFAULT_NS_MAP
 
     serializer = _amf_serializer()
-    return serializer.render(_encode_file_uris(amf), ns_map=ns_map)
+    return serializer.render(_encode_file_uris(amf_obj), ns_map=ns_map)
 
 
-def write_amf(out: TextIO, amf: amf_v2.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
+def write_amf(out: TextIO, amf_obj: amf.AcesMetadataFile, ns_map: dict[str, str] = None) -> str:
     """Serialize the provided AMF data as XML to a text stream."""
     if ns_map is None:
         ns_map = DEFAULT_NS_MAP
 
     serializer = _amf_serializer()
-    return serializer.write(out, _encode_file_uris(amf), ns_map=ns_map)
+    return serializer.write(out, _encode_file_uris(amf_obj), ns_map=ns_map)
 
 
-def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None, transform_registry=None) -> None:
+def _run_validation(amf_obj: amf.AcesMetadataFile, amf_path: Path | None = None, transform_registry=None) -> None:
     """Run validation and raise AMFValidationError on errors.
 
     Calls schema validation (if path available) + semantic validation directly,
     bypassing validate_semantic() to avoid circular imports.
 
     Args:
-        amf: The parsed AMF model.
+        amf_obj: The parsed AMF model.
         amf_path: Optional file path for schema validation.
         transform_registry: TransformRegistry implementation for validating transform IDs.
             Required if the 'transform_id_registry' validator is active.
@@ -196,14 +196,14 @@ def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None, 
         base_path = amf_path.parent if amf_path is not None else None
         context = ValidationContext(amf_path=amf_path, base_path=base_path, transform_registry=transform_registry)
         registry = get_default_registry()
-        messages.extend(registry.validate(amf, context))
+        messages.extend(registry.validate(amf_obj, context))
 
     errors = [m for m in messages if m.level == ValidationLevel.ERROR]
     if errors:
         raise AMFValidationError(messages)
 
 
-def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None) -> amf_v2.AcesMetadataFile:
+def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None) -> amf.AcesMetadataFile:
     """Load an AMF file. Auto-upgrades v1 to v2.
 
     Args:
@@ -220,13 +220,13 @@ def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None
         AMFValidationError: If validation is enabled and errors are found.
     """
     path = Path(path)
-    amf, _ = from_amf_file(path)
+    amf_obj, _ = from_amf_file(path)
     if validate:
-        _run_validation(amf, amf_path=path, transform_registry=transform_registry)
-    return amf
+        _run_validation(amf_obj, amf_path=path, transform_registry=transform_registry)
+    return amf_obj
 
 
-def load_amf_data(data: bytes, *, validate: bool = True, transform_registry=None) -> amf_v2.AcesMetadataFile:
+def load_amf_data(data: bytes, *, validate: bool = True, transform_registry=None) -> amf.AcesMetadataFile:
     """Load AMF from bytes. Auto-upgrades v1 to v2.
 
     Args:
@@ -242,28 +242,28 @@ def load_amf_data(data: bytes, *, validate: bool = True, transform_registry=None
         RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
-    amf, _ = from_amf_data(data)
+    amf_obj, _ = from_amf_data(data)
     if validate:
-        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
-    return amf
+        _run_validation(amf_obj, amf_path=None, transform_registry=transform_registry)
+    return amf_obj
 
 
-def _prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
+def _prepare_for_write(amf_obj: amf.AcesMetadataFile) -> None:
     """Update modification timestamps and regenerate UUIDs before serialization."""
     now = amf_xml_date_time()
-    if amf.amf_info:
-        amf.amf_info.date_time.modification_date_time = now
-        amf.amf_info.uuid = uuid.uuid4().urn
-    if amf.pipeline and amf.pipeline.pipeline_info:
-        amf.pipeline.pipeline_info.date_time.modification_date_time = now
-        amf.pipeline.pipeline_info.uuid = uuid.uuid4().urn
-    for archived in amf.archived_pipeline:
+    if amf_obj.amf_info:
+        amf_obj.amf_info.date_time.modification_date_time = now
+        amf_obj.amf_info.uuid = uuid.uuid4().urn
+    if amf_obj.pipeline and amf_obj.pipeline.pipeline_info:
+        amf_obj.pipeline.pipeline_info.date_time.modification_date_time = now
+        amf_obj.pipeline.pipeline_info.uuid = uuid.uuid4().urn
+    for archived in amf_obj.archived_pipeline:
         if archived.pipeline_info and archived.pipeline_info.date_time:
             archived.pipeline_info.date_time.modification_date_time = now
 
 
 def save_amf(
-    amf: amf_v2.AcesMetadataFile,
+    amf_obj: amf.AcesMetadataFile,
     path: Path | str,
     *,
     ns_map: dict[str, str] = None,
@@ -275,7 +275,7 @@ def save_amf(
     Calls ``prepare_for_write`` then serializes to the given path.
 
     Args:
-        amf: The AMF model to write.
+        amf_obj: The AMF model to write.
         path: Output file path.
         ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
         validate: Run semantic validation after writing. Defaults to True.
@@ -285,16 +285,16 @@ def save_amf(
         RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
-    _prepare_for_write(amf)
+    _prepare_for_write(amf_obj)
     path = Path(path)
     with open(path, "w") as f:
-        write_amf(f, amf, ns_map)
+        write_amf(f, amf_obj, ns_map)
     if validate:
-        _run_validation(amf, amf_path=path, transform_registry=transform_registry)
+        _run_validation(amf_obj, amf_path=path, transform_registry=transform_registry)
 
 
 def render_amf(
-    amf: amf_v2.AcesMetadataFile,
+    amf_obj: amf.AcesMetadataFile,
     *,
     ns_map: dict[str, str] = None,
     validate: bool = True,
@@ -305,7 +305,7 @@ def render_amf(
     Calls ``prepare_for_write`` then serializes to string.
 
     Args:
-        amf: The AMF model to serialize.
+        amf_obj: The AMF model to serialize.
         ns_map: Optional namespace map. Defaults to ``DEFAULT_NS_MAP``.
         validate: Run semantic validation after rendering. Defaults to True.
             Schema validation is skipped (no file path available).
@@ -318,10 +318,10 @@ def render_amf(
         RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
-    _prepare_for_write(amf)
-    xml_str = dump_amf(amf, ns_map)
+    _prepare_for_write(amf_obj)
+    xml_str = dump_amf(amf_obj, ns_map)
     if validate:
-        _run_validation(amf, amf_path=None, transform_registry=transform_registry)
+        _run_validation(amf_obj, amf_path=None, transform_registry=transform_registry)
     return xml_str
 
 

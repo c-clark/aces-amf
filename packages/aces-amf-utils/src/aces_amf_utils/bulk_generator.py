@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from aces_amf_lib import amf_v2, save_amf
+from aces_amf_lib import amf, save_amf
 from aces_amf_utils.factories import minimal_amf
 from aces_common.constants import INPUT_TRANSFORM_TYPES, OUTPUT_TRANSFORM_TYPES
 from aces_transforms import ACESTransformRegistry
@@ -74,17 +74,17 @@ def generate_test_matrix(
         if max_combinations and count >= max_combinations:
             break
 
-        amf = minimal_amf(aces_version=aces_version)
-        amf.amf_info.description = f"Test matrix: {idt['user_name']} -> {odt['user_name']}"
-        amf.amf_info.author.append(amf_v2.AuthorType(name=author_name, email_address=author_email))
+        amf_obj = minimal_amf(aces_version=aces_version)
+        amf_obj.amf_info.description = f"Test matrix: {idt['user_name']} -> {odt['user_name']}"
+        amf_obj.amf_info.author.append(amf.AuthorType(name=author_name, email_address=author_email))
 
-        amf.pipeline.input_transform = amf_v2.InputTransformType(
+        amf_obj.pipeline.input_transform = amf.InputTransformType(
             applied=False,
             transform_id=idt["transform_id"],
             description=idt.get("user_name", ""),
         )
 
-        amf.pipeline.output_transform = amf_v2.OutputTransformType(
+        amf_obj.pipeline.output_transform = amf.OutputTransformType(
             applied=False,
             transform_id=odt["transform_id"],
             description=odt.get("user_name", ""),
@@ -95,7 +95,7 @@ def generate_test_matrix(
         odt_safe = _safe_filename(odt["user_name"])
         out_path = output_dir / f"matrix_{count:04d}_{idt_safe}_to_{odt_safe}.amf"
 
-        save_amf(amf, out_path)
+        save_amf(amf_obj, out_path)
         generated.append(out_path)
         logger.debug("Generated %s", out_path.name)
 
@@ -137,14 +137,14 @@ def generate_from_template_matrix(
         params = dict(zip(param_names, combo))
 
         try:
-            amf = REGISTRY.generate(template_id, **params)
+            amf_obj = REGISTRY.generate(template_id, **params)
         except (KeyError, ValueError) as e:
             logger.warning("Failed to generate template %s with params %s: %s", template_id, params, e)
             continue
 
         count += 1
         out_path = output_dir / f"{template_id}_{count:04d}.amf"
-        save_amf(amf, out_path)
+        save_amf(amf_obj, out_path)
         generated.append(out_path)
 
     logger.info("Generated %d AMF files from template %s", len(generated), template_id)

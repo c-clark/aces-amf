@@ -25,7 +25,7 @@ from aces_amf_lib.amf_helpers import (
     save_amf,
     write_amf,
 )
-from aces_amf_lib.amf_v2 import AcesMetadataFile
+from aces_amf_lib.amf import AcesMetadataFile
 from aces_amf_lib.validation import (
     AMFValidationError,
     RegistryNotConfiguredError,
@@ -42,7 +42,7 @@ from aces_amf_lib.validation import (
 from aces_amf_lib.protocols import AMFValidator, TransformRegistry
 from aces_amf_lib.validation.core_validators.file_hashes import compute_file_hash, DEFAULT_HASH_ALGORITHM
 from aces_amf_lib import amf_helpers
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 
 __version__ = "0.1.0"
 
@@ -72,5 +72,5 @@ __all__ = [
     "compute_file_hash",
     "DEFAULT_HASH_ALGORITHM",
     "amf_helpers",
-    "amf_v2",
+    "amf",
 ]

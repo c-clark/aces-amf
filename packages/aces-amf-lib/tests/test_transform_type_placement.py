@@ -11,7 +11,7 @@ Enforcement layers:
 
 import pytest
 
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 
 
 # -- Valid URNs for each container type --
@@ -29,50 +29,50 @@ class TestCorrectPlacements:
     """Correct URN placements should not raise."""
 
     def test_idt_in_input(self):
-        it = amf_v2.InputTransformType(transform_id=VALID_IDT_URN, applied=False)
+        it = amf.InputTransformType(transform_id=VALID_IDT_URN, applied=False)
         assert it.transform_id == VALID_IDT_URN
 
     def test_acescsc_in_input(self):
-        it = amf_v2.InputTransformType(transform_id=VALID_CSC_V1_URN, applied=False)
+        it = amf.InputTransformType(transform_id=VALID_CSC_V1_URN, applied=False)
         assert it.transform_id == VALID_CSC_V1_URN
 
     def test_v2_input_in_input(self):
-        it = amf_v2.InputTransformType(transform_id=VALID_INPUT_V2_URN, applied=False)
+        it = amf.InputTransformType(transform_id=VALID_INPUT_V2_URN, applied=False)
         assert it.transform_id == VALID_INPUT_V2_URN
 
     def test_v2_csc_in_input(self):
-        it = amf_v2.InputTransformType(
+        it = amf.InputTransformType(
             transform_id="urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
             applied=False,
         )
         assert it.transform_id is not None
 
     def test_rrtodt_in_output(self):
-        ot = amf_v2.OutputTransformType(transform_id=VALID_ODT_URN, applied=False)
+        ot = amf.OutputTransformType(transform_id=VALID_ODT_URN, applied=False)
         assert ot.transform_id == VALID_ODT_URN
 
     def test_v2_output_in_output(self):
-        ot = amf_v2.OutputTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=False)
+        ot = amf.OutputTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=False)
         assert ot.transform_id == VALID_OUTPUT_V2_URN
 
     def test_lmt_in_look(self):
-        lt = amf_v2.LookTransformType(transform_id=VALID_LMT_URN, applied=True)
+        lt = amf.LookTransformType(transform_id=VALID_LMT_URN, applied=True)
         assert lt.transform_id == VALID_LMT_URN
 
     def test_v2_look_in_look(self):
-        lt = amf_v2.LookTransformType(transform_id=VALID_LOOK_V2_URN, applied=True)
+        lt = amf.LookTransformType(transform_id=VALID_LOOK_V2_URN, applied=True)
         assert lt.transform_id == VALID_LOOK_V2_URN
 
     def test_csc_in_working_space(self):
-        ws = amf_v2.WorkingSpaceTransformType(transform_id=VALID_CSC_V1_URN)
+        ws = amf.WorkingSpaceTransformType(transform_id=VALID_CSC_V1_URN)
         assert ws.transform_id == VALID_CSC_V1_URN
 
     def test_v2_csc_in_working_space(self):
-        ws = amf_v2.WorkingSpaceTransformType(transform_id=VALID_CSC_V2_URN)
+        ws = amf.WorkingSpaceTransformType(transform_id=VALID_CSC_V2_URN)
         assert ws.transform_id == VALID_CSC_V2_URN
 
     def test_none_transform_id_accepted(self):
-        it = amf_v2.InputTransformType(transform_id=None, applied=False)
+        it = amf.InputTransformType(transform_id=None, applied=False)
         assert it.transform_id is None
 
 
@@ -83,62 +83,62 @@ class TestPydanticCatchesMisplacement:
 
     def test_odt_in_input_raises(self):
         with pytest.raises(ValueError, match="not valid for InputTransform"):
-            amf_v2.InputTransformType(transform_id=VALID_ODT_URN, applied=False)
+            amf.InputTransformType(transform_id=VALID_ODT_URN, applied=False)
 
     def test_lmt_in_input_raises(self):
         with pytest.raises(ValueError, match="not valid for InputTransform"):
-            amf_v2.InputTransformType(transform_id=VALID_LMT_URN, applied=False)
+            amf.InputTransformType(transform_id=VALID_LMT_URN, applied=False)
 
     def test_v2_output_in_input_raises(self):
         with pytest.raises(ValueError, match="not valid for InputTransform"):
-            amf_v2.InputTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=False)
+            amf.InputTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=False)
 
     def test_v2_look_in_input_raises(self):
         with pytest.raises(ValueError, match="not valid for InputTransform"):
-            amf_v2.InputTransformType(transform_id=VALID_LOOK_V2_URN, applied=False)
+            amf.InputTransformType(transform_id=VALID_LOOK_V2_URN, applied=False)
 
     # -- Output transform misplacements --
 
     def test_idt_in_output_raises(self):
         with pytest.raises(ValueError, match="not valid for OutputTransform"):
-            amf_v2.OutputTransformType(transform_id=VALID_IDT_URN, applied=False)
+            amf.OutputTransformType(transform_id=VALID_IDT_URN, applied=False)
 
     def test_lmt_in_output_raises(self):
         with pytest.raises(ValueError, match="not valid for OutputTransform"):
-            amf_v2.OutputTransformType(transform_id=VALID_LMT_URN, applied=False)
+            amf.OutputTransformType(transform_id=VALID_LMT_URN, applied=False)
 
     def test_v2_input_in_output_raises(self):
         with pytest.raises(ValueError, match="not valid for OutputTransform"):
-            amf_v2.OutputTransformType(transform_id=VALID_INPUT_V2_URN, applied=False)
+            amf.OutputTransformType(transform_id=VALID_INPUT_V2_URN, applied=False)
 
     # -- Look transform misplacements --
 
     def test_idt_in_look_raises(self):
         with pytest.raises(ValueError, match="not valid for LookTransform"):
-            amf_v2.LookTransformType(transform_id=VALID_IDT_URN, applied=True)
+            amf.LookTransformType(transform_id=VALID_IDT_URN, applied=True)
 
     def test_odt_in_look_raises(self):
         with pytest.raises(ValueError, match="not valid for LookTransform"):
-            amf_v2.LookTransformType(transform_id=VALID_ODT_URN, applied=True)
+            amf.LookTransformType(transform_id=VALID_ODT_URN, applied=True)
 
     def test_v2_output_in_look_raises(self):
         with pytest.raises(ValueError, match="not valid for LookTransform"):
-            amf_v2.LookTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=True)
+            amf.LookTransformType(transform_id=VALID_OUTPUT_V2_URN, applied=True)
 
     def test_v2_input_in_look_raises(self):
         with pytest.raises(ValueError, match="not valid for LookTransform"):
-            amf_v2.LookTransformType(transform_id=VALID_INPUT_V2_URN, applied=True)
+            amf.LookTransformType(transform_id=VALID_INPUT_V2_URN, applied=True)
 
     # -- WorkingSpace transform misplacements --
 
     def test_idt_in_working_space_raises(self):
         with pytest.raises(ValueError, match="not valid for WorkingSpaceTransform"):
-            amf_v2.WorkingSpaceTransformType(transform_id=VALID_IDT_URN)
+            amf.WorkingSpaceTransformType(transform_id=VALID_IDT_URN)
 
     def test_odt_in_working_space_raises(self):
         with pytest.raises(ValueError, match="not valid for WorkingSpaceTransform"):
-            amf_v2.WorkingSpaceTransformType(transform_id=VALID_ODT_URN)
+            amf.WorkingSpaceTransformType(transform_id=VALID_ODT_URN)
 
     def test_lmt_in_working_space_raises(self):
         with pytest.raises(ValueError, match="not valid for WorkingSpaceTransform"):
-            amf_v2.WorkingSpaceTransformType(transform_id=VALID_LMT_URN)
+            amf.WorkingSpaceTransformType(transform_id=VALID_LMT_URN)

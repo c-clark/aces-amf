@@ -27,7 +27,7 @@ from aces_amf_lib.validation.types import (
 from aces_amf_lib.validation.core_validators._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from aces_amf_lib.amf_v2 import AcesMetadataFile, PipelineType
+    from aces_amf_lib.amf import AcesMetadataFile, PipelineType
 
 
 class TransformRegistryValidator(AMFValidator):

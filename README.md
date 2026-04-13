@@ -87,7 +87,7 @@ if amf.output_transform:
 Demonstrates all `.with_*` methods, including look transforms before and after a working location delimiter.
 
 ```python
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 from aces_amf_utils import ACESAMF
 from aces_amf_utils.factories import cdl_look_transform
 
@@ -99,17 +99,17 @@ primary_grade = cdl_look_transform(
 )
 primary_grade.description = "Primary Grade"
 primary_grade.applied = False
-primary_grade.cdl_working_space = amf_v2.CdlWorkingSpaceType(
-    from_cdl_working_space=amf_v2.WorkingSpaceTransformType(
+primary_grade.cdl_working_space = amf.CdlWorkingSpaceType(
+    from_cdl_working_space=amf.WorkingSpaceTransformType(
         transform_id="urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1",
     ),
-    to_cdl_working_space=amf_v2.WorkingSpaceTransformType(
+    to_cdl_working_space=amf.WorkingSpaceTransformType(
         transform_id="urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
     ),
 )
 
 # A file-based look (e.g. a show LUT)
-show_look = amf_v2.LookTransformType(
+show_look = amf.LookTransformType(
     file="show_lut.clf",
     description="Show LUT",
     applied=False,
@@ -120,10 +120,10 @@ amf = (
     # Metadata
     .with_description("My Show - Ep 1")
     .with_pipeline_description("Camera to Rec.709 Display")
-    .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
-    .with_clip_id(amf_v2.ClipIdType(clip_name="A001C003", file="A001C003.ari"))
+    .with_author(amf.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+    .with_clip_id(amf.ClipIdType(clip_name="A001C003", file="A001C003.ari"))
     # Input (camera to ACES)
-    .with_input_transform(amf_v2.InputTransformType(
+    .with_input_transform(amf.InputTransformType(
         transform_id="urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1",
         description="ARRI LogC4 to ACES",
         applied=False,
@@ -135,7 +135,7 @@ amf = (
     # Looks AFTER working location (applied in working color space)
     .with_look_transform(show_look)
     # Output (ACES to display)
-    .with_output_transform(amf_v2.OutputTransformType(
+    .with_output_transform(amf.OutputTransformType(
         transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1",
         description="Rec.709 100 nits",
         applied=False,
@@ -148,11 +148,11 @@ amf.write("output.amf", validate=False)
 ### Load, Modify, and Save
 
 ```python
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 from aces_amf_utils import ACESAMF
 
 amf = ACESAMF.from_file("shot_001.amf", validate=False)
-amf.output_transform = amf_v2.OutputTransformType(
+amf.output_transform = amf.OutputTransformType(
     transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_P3-D65_ST2084.a2.v1",
     description="P3 HDR 1000 nits",
     applied=False,

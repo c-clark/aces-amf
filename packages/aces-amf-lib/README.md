@@ -13,7 +13,7 @@ pip install aces-amf-lib
 ## Quick Start
 
 ```python
-from aces_amf_lib import load_amf, save_amf, amf_v2, validate_all
+from aces_amf_lib import load_amf, save_amf, amf, validate_all
 
 # Load an AMF file (automatically upgrades v1 to v2)
 amf = load_amf("example.amf")
@@ -22,7 +22,7 @@ print(f"Input: {amf.pipeline.input_transform}")
 
 # Modify directly via Pydantic models
 amf.amf_info.description = "Updated Show"
-amf.pipeline.input_transform = amf_v2.InputTransformType(
+amf.pipeline.input_transform = amf.InputTransformType(
     transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
     applied=False,
 )
@@ -62,27 +62,27 @@ All I/O functions accept `validate=True` (default) to run semantic validation au
 
 ## Schema Bindings
 
-The `amf_v2` module provides Pydantic models generated from the ACES AMF v2 XSD schema:
+The `amf` module provides Pydantic models generated from the ACES AMF v2 XSD schema:
 
 ```python
-from aces_amf_lib import AcesMetadataFile, amf_v2
+from aces_amf_lib import AcesMetadataFile, amf
 
 # Root document
 amf = AcesMetadataFile(...)
 
 # Key types
-amf_v2.InputTransformType       # input transform (transform_id, file, applied, ...)
-amf_v2.OutputTransformType      # output transform
-amf_v2.LookTransformType        # look transforms (file, CDL, transform_id, applied, ...)
-amf_v2.AuthorType               # author (name, email_address)
-amf_v2.ClipIdType               # clip identification (clip_name, file, uuid, sequence)
-amf_v2.VersionType              # system version (major, minor, patch)
-amf_v2.WorkingLocationType      # working location marker in compound list
-amf_v2.HashType                 # file hash (value, algorithm)
-amf_v2.DateTimeType             # creation and modification timestamps
-amf_v2.CdlWorkingSpaceType     # CDL working space transforms
-amf_v2.AscSop                   # ASC CDL slope/offset/power
-amf_v2.AscSat                   # ASC CDL saturation
+amf.InputTransformType       # input transform (transform_id, file, applied, ...)
+amf.OutputTransformType      # output transform
+amf.LookTransformType        # look transforms (file, CDL, transform_id, applied, ...)
+amf.AuthorType               # author (name, email_address)
+amf.ClipIdType               # clip identification (clip_name, file, uuid, sequence)
+amf.VersionType              # system version (major, minor, patch)
+amf.WorkingLocationType      # working location marker in compound list
+amf.HashType                 # file hash (value, algorithm)
+amf.DateTimeType             # creation and modification timestamps
+amf.CdlWorkingSpaceType     # CDL working space transforms
+amf.AscSop                   # ASC CDL slope/offset/power
+amf.AscSat                   # ASC CDL saturation
 ```
 
 ### Compound Field: Working Location + Looks

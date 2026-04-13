@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.fields import field
 
-from aces_amf_lib.amf_v2.asc_cdl_schema_v1_01 import (
+from aces_amf_lib.amf.asc_cdl_schema_v1_01 import (
     AscCcXml,
     AscSat,
     AscSop,

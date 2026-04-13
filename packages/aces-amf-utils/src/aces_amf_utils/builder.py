@@ -4,16 +4,16 @@ Fluent builder for constructing AMF files.
 
 Usage:
     from aces_amf_utils import AMFBuilder
-    from aces_amf_lib import amf_v2
+    from aces_amf_lib import amf
 
     amf = (AMFBuilder()
         .with_description("My Show - Ep 1")
-        .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
-        .with_input_transform(amf_v2.InputTransformType(
+        .with_author(amf.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+        .with_input_transform(amf.InputTransformType(
             transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
             applied=False))
-        .with_look_transform(amf_v2.LookTransformType(file="grade.clf", applied=True))
-        .with_output_transform(amf_v2.OutputTransformType(
+        .with_look_transform(amf.LookTransformType(file="grade.clf", applied=True))
+        .with_output_transform(amf.OutputTransformType(
             transform_id="urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec709_100nits_dim.a1.0.3",
             applied=False))
         .build())
@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import Iterator, Self
 
-from aces_amf_lib import AcesMetadataFile, amf_v2, get_working_location_index
+from aces_amf_lib import AcesMetadataFile, amf, get_working_location_index
 from aces_amf_utils.factories import minimal_amf
 
 
@@ -64,39 +64,39 @@ class _AMFMutatorMixin:
         self._amf.pipeline.pipeline_info.description = value
 
     @property
-    def input_transform(self) -> amf_v2.InputTransformType | None:
+    def input_transform(self) -> amf.InputTransformType | None:
         """The pipeline's input transform, or None."""
         return self._amf.pipeline.input_transform
 
     @input_transform.setter
-    def input_transform(self, value: amf_v2.InputTransformType | None) -> None:
+    def input_transform(self, value: amf.InputTransformType | None) -> None:
         self._amf.pipeline.input_transform = value
 
     @property
-    def output_transform(self) -> amf_v2.OutputTransformType | None:
+    def output_transform(self) -> amf.OutputTransformType | None:
         """The pipeline's output transform, or None."""
         return self._amf.pipeline.output_transform
 
     @output_transform.setter
-    def output_transform(self, value: amf_v2.OutputTransformType | None) -> None:
+    def output_transform(self, value: amf.OutputTransformType | None) -> None:
         self._amf.pipeline.output_transform = value
 
     @property
-    def clip_id(self) -> amf_v2.ClipIdType | None:
+    def clip_id(self) -> amf.ClipIdType | None:
         """Clip identification."""
         return self._amf.clip_id
 
     @clip_id.setter
-    def clip_id(self, value: amf_v2.ClipIdType | None) -> None:
+    def clip_id(self, value: amf.ClipIdType | None) -> None:
         self._amf.clip_id = value
 
     @property
-    def aces_system_version(self) -> amf_v2.VersionType | None:
+    def aces_system_version(self) -> amf.VersionType | None:
         """ACES system version."""
         return self._amf.pipeline.pipeline_info.system_version
 
     @aces_system_version.setter
-    def aces_system_version(self, value: amf_v2.VersionType | None) -> None:
+    def aces_system_version(self, value: amf.VersionType | None) -> None:
         self._amf.pipeline.pipeline_info.system_version = value
 
     # ------------------------------------------------------------------
@@ -124,7 +124,7 @@ class _AMFMutatorMixin:
         return self._amf.amf_info.date_time.creation_date_time
 
     @property
-    def authors(self) -> list[amf_v2.AuthorType]:
+    def authors(self) -> list[amf.AuthorType]:
         """List of AMF authors."""
         return self._amf.amf_info.author
 
@@ -147,17 +147,17 @@ class _AMFMutatorMixin:
         self.pipeline_description = text
         return self
 
-    def with_input_transform(self, value: amf_v2.InputTransformType) -> Self:
+    def with_input_transform(self, value: amf.InputTransformType) -> Self:
         """Set the input transform."""
         self.input_transform = value
         return self
 
-    def with_output_transform(self, value: amf_v2.OutputTransformType) -> Self:
+    def with_output_transform(self, value: amf.OutputTransformType) -> Self:
         """Set the output transform."""
         self.output_transform = value
         return self
 
-    def with_look_transform(self, value: amf_v2.LookTransformType) -> Self:
+    def with_look_transform(self, value: amf.LookTransformType) -> Self:
         """Append a look transform to the pipeline."""
         self._amf.pipeline.working_location_or_look_transform.append(value)
         return self
@@ -169,21 +169,21 @@ class _AMFMutatorMixin:
         looks added after are post-working-location.
         """
         self._amf.pipeline.working_location_or_look_transform.append(
-            amf_v2.WorkingLocationType()
+            amf.WorkingLocationType()
         )
         return self
 
-    def with_author(self, author: amf_v2.AuthorType) -> Self:
+    def with_author(self, author: amf.AuthorType) -> Self:
         """Append an author."""
         self._amf.amf_info.author.append(author)
         return self
 
-    def with_clip_id(self, value: amf_v2.ClipIdType) -> Self:
+    def with_clip_id(self, value: amf.ClipIdType) -> Self:
         """Set clip identification."""
         self.clip_id = value
         return self
 
-    def with_aces_system_version(self, value: amf_v2.VersionType) -> Self:
+    def with_aces_system_version(self, value: amf.VersionType) -> Self:
         """Set the ACES system version."""
         self.aces_system_version = value
         return self
@@ -199,14 +199,14 @@ class _AMFMutatorMixin:
             for i, item in enumerate(
                 self._amf.pipeline.working_location_or_look_transform
             )
-            if isinstance(item, amf_v2.LookTransformType)
+            if isinstance(item, amf.LookTransformType)
         ]
 
-    def get_looks(self) -> list[amf_v2.LookTransformType]:
+    def get_looks(self) -> list[amf.LookTransformType]:
         """Return all look transforms (excludes working location markers)."""
         return self._amf.pipeline.look_transforms
 
-    def get_look(self, idx: int) -> amf_v2.LookTransformType:
+    def get_look(self, idx: int) -> amf.LookTransformType:
         """Return the look transform at logical index ``idx``.
 
         Supports negative indices.
@@ -220,11 +220,11 @@ class _AMFMutatorMixin:
         """Return the number of look transforms."""
         return len(self.get_looks())
 
-    def iter_looks(self) -> Iterator[tuple[int, amf_v2.LookTransformType]]:
+    def iter_looks(self) -> Iterator[tuple[int, amf.LookTransformType]]:
         """Yield ``(index, look)`` pairs for all look transforms."""
         return enumerate(self.get_looks())
 
-    def insert_look(self, idx: int, lt: amf_v2.LookTransformType) -> Self:
+    def insert_look(self, idx: int, lt: amf.LookTransformType) -> Self:
         """Insert a look transform at logical index ``idx``.
 
         Working location markers are preserved. If ``idx`` is beyond the
@@ -275,7 +275,7 @@ class _AMFMutatorMixin:
         self._amf.pipeline.working_location_or_look_transform = [
             item
             for item in self._amf.pipeline.working_location_or_look_transform
-            if not isinstance(item, amf_v2.LookTransformType)
+            if not isinstance(item, amf.LookTransformType)
         ]
         return self
 
@@ -283,7 +283,7 @@ class _AMFMutatorMixin:
     # Pre/post working-location look split
     # ------------------------------------------------------------------
 
-    def get_pre_working_looks(self) -> list[amf_v2.LookTransformType]:
+    def get_pre_working_looks(self) -> list[amf.LookTransformType]:
         """Look transforms before the working location marker.
         Returns empty list if no working location exists."""
         compound = self._amf.pipeline.working_location_or_look_transform
@@ -291,9 +291,9 @@ class _AMFMutatorMixin:
         if wl_idx is None:
             return []
         return [item for i, item in enumerate(compound)
-                if i < wl_idx and isinstance(item, amf_v2.LookTransformType)]
+                if i < wl_idx and isinstance(item, amf.LookTransformType)]
 
-    def get_post_working_looks(self) -> list[amf_v2.LookTransformType]:
+    def get_post_working_looks(self) -> list[amf.LookTransformType]:
         """Look transforms after the working location marker.
         Returns all looks if no working location exists."""
         compound = self._amf.pipeline.working_location_or_look_transform
@@ -301,7 +301,7 @@ class _AMFMutatorMixin:
         if wl_idx is None:
             return self.get_looks()
         return [item for i, item in enumerate(compound)
-                if i > wl_idx and isinstance(item, amf_v2.LookTransformType)]
+                if i > wl_idx and isinstance(item, amf.LookTransformType)]
 
 
 class AMFBuilder(_AMFMutatorMixin):

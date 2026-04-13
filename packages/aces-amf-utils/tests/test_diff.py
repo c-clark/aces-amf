@@ -3,7 +3,7 @@
 
 import pytest
 from aces_amf_lib import load_amf, save_amf
-from aces_amf_lib.amf_v2 import InputTransformType, LookTransformType
+from aces_amf_lib.amf import InputTransformType, LookTransformType
 from aces_amf_utils import AMFBuilder, cdl_look_transform, diff_amf, DiffResult, FieldDiff
 
 
