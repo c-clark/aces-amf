@@ -9,29 +9,29 @@ helpers, not core I/O operations.
 
 import uuid
 
-from aces_amf_lib import amf_v2
+from aces_amf_lib import amf
 from aces_amf_lib.amf_helpers import amf_date_time_now, amf_xml_date_time
 
 FloatVector = tuple[float, float, float]
 
 
-def minimal_amf(aces_version: tuple[int, int, int] = (1, 3, 0)) -> amf_v2.AcesMetadataFile:
+def minimal_amf(aces_version: tuple[int, int, int] = (1, 3, 0)) -> amf.AcesMetadataFile:
     """Create a minimal AMF with required fields populated."""
-    version_type = amf_v2.VersionType(
+    version_type = amf.VersionType(
         major_version=aces_version[0], minor_version=aces_version[1], patch_version=aces_version[2]
     )
-    pipeline_info = amf_v2.PipelineInfoType(
+    pipeline_info = amf.PipelineInfoType(
         date_time=amf_date_time_now(), uuid=uuid.uuid4().urn, system_version=version_type
     )
-    return amf_v2.AcesMetadataFile(
-        amf_info=amf_v2.InfoType(date_time=amf_date_time_now(), uuid=uuid.uuid4().urn),
-        pipeline=amf_v2.PipelineType(pipeline_info=pipeline_info),
+    return amf.AcesMetadataFile(
+        amf_info=amf.InfoType(date_time=amf_date_time_now(), uuid=uuid.uuid4().urn),
+        pipeline=amf.PipelineType(pipeline_info=pipeline_info),
     )
 
 
 def cdl_look_transform(
     *, slope: FloatVector = None, offset: FloatVector = None, power: FloatVector = None, saturation: float = None
-) -> amf_v2.LookTransformType:
+) -> amf.LookTransformType:
     """Create a CDL look transform from the provided parameters."""
     if slope is None:
         slope = (1.0, 1.0, 1.0)
@@ -45,17 +45,17 @@ def cdl_look_transform(
     if len(slope) != 3 or len(offset) != 3 or len(power) != 3:
         raise ValueError("Slope, offset, and power must be 3 element tuples")
 
-    working_space = amf_v2.CdlWorkingSpaceType(
-        from_cdl_working_space=amf_v2.WorkingSpaceTransformType(
+    working_space = amf.CdlWorkingSpaceType(
+        from_cdl_working_space=amf.WorkingSpaceTransformType(
             transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3"
         ),
     )
-    sop_node = amf_v2.AscSop(slope=list(slope), offset=list(offset), power=list(power))
-    sat_node = amf_v2.AscSat(saturation=saturation)
-    return amf_v2.LookTransformType(cdl_working_space=working_space, asc_sop=sop_node, asc_sat=sat_node, applied=False)
+    sop_node = amf.AscSop(slope=list(slope), offset=list(offset), power=list(power))
+    sat_node = amf.AscSat(saturation=saturation)
+    return amf.LookTransformType(cdl_working_space=working_space, asc_sop=sop_node, asc_sat=sat_node, applied=False)
 
 
-def cdl_look_transform_to_dict(look_transform: amf_v2.LookTransformType) -> dict:
+def cdl_look_transform_to_dict(look_transform: amf.LookTransformType) -> dict:
     """Extract CDL values from a look transform as a plain dict.
 
     Returns:
@@ -81,19 +81,19 @@ def cdl_look_transform_to_dict(look_transform: amf_v2.LookTransformType) -> dict
     return asc_cdl
 
 
-def prepare_for_write(amf: amf_v2.AcesMetadataFile) -> None:
+def prepare_for_write(amf_obj: amf.AcesMetadataFile) -> None:
     """Update modification timestamps and regenerate UUIDs.
 
     Called automatically by ``save_amf`` and ``render_amf``.
     Can also be called manually before low-level ``dump_amf``/``write_amf``.
     """
     now = amf_xml_date_time()
-    if amf.amf_info:
-        amf.amf_info.date_time.modification_date_time = now
-        amf.amf_info.uuid = uuid.uuid4().urn
-    if amf.pipeline and amf.pipeline.pipeline_info:
-        amf.pipeline.pipeline_info.date_time.modification_date_time = now
-        amf.pipeline.pipeline_info.uuid = uuid.uuid4().urn
-    for archived in amf.archived_pipeline:
+    if amf_obj.amf_info:
+        amf_obj.amf_info.date_time.modification_date_time = now
+        amf_obj.amf_info.uuid = uuid.uuid4().urn
+    if amf_obj.pipeline and amf_obj.pipeline.pipeline_info:
+        amf_obj.pipeline.pipeline_info.date_time.modification_date_time = now
+        amf_obj.pipeline.pipeline_info.uuid = uuid.uuid4().urn
+    for archived in amf_obj.archived_pipeline:
         if archived.pipeline_info and archived.pipeline_info.date_time:
             archived.pipeline_info.date_time.modification_date_time = now

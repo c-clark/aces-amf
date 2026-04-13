@@ -3,7 +3,7 @@
 
 import pytest
 from aces_amf_lib import AcesMetadataFile
-from aces_amf_lib.amf_v2 import (
+from aces_amf_lib.amf import (
     AuthorType,
     ClipIdType,
     InputTransformType,

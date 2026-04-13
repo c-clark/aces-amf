@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 from aces_amf_lib.protocols import AMFValidator
 from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
-from aces_amf_lib.amf_v2 import WorkingLocationType
+from aces_amf_lib.amf import WorkingLocationType
 
 if TYPE_CHECKING:
-    from aces_amf_lib.amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf import AcesMetadataFile
 
 
 def _count_working_locations(pipeline) -> int:

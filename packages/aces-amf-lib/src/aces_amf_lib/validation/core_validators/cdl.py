@@ -9,7 +9,7 @@ from aces_amf_lib.protocols import AMFValidator
 from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from aces_amf_lib.amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf import AcesMetadataFile
 
 # CDL validation constants
 CDL_SLOPE_MAX = 5.0

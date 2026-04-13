@@ -6,7 +6,7 @@ Provides a fluent API for loading, inspecting, mutating, and saving AMF files.
 
 Usage:
     from aces_amf_utils import ACESAMF
-    from aces_amf_lib import amf_v2
+    from aces_amf_lib import amf
 
     # Load and modify an existing AMF
     amf = ACESAMF.from_file("input.amf")
@@ -15,12 +15,12 @@ Usage:
     # Build a new AMF from scratch
     amf = (ACESAMF.new()
         .with_description("My Show - Ep 1")
-        .with_author(amf_v2.AuthorType(name="Jane Doe", email_address="jane@example.com"))
-        .with_input_transform(amf_v2.InputTransformType(
+        .with_author(amf.AuthorType(name="Jane Doe", email_address="jane@example.com"))
+        .with_input_transform(amf.InputTransformType(
             transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
             applied=False))
-        .with_look_transform(amf_v2.LookTransformType(file="grade.clf", applied=True))
-        .with_output_transform(amf_v2.OutputTransformType(
+        .with_look_transform(amf.LookTransformType(file="grade.clf", applied=True))
+        .with_output_transform(amf.OutputTransformType(
             transform_id="urn:ampas:aces:transformId:v1.5:RRTODT...",
             applied=False)))
 """
@@ -33,7 +33,7 @@ from typing import Self
 from aces_amf_lib import (
     AcesMetadataFile,
     DEFAULT_HASH_ALGORITHM,
-    amf_v2,
+    amf,
     compute_file_hash,
     load_amf,
     load_amf_data,
@@ -58,8 +58,8 @@ class ACESAMF(_AMFMutatorMixin):
     Adds I/O, construction helpers, and derived read-only properties.
     """
 
-    def __init__(self, amf: AcesMetadataFile, registry=None):
-        self._amf = amf
+    def __init__(self, amf_obj: AcesMetadataFile, registry=None):
+        self._amf = amf_obj
         self._registry = registry
 
     @property
@@ -180,9 +180,9 @@ class ACESAMF(_AMFMutatorMixin):
             if not resolved.is_file():
                 continue
             digest = compute_file_hash(resolved, HASH_ALGO_MAP[algorithm])
-            transform.hash = amf_v2.HashType(
+            transform.hash = amf.HashType(
                 value=digest,
-                algorithm=amf_v2.HashAlgoType(algorithm),
+                algorithm=amf.HashAlgoType(algorithm),
             )
             results[file_ref] = digest
 

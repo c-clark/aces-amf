@@ -4,7 +4,7 @@ Generator: PydanticGenerator
 See: https://xsdata.readthedocs.io/
 """
 
-from aces_amf_lib.amf_v2.aces_metadata_file import (
+from aces_amf_lib.amf.aces_metadata_file import (
     AcesMetadataFile,
     AuthorType,
     CdlWorkingSpaceType,
@@ -29,10 +29,10 @@ from aces_amf_lib.amf_v2.aces_metadata_file import (
     VersionType,
     WorkingSpaceTransformType,
 )
-from aces_amf_lib.amf_v2.aces_metadata_file import (
+from aces_amf_lib.amf.aces_metadata_file import (
     TransformType as MetadataFileTransformType,
 )
-from aces_amf_lib.amf_v2.asc_cdl_schema_v1_01 import (
+from aces_amf_lib.amf.asc_cdl_schema_v1_01 import (
     AscCcXml,
     AscSat,
     AscSop,
@@ -59,7 +59,7 @@ from aces_amf_lib.amf_v2.asc_cdl_schema_v1_01 import (
     Sopnode,
     SopnodeType,
 )
-from aces_amf_lib.amf_v2.st433b_2008_am1_2011 import (
+from aces_amf_lib.amf.st433b_2008_am1_2011 import (
     CurrentModeToken,
     CurrentType,
     CurrentUnitsToken,
@@ -83,7 +83,7 @@ from aces_amf_lib.amf_v2.st433b_2008_am1_2011 import (
     VoltageType,
     VoltageUnitsToken,
 )
-from aces_amf_lib.amf_v2.xmldsig_core_schema import (
+from aces_amf_lib.amf.xmldsig_core_schema import (
     CanonicalizationMethod,
     CanonicalizationMethodType,
     DigestMethod,
@@ -130,7 +130,7 @@ from aces_amf_lib.amf_v2.xmldsig_core_schema import (
     X509DataType,
     X509IssuerSerialType,
 )
-from aces_amf_lib.amf_v2.xmldsig_core_schema import (
+from aces_amf_lib.amf.xmldsig_core_schema import (
     TransformType as XmldsigCoreSchemaTransformType,
 )
 
