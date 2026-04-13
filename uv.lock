@@ -15,6 +15,12 @@ members = [
 name = "aces-amf"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "aces-amf-lib" },
+    { name = "aces-amf-utils" },
+    { name = "aces-common" },
+    { name = "aces-transforms" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -24,6 +30,12 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "aces-amf-lib", editable = "packages/aces-amf-lib" },
+    { name = "aces-amf-utils", editable = "packages/aces-amf-utils" },
+    { name = "aces-common", editable = "packages/aces-common" },
+    { name = "aces-transforms", editable = "packages/aces-transforms" },
+]
 
 [package.metadata.requires-dev]
 dev = [

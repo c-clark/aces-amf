@@ -4,7 +4,7 @@
 import pytest
 from pathlib import Path
 
-from aces_amf_lib.fixtures import get_amf_examples_path
+from aces.amf_lib.fixtures import get_amf_examples_path
 
 
 @pytest.fixture

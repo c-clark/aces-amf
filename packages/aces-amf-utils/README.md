@@ -11,8 +11,8 @@ pip install aces-amf-utils
 ## Quick Start
 
 ```python
-from aces_amf_lib import amf
-from aces_amf_utils import ACESAMF, AMFBuilder, cdl_look_transform
+from aces.amf_lib import amf
+from aces.amf_utils import ACESAMF, AMFBuilder, cdl_look_transform
 
 # Load and inspect an existing AMF
 amf = ACESAMF.from_file("input.amf")
@@ -37,7 +37,7 @@ amf = (AMFBuilder()
 
 The API follows a property-based pattern with chainable builder wrappers:
 
-- **Properties** for Pythonic get/set using pre-built Pydantic types from `aces_amf_lib.amf`
+- **Properties** for Pythonic get/set using pre-built Pydantic types from `aces.amf_lib.amf`
 - **`with_X()` methods** that wrap property setters and return `self` for fluent chaining
 - **Factory functions** for complex type construction (e.g., CDL look transforms)
 
@@ -127,8 +127,8 @@ All return `self` for fluent chaining:
 `AMFBuilder` provides the same properties and `with_X()` methods as `ACESAMF`, plus a `build()` method to extract the final `AcesMetadataFile`:
 
 ```python
-from aces_amf_lib import amf, save_amf
-from aces_amf_utils import AMFBuilder
+from aces.amf_lib import amf, save_amf
+from aces.amf_utils import AMFBuilder
 
 amf = (AMFBuilder(aces_version=(2, 0, 0))
     .with_description("DI Grade")
@@ -179,7 +179,7 @@ post = amf.get_post_working_looks()        # looks after working location
 For complex type construction:
 
 ```python
-from aces_amf_utils import cdl_look_transform, cdl_look_transform_to_dict
+from aces.amf_utils import cdl_look_transform, cdl_look_transform_to_dict
 
 # Create a CDL look transform with ACEScct working space
 lt = cdl_look_transform(
@@ -201,7 +201,7 @@ cdl_dict = cdl_look_transform_to_dict(lt)
 Compare two AMF files or objects:
 
 ```python
-from aces_amf_utils import diff_amf
+from aces.amf_utils import diff_amf
 
 result = diff_amf("a.amf", "b.amf", verbose=True)
 if result.has_differences:
@@ -254,10 +254,10 @@ amf template search "HDR"
 
 ## Key Types
 
-All transform and metadata types come from `aces_amf_lib.amf`:
+All transform and metadata types come from `aces.amf_lib.amf`:
 
 ```python
-from aces_amf_lib.amf import (
+from aces.amf_lib.amf import (
     InputTransformType,      # input_transform property type
     OutputTransformType,     # output_transform property type
     LookTransformType,       # look transforms and CDL

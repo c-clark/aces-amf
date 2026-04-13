@@ -68,7 +68,7 @@ aces-common          (shared protocols, zero dependencies)
 ### Load & Inspect an AMF
 
 ```python
-from aces_amf_utils import ACESAMF
+from aces.amf_utils import ACESAMF
 
 amf = ACESAMF.from_file("shot_001.amf", validate=False)
 print(amf.description)
@@ -87,9 +87,9 @@ if amf.output_transform:
 Demonstrates all `.with_*` methods, including look transforms before and after a working location delimiter.
 
 ```python
-from aces_amf_lib import amf
-from aces_amf_utils import ACESAMF
-from aces_amf_utils.factories import cdl_look_transform
+from aces.amf_lib import amf
+from aces.amf_utils import ACESAMF
+from aces.amf_utils.factories import cdl_look_transform
 
 # CDL grade with ACEScct working space
 primary_grade = cdl_look_transform(
@@ -148,8 +148,8 @@ amf.write("output.amf", validate=False)
 ### Load, Modify, and Save
 
 ```python
-from aces_amf_lib import amf
-from aces_amf_utils import ACESAMF
+from aces.amf_lib import amf
+from aces.amf_utils import ACESAMF
 
 amf = ACESAMF.from_file("shot_001.amf", validate=False)
 amf.output_transform = amf.OutputTransformType(
@@ -165,8 +165,8 @@ amf.write("shot_001_hdr.amf", validate=False)
 Insert, remove, and reorder looks in an existing AMF.
 
 ```python
-from aces_amf_utils import ACESAMF
-from aces_amf_utils.factories import cdl_look_transform
+from aces.amf_utils import ACESAMF
+from aces.amf_utils.factories import cdl_look_transform
 
 amf = ACESAMF.from_file("shot_001.amf", validate=False)
 
@@ -192,8 +192,8 @@ amf.write("reordered.amf", validate=False)
 ### Validate an AMF
 
 ```python
-from aces_amf_lib import validate_schema, validate_semantic, validate_all
-from aces_transforms import ACESTransformRegistry
+from aces.amf_lib import validate_schema, validate_semantic, validate_all
+from aces.transforms import ACESTransformRegistry
 
 registry = ACESTransformRegistry()
 
@@ -215,7 +215,7 @@ for m in messages:
 Look up transforms, find equivalents, and check validity.
 
 ```python
-from aces_transforms import ACESTransformRegistry
+from aces.transforms import ACESTransformRegistry
 
 registry = ACESTransformRegistry()
 
@@ -241,7 +241,7 @@ registry.get_equivalent_id(
 ### Compare Two AMFs
 
 ```python
-from aces_amf_utils import diff_amf
+from aces.amf_utils import diff_amf
 
 result = diff_amf("shot_001_v1.amf", "shot_001_v2.amf")
 if result.has_differences:
@@ -253,7 +253,7 @@ if result.has_differences:
 ### Parse Transform URNs
 
 ```python
-from aces_common import TransformURN
+from aces.common import TransformURN
 
 urn = TransformURN.parse(
     "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3"
@@ -297,7 +297,7 @@ amf transforms info "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v
 amf resolve-urns mixed.amf --auto -o fixed.amf
 ```
 
-> **Lower-level access:** For direct Pydantic model access, `AMFBuilder(...).build()` returns a raw `AcesMetadataFile`, and `load_amf()` / `save_amf()` from `aces_amf_lib` provide I/O without the wrapper. See the [aces-amf-lib README](./packages/aces-amf-lib/) for details.
+> **Lower-level access:** For direct Pydantic model access, `AMFBuilder(...).build()` returns a raw `AcesMetadataFile`, and `load_amf()` / `save_amf()` from `aces.amf_lib` provide I/O without the wrapper. See the [aces-amf-lib README](./packages/aces-amf-lib/) for details.
 
 ### Development Setup
 
