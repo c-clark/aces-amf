@@ -16,11 +16,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import unquote
 
-from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
-from ._nested import collect_sub_transforms
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from aces_amf_lib.validation.core_validators._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile, PipelineType
+    from aces_amf_lib.amf_v2 import AcesMetadataFile, PipelineType
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ HASH_ALGORITHM_MAP = {
 CDL_COLLECTION_EXTENSIONS = {".ccc", ".cdl"}
 
 
-class FileReferenceValidator:
+class FileReferenceValidator(AMFValidator):
     """Validates file references, hashes, and CCC cross-references.
 
     Only runs when context.base_path is set (file-system access required).

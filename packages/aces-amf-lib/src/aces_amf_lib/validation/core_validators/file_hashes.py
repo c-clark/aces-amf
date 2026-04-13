@@ -8,11 +8,12 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
-from ._nested import collect_sub_transforms
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from aces_amf_lib.validation.core_validators._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf_v2 import AcesMetadataFile
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ HASH_ALGO_MAP = {
 }
 
 
-class FileHashValidator:
+class FileHashValidator(AMFValidator):
     name = "file_hashes"
 
     def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:

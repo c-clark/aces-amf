@@ -15,7 +15,7 @@ Example usage:
     save_amf(amf, "output.amf")
 """
 
-from .amf_helpers import (
+from aces_amf_lib.amf_helpers import (
     DEFAULT_NS_MAP,
     dump_amf,
     get_working_location_index,
@@ -25,8 +25,8 @@ from .amf_helpers import (
     save_amf,
     write_amf,
 )
-from .amf_v2 import AcesMetadataFile
-from .validation import (
+from aces_amf_lib.amf_v2 import AcesMetadataFile
+from aces_amf_lib.validation import (
     AMFValidationError,
     RegistryNotConfiguredError,
     ValidationContext,
@@ -39,10 +39,10 @@ from .validation import (
     validate_schema,
     validate_semantic,
 )
-from .protocols import AMFValidator, TransformRegistry
-from .validation.core_validators.file_hashes import compute_file_hash, DEFAULT_HASH_ALGORITHM
-from . import amf_helpers
-from . import amf_v2
+from aces_amf_lib.protocols import AMFValidator, TransformRegistry
+from aces_amf_lib.validation.core_validators.file_hashes import compute_file_hash, DEFAULT_HASH_ALGORITHM
+from aces_amf_lib import amf_helpers
+from aces_amf_lib import amf_v2
 
 __version__ = "0.1.0"
 

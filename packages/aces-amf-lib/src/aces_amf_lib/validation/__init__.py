@@ -20,7 +20,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .types import (
+from aces_amf_lib.validation.types import (
     AMFValidationError,
     RegistryNotConfiguredError,
     ValidationContext,
@@ -28,11 +28,11 @@ from .types import (
     ValidationMessage,
     ValidationType,
 )
-from .schema import validate_schema
-from .registry import ValidatorRegistry, get_default_registry
+from aces_amf_lib.validation.schema import validate_schema
+from aces_amf_lib.validation.registry import ValidatorRegistry, get_default_registry
 
 # Import core validators to trigger auto-registration
-from . import core_validators  # noqa: F401
+from aces_amf_lib.validation import core_validators  # noqa: F401
 
 if TYPE_CHECKING:
     from aces_common.protocols import TransformRegistry
@@ -69,7 +69,7 @@ def validate_semantic(
         RegistryNotConfiguredError: If the transform_id_registry validator runs and
             no transform_registry was provided.
     """
-    from ..amf_helpers import load_amf
+    from aces_amf_lib.amf_helpers import load_amf
 
     amf_path = Path(amf_path)
 
