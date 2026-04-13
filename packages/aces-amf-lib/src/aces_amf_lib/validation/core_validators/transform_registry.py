@@ -16,20 +16,21 @@ from typing import TYPE_CHECKING
 
 from aces_common.types import TransformURN
 
-from ..types import (
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import (
     RegistryNotConfiguredError,
     ValidationContext,
     ValidationLevel,
     ValidationMessage,
     ValidationType,
 )
-from ._nested import collect_sub_transforms
+from aces_amf_lib.validation.core_validators._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile, PipelineType
+    from aces_amf_lib.amf_v2 import AcesMetadataFile, PipelineType
 
 
-class TransformRegistryValidator:
+class TransformRegistryValidator(AMFValidator):
     """Validates transform IDs against an injected TransformRegistry.
 
     For each transform ID in the AMF pipeline:

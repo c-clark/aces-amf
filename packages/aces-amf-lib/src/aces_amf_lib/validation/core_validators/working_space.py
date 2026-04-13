@@ -5,12 +5,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
-from ...amf_v2 import WorkingLocationType
+from aces_amf_lib.amf_v2 import WorkingLocationType
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf_v2 import AcesMetadataFile
 
 
 def _count_working_locations(pipeline) -> int:
@@ -21,7 +22,7 @@ def _count_working_locations(pipeline) -> int:
     )
 
 
-class WorkingSpaceValidator:
+class WorkingSpaceValidator(AMFValidator):
     name = "working_space"
 
     def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:

@@ -5,14 +5,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
-from ._nested import collect_sub_transforms
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from aces_amf_lib.validation.core_validators._nested import collect_sub_transforms
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile, PipelineType
+    from aces_amf_lib.amf_v2 import AcesMetadataFile, PipelineType
 
 
-class UUIDValidator:
+class UUIDValidator(AMFValidator):
     name = "uuid"
 
     def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:

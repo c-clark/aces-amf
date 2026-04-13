@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.bindings import XmlParser, XmlSerializer
 
-from . import amf_v2
+from aces_amf_lib import amf_v2
 
 
 """Minimal namespaces for AMF"""
@@ -180,9 +180,9 @@ def _run_validation(amf: amf_v2.AcesMetadataFile, amf_path: Path | None = None, 
         RegistryNotConfiguredError: If transform_id_registry validator runs without a registry.
         AMFValidationError: If validation finds ERROR-level messages.
     """
-    from .validation.types import AMFValidationError, ValidationContext, ValidationLevel
-    from .validation.schema import validate_schema
-    from .validation.registry import get_default_registry
+    from aces_amf_lib.validation.types import AMFValidationError, ValidationContext, ValidationLevel
+    from aces_amf_lib.validation.schema import validate_schema
+    from aces_amf_lib.validation.registry import get_default_registry
 
     messages = []
 

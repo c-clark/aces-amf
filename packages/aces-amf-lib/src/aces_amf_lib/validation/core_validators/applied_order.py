@@ -9,13 +9,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
+from aces_amf_lib.protocols import AMFValidator
+from aces_amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationMessage, ValidationType
 
 if TYPE_CHECKING:
-    from ...amf_v2 import AcesMetadataFile
+    from aces_amf_lib.amf_v2 import AcesMetadataFile
 
 
-class AppliedOrderValidator:
+class AppliedOrderValidator(AMFValidator):
     name = "applied_order"
 
     def validate(self, amf: AcesMetadataFile, context: ValidationContext) -> list[ValidationMessage]:
