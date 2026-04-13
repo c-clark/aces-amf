@@ -54,13 +54,8 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
-            <aces:description>RRT + P3 D65 ST.2084 108 nit ODT</aces:description>
-            <aces:referenceRenderingTransform>
-                <aces:transformId>urn:ampas:aces:transformId:v1.5:RRT.a1.0.3</aces:transformId>
-            </aces:referenceRenderingTransform>
-            <aces:outputDeviceTransform>
-                <aces:transformId>urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_108nits_7.2nits_ST2084.a1.1.0</aces:transformId>
-            </aces:outputDeviceTransform>
+            <aces:description>P3 D65 ST.2084 108 nit (RRTODT)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7point2nits_ST2084.a1.1.0</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>
