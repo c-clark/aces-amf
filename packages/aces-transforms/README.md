@@ -13,7 +13,7 @@ pip install aces-transforms
 ## Quick start
 
 ```python
-from aces_transforms import ACESTransformRegistry
+from aces.transforms import ACESTransformRegistry
 
 registry = ACESTransformRegistry()
 
@@ -107,9 +107,9 @@ When a new version of ACES is released:
 
 1. **Get the updated `transforms.json`** from the [aces-aswf/aces](https://github.com/aces-aswf/aces) repository. The new version will appear as a new entry in `transformsData`.
 
-2. **Replace the bundled data file** at `src/aces_transforms/data/aces_transforms.json`.
+2. **Replace the bundled data file** at `src/aces/transforms/data/aces_transforms.json`.
 
-3. **Bump the package version** in `pyproject.toml` and `src/aces_transforms/__init__.py`.
+3. **Bump the package version** in `pyproject.toml` and `src/aces/transforms/__init__.py`.
 
 4. **Run tests** to verify:
    ```bash

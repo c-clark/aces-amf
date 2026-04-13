@@ -10,8 +10,8 @@ import re
 
 import pytest
 
-from aces_common.constants import TRANSFORM_ID_PATTERNS, TRANSFORM_TYPES_WITHOUT_PATTERN
-from aces_transforms import ACESTransformRegistry
+from aces.common.constants import TRANSFORM_ID_PATTERNS, TRANSFORM_TYPES_WITHOUT_PATTERN
+from aces.transforms import ACESTransformRegistry
 
 # Only validate versions we support (v1.3+)
 SUPPORTED_VERSIONS = ["v1.3", "v1.3.1", "v2.0.0+2025.04.04"]

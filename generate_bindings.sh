@@ -13,10 +13,10 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 LIB_SRC="$REPO_ROOT/packages/aces-amf-lib/src"
-SCHEMA="$LIB_SRC/aces_amf_lib/data/amf-schema/v2/acesMetadataFile.xsd"
+SCHEMA="$LIB_SRC/aces/amf_lib/data/amf-schema/v2/acesMetadataFile.xsd"
 PATCHES_DIR="$REPO_ROOT/packages/aces-amf-lib/patches"
-OUTDIR="$LIB_SRC/aces_amf_lib/amf"
-PACKAGE="aces_amf_lib.amf"
+OUTDIR="$LIB_SRC/aces/amf_lib/amf"
+PACKAGE="aces.amf_lib.amf"
 
 # Prefer the project venv xsdata (has cli extras) over any system-level install
 if [[ -x "$REPO_ROOT/.venv/bin/xsdata" ]]; then
@@ -48,9 +48,9 @@ generate() {
         "$SCHEMA") || true
 
     # Replace only the amf subpackage, never the parent __init__.py
-    if [[ -d "$tmpdir/aces_amf_lib/amf" ]]; then
+    if [[ -d "$tmpdir/aces/amf_lib/amf" ]]; then
         rm -rf "$OUTDIR"
-        mv "$tmpdir/aces_amf_lib/amf" "$OUTDIR"
+        mv "$tmpdir/aces/amf_lib/amf" "$OUTDIR"
     else
         echo "ERROR: Expected output not found in temp dir" >&2
         exit 1
@@ -92,7 +92,7 @@ gen_patches() {
 
     mkdir -p "$PATCHES_DIR"
 
-    local raw_dir="$tmpdir/aces_amf_lib/amf"
+    local raw_dir="$tmpdir/aces/amf_lib/amf"
     local work_dir="$tmpdir/work"
     cp -r "$raw_dir" "$work_dir"
 

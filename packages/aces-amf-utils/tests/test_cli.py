@@ -5,9 +5,9 @@ import pytest
 from click.testing import CliRunner
 from pathlib import Path
 
-from aces_amf_lib import load_amf, save_amf
-from aces_amf_lib.amf import AuthorType, InputTransformType, OutputTransformType
-from aces_amf_utils.cli import main
+from aces.amf_lib import load_amf, save_amf
+from aces.amf_lib.amf import AuthorType, InputTransformType, OutputTransformType
+from aces.amf_utils.cli import main
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def runner():
 @pytest.fixture
 def sample_amf(tmp_path):
     """Create a sample AMF file for testing."""
-    from aces_amf_utils import AMFBuilder
+    from aces.amf_utils import AMFBuilder
 
     path = tmp_path / "sample.amf"
     amf = (
@@ -127,7 +127,7 @@ class TestDiffCommand:
         assert "identical" in result.output.lower()
 
     def test_diff_different(self, runner, tmp_path):
-        from aces_amf_utils import AMFBuilder
+        from aces.amf_utils import AMFBuilder
 
         f1 = tmp_path / "a.amf"
         f2 = tmp_path / "b.amf"

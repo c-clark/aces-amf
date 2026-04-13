@@ -5,16 +5,16 @@ import time
 
 import pytest
 
-from aces_amf_lib import (
+from aces.amf_lib import (
     load_amf,
     load_amf_data,
     save_amf,
     render_amf,
 )
-from aces_amf_utils.factories import cdl_look_transform, minimal_amf, prepare_for_write
-from aces_amf_lib import amf
-from aces_amf_lib.amf import AcesMetadataFile, VersionType
-from aces_amf_lib.validation import validate_schema
+from aces.amf_utils.factories import cdl_look_transform, minimal_amf, prepare_for_write
+from aces.amf_lib import amf
+from aces.amf_lib.amf import AcesMetadataFile, VersionType
+from aces.amf_lib.validation import validate_schema
 
 
 def test_load_amf(aces_amf_examples_path):
@@ -167,7 +167,7 @@ def test_load_validates_by_default(aces_amf_examples_path, transform_registry):
 
 def test_load_no_registry_raises(aces_amf_examples_path):
     """load_amf with validate=True and no registry raises RegistryNotConfiguredError."""
-    from aces_amf_lib.validation.types import RegistryNotConfiguredError
+    from aces.amf_lib.validation.types import RegistryNotConfiguredError
     with pytest.raises(RegistryNotConfiguredError):
         load_amf(aces_amf_examples_path / "example6.amf")
 
@@ -188,7 +188,7 @@ def test_save_validates_by_default(tmp_path, transform_registry):
 
 def test_save_raises_on_invalid(tmp_path, transform_registry):
     """save_amf with validate=True raises on ERROR-level issues."""
-    from aces_amf_lib.validation.types import AMFValidationError
+    from aces.amf_lib.validation.types import AMFValidationError
 
     amf_obj = minimal_amf()
     amf_obj.pipeline.working_location_or_look_transform.append(
@@ -212,7 +212,7 @@ def test_save_skip_validation(tmp_path):
 
 def test_roundtrip_file_paths(aces_amf_examples_path):
     """Round-tripping a file with <file> elements produces no percent-encoding."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_path = aces_amf_examples_path / "example5.amf"
     amf_obj = load_amf(amf_path, validate=False)
     xml_out = dump_amf(amf_obj)
@@ -264,7 +264,7 @@ def test_load_decodes_percent_encoded_file_paths():
 
 def test_save_encodes_file_paths_to_valid_uris(tmp_path):
     """File paths with spaces are percent-encoded in serialized XML."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     # In-memory should be decoded
     assert amf_obj.pipeline.input_transform.file == "my show/Camera Files/A001.clf"
@@ -275,7 +275,7 @@ def test_save_encodes_file_paths_to_valid_uris(tmp_path):
 
 def test_roundtrip_preserves_plain_paths(aces_amf_examples_path):
     """Plain paths with no special characters survive round-trip unchanged."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = load_amf(aces_amf_examples_path / "example5.amf", validate=False)
     # Second look is file-based (first is CDL)
     assert amf_obj.pipeline.look_transforms[1].file == "showLook.clf"
@@ -285,7 +285,7 @@ def test_roundtrip_preserves_plain_paths(aces_amf_examples_path):
 
 def test_roundtrip_encoded_paths():
     """Encoded input -> decoded in memory -> re-encoded on save."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     xml_out = dump_amf(amf_obj)
     assert "my%20show/Camera%20Files/A001.clf" in xml_out
@@ -303,14 +303,14 @@ def test_decode_does_not_double_decode():
     amf2.pipeline.input_transform = amf.InputTransformType(
         file="plain_file.clf", applied=False,
     )
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     xml_out = dump_amf(amf2)
     assert "plain_file.clf" in xml_out
 
 
 def test_encode_does_not_mutate_original():
     """dump_amf does not alter the in-memory model's file paths."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = load_amf_data(_AMF_WITH_ENCODED_PATH.encode(), validate=False)
     original_path = amf_obj.pipeline.input_transform.file
     dump_amf(amf_obj)  # should deep-copy internally
@@ -320,7 +320,7 @@ def test_encode_does_not_mutate_original():
 
 def test_clip_id_file_uri_roundtrip(tmp_path):
     """ClipIdType.file is decoded on load and encoded on save."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = minimal_amf()
     amf_obj.clip_id = amf.ClipIdType(clip_name="A001", file="my show/A001.ari")
     xml_out = dump_amf(amf_obj)
@@ -334,7 +334,7 @@ def test_clip_id_file_uri_roundtrip(tmp_path):
 
 def test_nested_output_transform_file_uri():
     """File fields nested inside OutputTransformType are encoded/decoded."""
-    from aces_amf_lib.amf_helpers import dump_amf
+    from aces.amf_lib.amf_helpers import dump_amf
     amf_obj = minimal_amf()
     amf_obj.pipeline.output_transform = amf.OutputTransformType(
         applied=False,
@@ -362,7 +362,7 @@ def test_render_amf_encodes_file_paths():
 
 def test_working_location_ordering_preserved(test_data_path):
     """Loading an AMF with interleaved workingLocation/lookTransform preserves order."""
-    from aces_amf_lib.amf import WorkingLocationType, LookTransformType
+    from aces.amf_lib.amf import WorkingLocationType, LookTransformType
 
     amf_obj = load_amf(test_data_path / "interleaved_working_location.amf", validate=False)
     items = amf_obj.pipeline.working_location_or_look_transform
@@ -380,7 +380,7 @@ def test_working_location_ordering_preserved(test_data_path):
 
 def test_working_location_roundtrip(test_data_path, tmp_path):
     """Round-trip preserves workingLocation/lookTransform ordering."""
-    from aces_amf_lib.amf import WorkingLocationType, LookTransformType
+    from aces.amf_lib.amf import WorkingLocationType, LookTransformType
 
     amf_obj = load_amf(test_data_path / "interleaved_working_location.amf", validate=False)
     out_path = tmp_path / "roundtrip.amf"

@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from aces_amf_lib import load_amf
-from aces_amf_lib.validation import (
+from aces.amf_lib import load_amf
+from aces.amf_lib.validation import (
     validate_semantic,
     ValidationContext,
     ValidationLevel,
@@ -24,7 +24,7 @@ INVALID_DIR = SAMPLES_DIR / "invalid_AMFs"
 
 @pytest.fixture(scope="module")
 def transform_registry():
-    from aces_transforms import ACESTransformRegistry
+    from aces.transforms import ACESTransformRegistry
     return ACESTransformRegistry()
 
 
@@ -69,7 +69,7 @@ class TestInvalidAMFs:
             base_path=invalid_amf.parent,
             transform_registry=transform_registry,
         )
-        from aces_amf_lib.validation.registry import get_default_registry
+        from aces.amf_lib.validation.registry import get_default_registry
         registry = get_default_registry()
         msgs = registry.validate(amf, context)
 

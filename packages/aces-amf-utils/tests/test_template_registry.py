@@ -2,9 +2,9 @@
 """Tests for the template registry."""
 
 import pytest
-from aces_amf_lib import AcesMetadataFile
-from aces_amf_utils import minimal_amf
-from aces_amf_utils import (
+from aces.amf_lib import AcesMetadataFile
+from aces.amf_utils import minimal_amf
+from aces.amf_utils import (
     TemplateCategory,
     TemplateMetadata,
     TemplateRegistry,

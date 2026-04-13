@@ -13,7 +13,7 @@ pip install aces-amf-lib
 ## Quick Start
 
 ```python
-from aces_amf_lib import load_amf, save_amf, amf, validate_all
+from aces.amf_lib import load_amf, save_amf, amf, validate_all
 
 # Load an AMF file (automatically upgrades v1 to v2)
 amf = load_amf("example.amf")
@@ -47,7 +47,7 @@ for msg in messages:
 ## I/O Functions
 
 ```python
-from aces_amf_lib import load_amf, load_amf_data, save_amf, render_amf
+from aces.amf_lib import load_amf, load_amf_data, save_amf, render_amf
 
 # Load from file or bytes
 amf = load_amf("file.amf", validate=True)
@@ -65,7 +65,7 @@ All I/O functions accept `validate=True` (default) to run semantic validation au
 The `amf` module provides Pydantic models generated from the ACES AMF v2 XSD schema:
 
 ```python
-from aces_amf_lib import AcesMetadataFile, amf
+from aces.amf_lib import AcesMetadataFile, amf
 
 # Root document
 amf = AcesMetadataFile(...)
@@ -97,7 +97,7 @@ pipeline.working_location_or_look_transform  # list[WorkingLocationType | LookTr
 pipeline.look_transforms  # list[LookTransformType]
 
 # Find the working location marker index
-from aces_amf_lib import get_working_location_index
+from aces.amf_lib import get_working_location_index
 idx = get_working_location_index(pipeline)  # int | None
 ```
 
@@ -108,7 +108,7 @@ idx = get_working_location_index(pipeline)  # int | None
 Validates AMF XML against the bundled XSD schemas (v1 or v2 auto-detected):
 
 ```python
-from aces_amf_lib import validate_schema
+from aces.amf_lib import validate_schema
 messages = validate_schema("file.amf")
 ```
 
@@ -117,7 +117,7 @@ messages = validate_schema("file.amf")
 Runs pluggable validators that check logical correctness:
 
 ```python
-from aces_amf_lib import validate_semantic
+from aces.amf_lib import validate_semantic
 messages = validate_semantic("file.amf", transform_registry=registry)
 ```
 
@@ -139,7 +139,7 @@ Built-in semantic validators:
 ### Combined Validation
 
 ```python
-from aces_amf_lib import validate_all
+from aces.amf_lib import validate_all
 messages = validate_all("file.amf", transform_registry=registry)
 ```
 
@@ -155,7 +155,7 @@ my_validator = "my_package:MyValidator"
 Validators implement the `AMFValidator` protocol:
 
 ```python
-from aces_amf_lib import AMFValidator, AcesMetadataFile, ValidationContext, ValidationMessage
+from aces.amf_lib import AMFValidator, AcesMetadataFile, ValidationContext, ValidationMessage
 
 class MyValidator:
     name = "my_validator"
@@ -167,7 +167,7 @@ class MyValidator:
 ## Utilities
 
 ```python
-from aces_amf_lib import compute_file_hash, DEFAULT_HASH_ALGORITHM
+from aces.amf_lib import compute_file_hash, DEFAULT_HASH_ALGORITHM
 
 # Compute file hash
 digest = compute_file_hash("grade.clf", "sha256")

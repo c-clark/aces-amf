@@ -17,10 +17,11 @@ dependencies = [
 ]
 
 [project.scripts]
-amf = "aces_amf_utils.cli:main"
+amf = "aces.amf_utils.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["aces.amf_utils*"]
 
 [tool.uv.sources]
 aces-amf-lib = { workspace = true }

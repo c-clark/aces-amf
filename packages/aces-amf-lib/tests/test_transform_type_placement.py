@@ -11,7 +11,7 @@ Enforcement layers:
 
 import pytest
 
-from aces_amf_lib import amf
+from aces.amf_lib import amf
 
 
 # -- Valid URNs for each container type --
