@@ -4,8 +4,8 @@
 from datetime import datetime, timezone
 import uuid
 
-from aces_amf_lib import amf_helpers
-from aces_amf_utils import factories as amf_factories
+from aces.amf_lib import amf_helpers
+from aces.amf_utils import factories as amf_factories
 
 
 def test_amf_timestamp_string():
