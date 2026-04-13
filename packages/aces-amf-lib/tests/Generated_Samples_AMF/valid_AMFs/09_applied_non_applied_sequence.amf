@@ -28,16 +28,16 @@
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
             <aces:description>Sony Venice 2 to ACES</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3.a1.v1</aces:transformId>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Sony.Venice_SLog3_SGamut3_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>Hero Grade - APPLIED</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
                 </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -53,10 +53,10 @@
             <aces:description>Secondary Correction - APPLIED</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
                 </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -72,10 +72,10 @@
             <aces:description>Alternative Look - Cool Tones (ARCHIVED)</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
                 </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -91,10 +91,10 @@
             <aces:description>Experimental High Contrast Look (ARCHIVED)</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACES2065-1.ACEScct.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
                 </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.ACEScct.ACES2065-1.a1.v1</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
