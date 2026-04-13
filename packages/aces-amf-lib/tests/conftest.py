@@ -2,7 +2,7 @@
 from pathlib import Path
 import pytest
 
-from aces_amf_lib.fixtures import get_amf_examples_path
+from aces.amf_lib.fixtures import get_amf_examples_path
 
 
 # Test data directory (local test data, not package fixtures)
@@ -24,5 +24,5 @@ def aces_amf_examples_path() -> Path:
 @pytest.fixture
 def transform_registry():
     """ACESTransformRegistry instance for tests that exercise transform ID validation."""
-    from aces_transforms import ACESTransformRegistry
+    from aces.transforms import ACESTransformRegistry
     return ACESTransformRegistry()

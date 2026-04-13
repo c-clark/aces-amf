@@ -2,9 +2,9 @@
 """Tests for the AMFBuilder fluent API."""
 
 import pytest
-from aces_amf_utils import AMFBuilder, cdl_look_transform
-from aces_amf_lib import AcesMetadataFile, load_amf, save_amf
-from aces_amf_lib.amf_v2 import (
+from aces.amf_utils import AMFBuilder, cdl_look_transform
+from aces.amf_lib import AcesMetadataFile, load_amf, save_amf
+from aces.amf_lib.amf import (
     AuthorType,
     ClipIdType,
     InputTransformType,

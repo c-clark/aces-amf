@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Regenerate xsdata-pydantic bindings from the v2 XSD schema.
+# Regenerate xsdata-pydantic bindings from the AMF XSD schema.
 #
 # Usage:
-#   ./generate_bindings.sh              # regenerate v2 bindings
+#   ./generate_bindings.sh              # regenerate bindings
 #   ./generate_bindings.sh --gen-patches  # regenerate patch files from current committed bindings
 #
 # Post-generation patches live in packages/aces-amf-lib/patches/.
@@ -13,8 +13,10 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 LIB_SRC="$REPO_ROOT/packages/aces-amf-lib/src"
-SCHEMA_DIR="$LIB_SRC/aces_amf_lib/data/amf-schema"
+SCHEMA="$LIB_SRC/aces/amf_lib/data/amf-schema/v2/acesMetadataFile.xsd"
 PATCHES_DIR="$REPO_ROOT/packages/aces-amf-lib/patches"
+OUTDIR="$LIB_SRC/aces/amf_lib/amf"
+PACKAGE="aces.amf_lib.amf"
 
 # Prefer the project venv xsdata (has cli extras) over any system-level install
 if [[ -x "$REPO_ROOT/.venv/bin/xsdata" ]]; then
@@ -27,17 +29,12 @@ else
 fi
 
 generate() {
-    local version="$1"
-    local schema="$SCHEMA_DIR/$version/acesMetadataFile.xsd"
-    local outdir="$LIB_SRC/aces_amf_lib/amf_$version"
-    local package="aces_amf_lib.amf_$version"
-
-    if [[ ! -f "$schema" ]]; then
-        echo "ERROR: Schema not found: $schema" >&2
+    if [[ ! -f "$SCHEMA" ]]; then
+        echo "ERROR: Schema not found: $SCHEMA" >&2
         exit 1
     fi
 
-    echo "Generating $package from $schema ..."
+    echo "Generating $PACKAGE from $SCHEMA ..."
 
     # Generate into a temp directory to avoid import side-effects.
     local tmpdir
@@ -46,14 +43,14 @@ generate() {
 
     (cd "$tmpdir" && "$XSDATA" generate \
         --output pydantic \
-        --package "$package" \
+        --package "$PACKAGE" \
         --include-header \
-        "$schema") || true
+        "$SCHEMA") || true
 
-    # Replace only the versioned subpackage, never the parent __init__.py
-    if [[ -d "$tmpdir/aces_amf_lib/amf_$version" ]]; then
-        rm -rf "$outdir"
-        mv "$tmpdir/aces_amf_lib/amf_$version" "$outdir"
+    # Replace only the amf subpackage, never the parent __init__.py
+    if [[ -d "$tmpdir/aces/amf_lib/amf" ]]; then
+        rm -rf "$OUTDIR"
+        mv "$tmpdir/aces/amf_lib/amf" "$OUTDIR"
     else
         echo "ERROR: Expected output not found in temp dir" >&2
         exit 1
@@ -62,19 +59,16 @@ generate() {
     rm -rf "$tmpdir"
     trap - RETURN
 
-    _apply_patches "$version" "$outdir"
+    _apply_patches
 
-    echo "  -> $outdir"
+    echo "  -> $OUTDIR"
 }
 
 _apply_patches() {
-    local version="$1"
-    local target_dir="$2"
-
-    for patch_file in "$PATCHES_DIR"/${version}_*.patch; do
+    for patch_file in "$PATCHES_DIR"/*.patch; do
         [[ -f "$patch_file" ]] || continue
         echo "  Applying $(basename "$patch_file") ..."
-        patch -d "$target_dir" -p0 --fuzz=2 < "$patch_file" || {
+        patch -d "$OUTDIR" -p0 --fuzz=2 < "$patch_file" || {
             echo "ERROR: $(basename "$patch_file") failed to apply." >&2
             echo "  The xsdata output may have changed. Regenerate patches with:" >&2
             echo "    ./generate_bindings.sh --gen-patches" >&2
@@ -90,22 +84,19 @@ gen_patches() {
     trap "rm -rf '$tmpdir'" RETURN
 
     echo "Generating raw (unpatched) bindings for diffing ..."
-    local schema="$SCHEMA_DIR/v2/acesMetadataFile.xsd"
     (cd "$tmpdir" && "$XSDATA" generate \
         --output pydantic \
-        --package "aces_amf_lib.amf_v2" \
+        --package "$PACKAGE" \
         --include-header \
-        "$schema") || true
+        "$SCHEMA") || true
 
     mkdir -p "$PATCHES_DIR"
 
-    local target_dir="$LIB_SRC/aces_amf_lib/amf_v2"
-    local raw_dir="$tmpdir/aces_amf_lib/amf_v2"
-
-    local work_dir="$tmpdir/work_v2"
+    local raw_dir="$tmpdir/aces/amf_lib/amf"
+    local work_dir="$tmpdir/work"
     cp -r "$raw_dir" "$work_dir"
 
-    for patch_file in "$PATCHES_DIR"/v2_*.patch; do
+    for patch_file in "$PATCHES_DIR"/*.patch; do
         [[ -f "$patch_file" ]] || continue
 
         local fname
@@ -114,10 +105,10 @@ gen_patches() {
         local before="$tmpdir/before_$(basename "$patch_file" .patch)"
         cp "$work_dir/$fname" "$before"
 
-        local after_dir="$tmpdir/after_v2"
+        local after_dir="$tmpdir/after"
         cp -r "$work_dir" "$after_dir"
         if ! patch -d "$after_dir" -p0 --fuzz=2 < "$patch_file" >/dev/null 2>&1; then
-            cp "$target_dir/$fname" "$after_dir/$fname"
+            cp "$OUTDIR/$fname" "$after_dir/$fname"
         fi
 
         local header
@@ -176,6 +167,6 @@ if [[ "${1:-}" == "--gen-patches" ]]; then
     exit 0
 fi
 
-generate "v2"
+generate
 
 echo "Done."

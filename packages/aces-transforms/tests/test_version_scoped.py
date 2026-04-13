@@ -4,8 +4,8 @@
 
 import pytest
 
-from aces_transforms import ACESTransformRegistry
-from aces_transforms._version_resolver import resolve_version_key
+from aces.transforms import ACESTransformRegistry
+from aces.transforms._version_resolver import resolve_version_key
 
 
 @pytest.fixture

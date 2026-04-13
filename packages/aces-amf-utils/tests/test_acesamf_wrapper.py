@@ -2,8 +2,8 @@
 """Tests for the ACESAMF high-level wrapper."""
 
 import pytest
-from aces_amf_lib import AcesMetadataFile
-from aces_amf_lib.amf_v2 import (
+from aces.amf_lib import AcesMetadataFile
+from aces.amf_lib.amf import (
     AuthorType,
     ClipIdType,
     InputTransformType,
@@ -12,7 +12,7 @@ from aces_amf_lib.amf_v2 import (
     VersionType,
     WorkingLocationType,
 )
-from aces_amf_utils import ACESAMF, cdl_look_transform
+from aces.amf_utils import ACESAMF, cdl_look_transform
 
 
 class TestACESAMFConstruction:

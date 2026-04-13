@@ -14,9 +14,10 @@ dependencies = ["aces-common>=0.1.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["aces.transforms*"]
 
 [tool.setuptools.package-data]
-aces_transforms = ["data/*.json"]
+"aces.transforms" = ["data/*.json"]
 
 [tool.uv.sources]
 aces-common = { workspace = true }
