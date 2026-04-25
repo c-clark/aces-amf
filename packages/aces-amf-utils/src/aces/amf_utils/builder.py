@@ -21,7 +21,10 @@ Usage:
 
 from __future__ import annotations
 
-from typing import Iterator, Self
+from typing import TYPE_CHECKING, Iterator
+
+if TYPE_CHECKING:
+    from typing import Self
 
 from aces.amf_lib import AcesMetadataFile, amf, get_working_location_index
 from aces.amf_utils.factories import minimal_amf
