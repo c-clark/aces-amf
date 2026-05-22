@@ -42,6 +42,7 @@ class TestValidatorRegistry:
         assert "file_paths" in names
         assert "working_space" in names
         assert "transform_ids" in names
+        assert "transform_placement" in names
         assert "file_hashes" in names
         assert "transform_id_registry" in names
 

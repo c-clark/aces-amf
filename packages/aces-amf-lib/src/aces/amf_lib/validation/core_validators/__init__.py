@@ -14,6 +14,7 @@ from aces.amf_lib.validation.core_validators.file_references import FileReferenc
 from aces.amf_lib.validation.core_validators.metadata import MetadataValidator
 from aces.amf_lib.validation.core_validators.temporal import TemporalValidator
 from aces.amf_lib.validation.core_validators.transform_ids import TransformIdFormatValidator
+from aces.amf_lib.validation.core_validators.transform_placement import TransformTypePlacementValidator
 from aces.amf_lib.validation.core_validators.transform_registry import TransformRegistryValidator
 from aces.amf_lib.validation.core_validators.uuid_validator import UUIDValidator
 from .working_space import WorkingSpaceValidator
@@ -31,6 +32,7 @@ def _register_core_validators():
         FileReferenceValidator,
         WorkingSpaceValidator,
         TransformIdFormatValidator,
+        TransformTypePlacementValidator,
         FileHashValidator,
         TransformRegistryValidator,
     ]:
