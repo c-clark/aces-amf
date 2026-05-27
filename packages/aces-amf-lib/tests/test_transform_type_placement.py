@@ -9,8 +9,6 @@ Enforcement layers:
    when saving/loading XML.
 """
 
-import pytest
-
 from aces.amf_lib import amf
 from aces.amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationType
 from aces.amf_lib.validation.core_validators.transform_placement import TransformTypePlacementValidator

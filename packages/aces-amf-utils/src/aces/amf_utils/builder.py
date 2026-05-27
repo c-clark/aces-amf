@@ -74,9 +74,9 @@ class _AMFMutatorMixin:
     @input_transform.setter
     def input_transform(self, value: amf.InputTransformType | None) -> None:
         if value is not None:
-            from aces.amf_utils.placement import INPUT_PLACEMENT, validate_transform_placement
+            from aces.amf_utils.placement import validate_input_transform_placement
 
-            validate_transform_placement(value.transform_id, *INPUT_PLACEMENT)
+            validate_input_transform_placement(value)
         self._amf.pipeline.input_transform = value
 
     @property
@@ -87,9 +87,9 @@ class _AMFMutatorMixin:
     @output_transform.setter
     def output_transform(self, value: amf.OutputTransformType | None) -> None:
         if value is not None:
-            from aces.amf_utils.placement import OUTPUT_PLACEMENT, validate_transform_placement
+            from aces.amf_utils.placement import validate_output_transform_placement
 
-            validate_transform_placement(value.transform_id, *OUTPUT_PLACEMENT)
+            validate_output_transform_placement(value)
         self._amf.pipeline.output_transform = value
 
     @property
@@ -170,9 +170,9 @@ class _AMFMutatorMixin:
 
     def with_look_transform(self, value: amf.LookTransformType) -> Self:
         """Append a look transform to the pipeline."""
-        from aces.amf_utils.placement import LOOK_PLACEMENT, validate_transform_placement
+        from aces.amf_utils.placement import validate_look_transform_placement
 
-        validate_transform_placement(value.transform_id, *LOOK_PLACEMENT)
+        validate_look_transform_placement(value)
         self._amf.pipeline.working_location_or_look_transform.append(value)
         return self
 
@@ -248,9 +248,9 @@ class _AMFMutatorMixin:
             idx: Logical look index at which to insert.
             lt: The look transform to insert.
         """
-        from aces.amf_utils.placement import LOOK_PLACEMENT, validate_transform_placement
+        from aces.amf_utils.placement import validate_look_transform_placement
 
-        validate_transform_placement(lt.transform_id, *LOOK_PLACEMENT)
+        validate_look_transform_placement(lt)
         compound = self._amf.pipeline.working_location_or_look_transform
         positions = self._look_positions()
         if idx >= len(positions):
