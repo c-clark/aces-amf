@@ -16,7 +16,7 @@ def amf_examples_path():
 @pytest.fixture
 def sample_amf_path(amf_examples_path):
     """Path to a single sample AMF file."""
-    examples = list(amf_examples_path.glob("*.amf"))
+    examples = sorted(amf_examples_path.glob("*.amf"))
     assert examples, "No AMF example files found"
     return examples[0]
 

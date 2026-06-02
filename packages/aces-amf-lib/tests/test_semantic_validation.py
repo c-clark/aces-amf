@@ -4,7 +4,7 @@
 import pytest
 from pathlib import Path
 
-from aces.amf_lib import save_amf, load_amf
+from aces.amf_lib import save_amf, load_amf, write_amf
 from aces.amf_utils.factories import minimal_amf, cdl_look_transform
 from aces.amf_lib.validation import (
     validate_semantic,
@@ -42,6 +42,7 @@ class TestValidatorRegistry:
         assert "file_paths" in names
         assert "working_space" in names
         assert "transform_ids" in names
+        assert "transform_placement" in names
         assert "file_hashes" in names
         assert "transform_id_registry" in names
 
@@ -86,11 +87,15 @@ class TestDateLogicValidation:
 
     def test_creation_after_modification_error(self, tmp_path):
         """Creation date after modification date produces an ERROR."""
+        from xsdata.models.datatype import XmlDateTime
         amf_obj = minimal_amf()
-        amf_obj.amf_info.date_time.creation_date_time = "2026-06-01T00:00:00Z"
-        amf_obj.amf_info.date_time.modification_date_time = "2026-01-01T00:00:00Z"
+        amf_obj.amf_info.date_time.creation_date_time = XmlDateTime(2026, 6, 1, 0, 0, 0, 0, 0)
+        amf_obj.amf_info.date_time.modification_date_time = XmlDateTime(2026, 1, 1, 0, 0, 0, 0, 0)
         amf_path = tmp_path / "test.amf"
-        save_amf(amf_obj, amf_path, validate=False)
+        # Use write_amf directly to bypass _prepare_for_write(), which would
+        # stamp modification_date_time with the current time and erase the invalid state.
+        with open(amf_path, "w") as f:
+            write_amf(f, amf_obj)
 
         msgs = validate_semantic(amf_path, validators=["temporal"])
         errors = [m for m in msgs if m.validation_type == ValidationType.INVALID_DATE_LOGIC]
