@@ -106,6 +106,7 @@ def validate_look_transform_placement(transform) -> None:
 
 
 def _validate_nested_transform(transform, attr: str, allowed: frozenset[str], label: str) -> None:
+    """Validate placement for a named nested transform attribute if present."""
     nested = getattr(transform, attr, None)
     if nested is not None:
         validate_transform_placement(nested.transform_id, allowed, label)

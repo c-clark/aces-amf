@@ -64,6 +64,7 @@ class TransformTypePlacementValidator(AMFValidator):
 
 
 def _validate_pipeline_placement(pipeline, prefix: str, amf_path: Path | None) -> list[ValidationMessage]:
+    """Collect placement errors for all transforms in a pipeline."""
     messages: list[ValidationMessage] = []
 
     if pipeline.input_transform:
@@ -125,6 +126,7 @@ def _validate_pipeline_placement(pipeline, prefix: str, amf_path: Path | None) -
 def _check_sub_transform_placements(
     transform, prefix: str, messages: list[ValidationMessage], amf_path: Path | None
 ) -> None:
+    """Check nested sub-transforms (RRT, ODT, inverse variants) for placement errors."""
     for attr, allowed in _SUB_TRANSFORM_PREFIXES.items():
         sub = getattr(transform, attr, None)
         if sub is not None:
@@ -147,6 +149,7 @@ def _check_placement(
     messages: list[ValidationMessage],
     amf_path: Path | None,
 ) -> None:
+    """Append a placement error if transform_id's type prefix is not in allowed."""
     if transform_id is None:
         return
     parsed = TransformURN.parse(transform_id)
