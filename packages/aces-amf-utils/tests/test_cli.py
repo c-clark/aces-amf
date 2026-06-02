@@ -86,6 +86,7 @@ class TestCreateCommand:
             "create", str(out),
             "-d", "New AMF",
             "--author", "Creator",
+            "--author-email", "test@test.com",
         ])
         assert result.exit_code == 0
         assert out.exists()
