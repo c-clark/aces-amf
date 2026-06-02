@@ -42,7 +42,7 @@ def create(ctx, output, description, author, author_email, idt_id, odt_id, aces_
     if description:
         builder.with_description(description)
     if author:
-        builder.with_author(amf.AuthorType(name=author, email_address=author_email or ""))
+        builder.with_author(amf.AuthorType(name=author, email_address=author_email))
     if idt_id:
         builder.with_input_transform(amf.InputTransformType(transform_id=idt_id, applied=False))
     if odt_id:
