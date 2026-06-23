@@ -8,6 +8,7 @@ from aces.amf_lib import save_amf, load_amf, write_amf
 from aces.amf_utils.factories import minimal_amf, cdl_look_transform
 from aces.amf_lib.validation import (
     validate_semantic,
+    validate_schema,
     get_default_registry,
     ValidationContext,
     ValidationLevel,
@@ -840,8 +841,8 @@ class TestMultipleWorkingLocations:
         assert len(wl_msgs) == 1
         assert "Archived pipeline #1" in wl_msgs[0].message
 
-    def test_cdl_without_working_space_warning(self, tmp_path):
-        """CDL with no working space specified produces a WARNING."""
+    def test_cdl_without_working_space_error(self, tmp_path):
+        """CDL with no working space specified produces an ERROR."""
         amf_obj = minimal_amf()
         lt = amf.LookTransformType(
             asc_sop=amf.AscSop(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
@@ -853,9 +854,163 @@ class TestMultipleWorkingLocations:
         save_amf(amf_obj, amf_path, validate=False)
 
         msgs = validate_semantic(amf_path, validators=["working_space"])
-        warnings = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
-        assert len(warnings) == 1
-        assert "no working space" in warnings[0].message.lower()
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) == 1
+        assert errors[0].level == ValidationLevel.ERROR
+        assert "no working space" in errors[0].message.lower()
+
+    def test_asc_sop_no_cdl_working_space_real_world(self, test_data_path):
+        """Real-world DaVinci Resolve AMF: ASC_SOP look transforms without cdlWorkingSpace.
+
+        Verifies three things:
+        1. cdl:ASC_SOP is accepted at parse time — xsdata respects CDL substitution groups.
+        2. Schema validation (lxml XSD) rejects the file — cdlWorkingSpace is mandatory
+           in the CDL branch, so this is the primary gate in the full validate=True flow.
+        3. Semantic validation flags MISSING_CDL_WORKING_SPACE at ERROR level for each
+           CDL look transform that omits the required cdlWorkingSpace element.
+        """
+        amf_path = test_data_path / "test_ASC_SOP_no_cdlworkingSpace.amf"
+
+        amf_obj = load_amf(amf_path, validate=False)
+        assert amf_obj is not None
+
+        schema_errors = [m for m in validate_schema(amf_path) if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert len(schema_errors) >= 1
+        assert all(m.level == ValidationLevel.ERROR for m in schema_errors)
+
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) > 0
+        assert all(m.level == ValidationLevel.ERROR for m in errors)
+
+        other_errors = [
+            m for m in msgs
+            if m.level == ValidationLevel.ERROR
+            and m.validation_type != ValidationType.MISSING_CDL_WORKING_SPACE
+        ]
+        assert len(other_errors) == 0
+
+    def _cdl_working_space(self):
+        return amf.CdlWorkingSpaceType(
+            from_cdl_working_space=amf.WorkingSpaceTransformType(
+                transform_id="urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3"
+            ),
+        )
+
+    def test_asc_sop_asc_sat_without_working_space(self, tmp_path):
+        """ASC_SOP/ASC_SAT without cdlWorkingSpace.
+
+        - Parse succeeds (substitution group respected).
+        - Schema (lxml XSD) rejects it: cdlWorkingSpace is mandatory in the CDL
+          branch of lookTransformType, so this is the primary gate via validate=True.
+        - Semantic layer (run in isolation) also flags it as an ERROR.
+        """
+        amf_obj = minimal_amf()
+        lt = amf.LookTransformType(
+            asc_sop=amf.AscSop(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            asc_sat=amf.AscSat(saturation=1.0),
+            applied=False,
+        )
+        amf_obj.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        loaded = load_amf(amf_path, validate=False)
+        assert loaded is not None
+
+        # Schema layer is the real gatekeeper in the full validate=True flow.
+        schema_msgs = validate_schema(amf_path)
+        schema_errors = [m for m in schema_msgs if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert len(schema_errors) >= 1
+        assert all(m.level == ValidationLevel.ERROR for m in schema_errors)
+
+        # Semantic layer, run in isolation, also catches it with a clearer message.
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) == 1
+        assert errors[0].level == ValidationLevel.ERROR
+
+    def test_asc_sop_asc_sat_with_working_space(self, tmp_path):
+        """ASC_SOP/ASC_SAT with valid cdlWorkingSpace: parse + schema pass, no MISSING_CDL_WORKING_SPACE."""
+        amf_obj = minimal_amf()
+        lt = amf.LookTransformType(
+            asc_sop=amf.AscSop(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            asc_sat=amf.AscSat(saturation=1.0),
+            cdl_working_space=self._cdl_working_space(),
+            applied=False,
+        )
+        amf_obj.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        loaded = load_amf(amf_path, validate=False)
+        assert loaded is not None
+
+        # With cdlWorkingSpace present, the schema accepts the CDL branch (ASC_SOP included).
+        schema_errors = [m for m in validate_schema(amf_path) if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert len(schema_errors) == 0
+
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) == 0
+
+    def test_sopnode_satnode_without_working_space(self, tmp_path):
+        """SOPNode/SatNode without cdlWorkingSpace.
+
+        - Parse succeeds (substitution group respected).
+        - Schema (lxml XSD) rejects it: cdlWorkingSpace is mandatory in the CDL
+          branch of lookTransformType, so this is the primary gate via validate=True.
+        - Semantic layer (run in isolation) also flags it as an ERROR.
+        """
+        amf_obj = minimal_amf()
+        lt = amf.LookTransformType(
+            sopnode=amf.Sopnode(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            sat_node=amf.SatNode(saturation=1.0),
+            applied=False,
+        )
+        amf_obj.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        loaded = load_amf(amf_path, validate=False)
+        assert loaded is not None
+
+        # Schema layer is the real gatekeeper in the full validate=True flow.
+        schema_msgs = validate_schema(amf_path)
+        schema_errors = [m for m in schema_msgs if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert len(schema_errors) >= 1
+        assert all(m.level == ValidationLevel.ERROR for m in schema_errors)
+
+        # Semantic layer, run in isolation, also catches it with a clearer message.
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) == 1
+        assert errors[0].level == ValidationLevel.ERROR
+
+    def test_sopnode_satnode_with_working_space(self, tmp_path):
+        """SOPNode/SatNode with valid cdlWorkingSpace: parse + schema pass, no MISSING_CDL_WORKING_SPACE."""
+        amf_obj = minimal_amf()
+        lt = amf.LookTransformType(
+            sopnode=amf.Sopnode(slope=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0], power=[1.0, 1.0, 1.0]),
+            sat_node=amf.SatNode(saturation=1.0),
+            cdl_working_space=self._cdl_working_space(),
+            applied=False,
+        )
+        amf_obj.pipeline.working_location_or_look_transform.append(lt)
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        loaded = load_amf(amf_path, validate=False)
+        assert loaded is not None
+
+        # With cdlWorkingSpace present, the schema accepts the CDL branch (SOPNode included).
+        schema_errors = [m for m in validate_schema(amf_path) if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert len(schema_errors) == 0
+
+        msgs = validate_semantic(amf_path, validators=["working_space"])
+        errors = [m for m in msgs if m.validation_type == ValidationType.MISSING_CDL_WORKING_SPACE]
+        assert len(errors) == 0
 
     def test_missing_from_cdl_working_space_error(self, tmp_path):
         """CDL with toCdlWorkingSpace but no fromCdlWorkingSpace produces an ERROR."""
