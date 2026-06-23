@@ -596,8 +596,12 @@ class TestCDLAlternateFields:
         identity_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_IDENTITY]
         assert len(identity_msgs) >= 1, "Identity detection should work via SOPNode/SatNode alternate"
 
-    def test_color_correction_ref_without_file(self, tmp_path):
-        """ColorCorrectionRef without a file element should produce a warning."""
+    def test_color_correction_ref_without_file_error(self, tmp_path):
+        """ColorCorrectionRef without a file element should produce an ERROR.
+
+        The XSD requires a file alongside ColorCorrectionRef in the CDL branch of
+        lookTransformType (minOccurs=1), so its absence is schema-invalid.
+        """
         amf_obj = minimal_amf()
         lt = amf.LookTransformType(
             color_correction_ref=amf.ColorCorrectionRef(ref="cc-001"),
@@ -610,10 +614,11 @@ class TestCDLAlternateFields:
         messages = validate_semantic(amf_path, validators=["cdl"])
         ccr_msgs = [m for m in messages if m.validation_type == ValidationType.CDL_MISSING_CCR_FILE]
         assert len(ccr_msgs) == 1
+        assert ccr_msgs[0].level == ValidationLevel.ERROR
         assert "ColorCorrectionRef" in ccr_msgs[0].message
 
-    def test_color_correction_ref_with_file_no_warning(self, tmp_path):
-        """ColorCorrectionRef WITH a file element should not produce a warning."""
+    def test_color_correction_ref_with_file_no_error(self, tmp_path):
+        """ColorCorrectionRef WITH a file element should not produce an error."""
         amf_obj = minimal_amf()
         lt = amf.LookTransformType(
             color_correction_ref=amf.ColorCorrectionRef(ref="cc-001"),
