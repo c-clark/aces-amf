@@ -1180,3 +1180,37 @@ class TestFileReferenceValidator:
         amf_obj = load_amf(amf_path, validate=False)
         msgs = validator.validate(amf_obj, context)
         assert len(msgs) == 0
+
+
+class TestAuthorEmailOptional:
+    def test_author_without_email_is_valid(self, tmp_path):
+        """AMF with an author that has no email passes full semantic validation."""
+        amf_obj = minimal_amf()
+        amf_obj.amf_info.author = [amf.AuthorType(name="No Email Author")]
+        amf_path = tmp_path / "no_email.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, exclude=["transform_id_registry"])
+        errors = [m for m in msgs if m.level.name == "ERROR"]
+        assert len(errors) == 0
+
+    def test_author_with_email_is_valid(self, tmp_path):
+        """AMF with a valid author email passes full semantic validation."""
+        amf_obj = minimal_amf()
+        amf_obj.amf_info.author = [amf.AuthorType(name="With Email", email_address="author@example.com")]
+        amf_path = tmp_path / "with_email.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        msgs = validate_semantic(amf_path, exclude=["transform_id_registry"])
+        errors = [m for m in msgs if m.level.name == "ERROR"]
+        assert len(errors) == 0
+
+    def test_author_email_roundtrip(self, tmp_path):
+        """email_address=None round-trips through save/load correctly."""
+        amf_obj = minimal_amf()
+        amf_obj.amf_info.author = [amf.AuthorType(name="Tester")]
+        amf_path = tmp_path / "roundtrip.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        loaded = load_amf(amf_path, validate=False)
+        assert loaded.amf_info.author[0].email_address is None

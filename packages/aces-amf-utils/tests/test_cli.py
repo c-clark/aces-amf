@@ -86,13 +86,24 @@ class TestCreateCommand:
             "create", str(out),
             "-d", "New AMF",
             "--author", "Creator",
-            "--author-email", "test@test.com",
         ])
         assert result.exit_code == 0
         assert out.exists()
 
         amf = load_amf(out, validate=False)
         assert amf.amf_info.description == "New AMF"
+
+    def test_create_author_without_email(self, runner, tmp_path):
+        """--author without --author-email produces a valid AMF (email is optional)."""
+        out = tmp_path / "no_email.amf"
+        result = runner.invoke(main, [
+            "create", str(out),
+            "--author", "Creator",
+        ])
+        assert result.exit_code == 0
+        amf = load_amf(out, validate=False)
+        assert amf.amf_info.author[0].name == "Creator"
+        assert amf.amf_info.author[0].email_address is None
 
     def test_create_with_transforms(self, runner, tmp_path):
         out = tmp_path / "with_transforms.amf"

@@ -185,8 +185,9 @@ class TestACESAMFAuthorManagement:
         assert amf.authors[0].email_address == "jane@example.com"
 
     def test_with_author_no_email(self):
-        amf = ACESAMF.new().with_author(AuthorType(name="Jane", email_address=""))
+        amf = ACESAMF.new().with_author(AuthorType(name="Jane", email_address=None))
         assert amf.authors[0].name == "Jane"
+        assert amf.authors[0].email_address is None
 
     def test_multiple_authors(self):
         amf = (ACESAMF.new()

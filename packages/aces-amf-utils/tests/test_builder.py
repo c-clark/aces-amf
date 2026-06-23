@@ -34,6 +34,16 @@ class TestAMFBuilder:
         assert amf.amf_info.author[0].name == "Jane Doe"
         assert amf.amf_info.author[0].email_address == "jane@example.com"
 
+    def test_with_author_no_email(self, tmp_path):
+        """Author without email is valid — emailAddress is optional in the schema."""
+        amf = AMFBuilder().with_author(AuthorType(name="No Email")).build()
+        assert amf.amf_info.author[0].email_address is None
+        out = tmp_path / "no_email.amf"
+        save_amf(amf, out, validate=False)
+        loaded = load_amf(out, validate=False)
+        assert loaded.amf_info.author[0].name == "No Email"
+        assert loaded.amf_info.author[0].email_address is None
+
     def test_multiple_authors(self):
         amf = (
             AMFBuilder()
@@ -84,7 +94,7 @@ class TestAMFBuilder:
             AMFBuilder(aces_version=(2, 0, 0))
             .with_description("Full pipeline test")
             .with_pipeline_description("Camera to Display")
-            .with_author(AuthorType(name="Test User", email_address=""))
+            .with_author(AuthorType(name="Test User", email_address=None))
             .with_input_transform(InputTransformType(
                 transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
                 applied=False,
@@ -116,7 +126,7 @@ class TestAMFBuilder:
         amf = (
             AMFBuilder()
             .with_description("Roundtrip test")
-            .with_author(AuthorType(name="Tester", email_address=""))
+            .with_author(AuthorType(name="Tester", email_address=None))
             .build()
         )
         save_amf(amf, out, validate=False)
