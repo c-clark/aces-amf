@@ -1147,6 +1147,73 @@ class TestTransformIDFormatValidation:
         assert errors[0].validation_type == ValidationType.INVALID_TRANSFORM_ID
 
 
+# All transform locations that can carry a <file> + <hash> reference.
+# Key -> substring expected in the validator message label (proves collection reached it).
+_HASH_LOCATION_LABELS = {
+    "input": "Input transform",
+    "output": "Output transform",
+    "look": "Look transform",
+    "inverseOutputTransform": "inverseOutputTransform",
+    "inverseOutputDeviceTransform": "inverseOutputDeviceTransform",
+    "inverseReferenceRenderingTransform": "inverseReferenceRenderingTransform",
+    "referenceRenderingTransform": "referenceRenderingTransform",
+    "outputDeviceTransform": "outputDeviceTransform",
+}
+_HASH_LOCATIONS = list(_HASH_LOCATION_LABELS)
+
+
+def _amf_with_hashed_file(location: str, file_name: str, hash_obj) -> amf.AcesMetadataFile:
+    """Build a minimal AMF that references ``file_name`` with ``hash_obj`` at ``location``.
+
+    Covers every file-bearing transform: the top-level input/output/look transforms
+    and the nested sub-transforms reachable via collect_sub_transforms(). Parent
+    input/output transforms in the nested cases carry no hash of their own, so the
+    only hash to verify is the one on the sub-transform.
+    """
+    amf_obj = minimal_amf()
+    pipeline = amf_obj.pipeline
+
+    if location == "input":
+        pipeline.input_transform = amf.InputTransformType(file=file_name, hash=hash_obj, applied=True)
+    elif location == "output":
+        pipeline.output_transform = amf.OutputTransformType(file=file_name, hash=hash_obj, applied=True)
+    elif location == "look":
+        pipeline.working_location_or_look_transform.append(
+            amf.LookTransformType(file=file_name, hash=hash_obj, applied=False)
+        )
+    elif location == "inverseOutputTransform":
+        pipeline.input_transform = amf.InputTransformType(
+            applied=True,
+            inverse_output_transform=amf.InverseOutputTransformType(file=file_name, hash=hash_obj),
+        )
+    elif location == "inverseOutputDeviceTransform":
+        pipeline.input_transform = amf.InputTransformType(
+            applied=True,
+            inverse_output_device_transform=amf.InverseOutputDeviceTransformType(file=file_name, hash=hash_obj),
+        )
+    elif location == "inverseReferenceRenderingTransform":
+        pipeline.input_transform = amf.InputTransformType(
+            applied=True,
+            inverse_reference_rendering_transform=amf.InverseReferenceRenderingTransformType(
+                file=file_name, hash=hash_obj
+            ),
+        )
+    elif location == "referenceRenderingTransform":
+        pipeline.output_transform = amf.OutputTransformType(
+            applied=True,
+            reference_rendering_transform=amf.ReferenceRenderingTransformType(file=file_name, hash=hash_obj),
+        )
+    elif location == "outputDeviceTransform":
+        pipeline.output_transform = amf.OutputTransformType(
+            applied=True,
+            output_device_transform=amf.OutputDeviceTransformType(file=file_name, hash=hash_obj),
+        )
+    else:
+        raise ValueError(f"Unknown hash location: {location}")
+
+    return amf_obj
+
+
 class TestFileHashValidator:
     """Tests for file_hashes validator: compute and verify hashes for referenced files."""
 
@@ -1235,6 +1302,115 @@ class TestFileHashValidator:
         msgs = validator.validate(amf_obj, context)
         warnings = [m for m in msgs if m.validation_type == ValidationType.HASH_ALGORITHM_UNSUPPORTED]
         assert len(warnings) == 1
+
+    # --- Coverage across every file-bearing transform location -------------------
+
+    @pytest.mark.parametrize("location", _HASH_LOCATIONS)
+    def test_hash_mismatch_detected_at_all_locations(self, tmp_path, location):
+        """A wrong hash is detected as a HASH_MISMATCH ERROR at every file-bearing location."""
+        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+
+        file_name = "ref.clf"
+        (tmp_path / file_name).write_bytes(b"<ProcessList/>")
+
+        # Declared hash deliberately does not match the file content.
+        hash_obj = amf.HashType(
+            value=b"\x00" * 16,
+            algorithm=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+        )
+        amf_obj = _amf_with_hashed_file(location, file_name, hash_obj)
+
+        msgs = FileHashValidator().validate(amf_obj, ValidationContext(base_path=tmp_path))
+        mismatches = [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+        assert len(mismatches) == 1, f"expected one HASH_MISMATCH at {location}, got {msgs}"
+        assert mismatches[0].level == ValidationLevel.ERROR
+        assert _HASH_LOCATION_LABELS[location] in mismatches[0].message
+
+    @pytest.mark.parametrize("location", _HASH_LOCATIONS)
+    def test_valid_hash_passes_at_all_locations(self, tmp_path, location):
+        """A correct hash produces no HASH_MISMATCH at every file-bearing location."""
+        import hashlib
+
+        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+
+        file_name = "ref.clf"
+        content = b"<ProcessList/>"
+        (tmp_path / file_name).write_bytes(content)
+
+        hash_obj = amf.HashType(
+            value=hashlib.md5(content).digest(),
+            algorithm=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+        )
+        amf_obj = _amf_with_hashed_file(location, file_name, hash_obj)
+
+        msgs = FileHashValidator().validate(amf_obj, ValidationContext(base_path=tmp_path))
+        mismatches = [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+        assert len(mismatches) == 0, f"unexpected HASH_MISMATCH at {location}: {msgs}"
+
+    @pytest.mark.parametrize("location", _HASH_LOCATIONS)
+    def test_unsupported_algorithm_detected_at_all_locations(self, tmp_path, location):
+        """An unsupported hash algorithm is flagged at every file-bearing location."""
+        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+
+        file_name = "ref.clf"
+        (tmp_path / file_name).write_bytes(b"<ProcessList/>")
+
+        # model_construct bypasses the HashAlgoType enum so we can inject an unsupported algo.
+        hash_obj = amf.HashType.model_construct(
+            value=b"\x00" * 16,
+            algorithm="http://example.com/unknown-algo",
+        )
+        amf_obj = _amf_with_hashed_file(location, file_name, hash_obj)
+
+        msgs = FileHashValidator().validate(amf_obj, ValidationContext(base_path=tmp_path))
+        warnings = [m for m in msgs if m.validation_type == ValidationType.HASH_ALGORITHM_UNSUPPORTED]
+        assert len(warnings) == 1, f"expected one HASH_ALGORITHM_UNSUPPORTED at {location}, got {msgs}"
+        assert _HASH_LOCATION_LABELS[location] in warnings[0].message
+
+    def test_invalid_hash_algorithm_rejected_at_parse_or_schema(self, tmp_path):
+        """A hash algorithm outside the XSD enum is rejected at parse/schema, not silently accepted.
+
+        HashAlgoType is a closed enum (sha256/sha1/md5), so a genuinely invalid algorithm in
+        a real AMF cannot be parsed/validated as a supported value — it must be caught at the
+        Pydantic parse layer or by XSD schema validation.
+        """
+        import hashlib
+        import warnings
+
+        file_name = "ref.clf"
+        content = b"<ProcessList/>"
+        (tmp_path / file_name).write_bytes(content)
+
+        amf_obj = minimal_amf()
+        amf_obj.pipeline.working_location_or_look_transform.append(
+            amf.LookTransformType(
+                file=file_name,
+                hash=amf.HashType(
+                    value=hashlib.md5(content).digest(),
+                    algorithm=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+                ),
+                applied=False,
+            )
+        )
+        amf_path = tmp_path / "test.amf"
+        save_amf(amf_obj, amf_path, validate=False)
+
+        # Swap the valid algorithm URI for one that is not in the XSD enum.
+        text = amf_path.read_text()
+        assert "http://www.w3.org/2001/04/xmldsig-more#md5" in text
+        amf_path.write_text(text.replace("http://www.w3.org/2001/04/xmldsig-more#md5", "http://example.com/bogus-algo"))
+
+        parse_failed = False
+        try:
+            # The bogus algorithm trips an expected xsdata ConverterWarning before raising.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                load_amf(amf_path, validate=False)
+        except Exception:
+            parse_failed = True
+
+        schema_errors = [m for m in validate_schema(amf_path) if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert parse_failed or schema_errors, "invalid hash algorithm should be rejected at parse or schema layer"
 
 
 class TestFileReferenceValidator:
