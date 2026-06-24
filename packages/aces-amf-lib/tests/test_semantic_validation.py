@@ -252,26 +252,26 @@ class TestAppliedOrderValidation:
 
 
 class TestMetadataValidation:
-    def test_missing_description_warning(self, tmp_path):
+    def test_missing_description_info(self, tmp_path):
         amf_obj = minimal_amf()
         amf_path = tmp_path / "test.amf"
         save_amf(amf_obj, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["metadata"])
-        desc_warnings = [m for m in messages if m.validation_type == ValidationType.MISSING_DESCRIPTION]
-        assert len(desc_warnings) >= 1
-        assert desc_warnings[0].level == ValidationLevel.WARNING
+        desc_msgs = [m for m in messages if m.validation_type == ValidationType.MISSING_DESCRIPTION]
+        assert len(desc_msgs) >= 1
+        assert desc_msgs[0].level == ValidationLevel.INFO
 
-    def test_missing_author_warning(self, tmp_path):
+    def test_missing_author_info(self, tmp_path):
         amf_obj = minimal_amf()
         amf_obj.amf_info.description = "Test"
         amf_path = tmp_path / "test.amf"
         save_amf(amf_obj, amf_path, validate=False)
 
         messages = validate_semantic(amf_path, validators=["metadata"])
-        author_warnings = [m for m in messages if m.validation_type == ValidationType.MISSING_AUTHOR]
-        assert len(author_warnings) >= 1
-        assert author_warnings[0].level == ValidationLevel.WARNING
+        author_msgs = [m for m in messages if m.validation_type == ValidationType.MISSING_AUTHOR]
+        assert len(author_msgs) >= 1
+        assert author_msgs[0].level == ValidationLevel.INFO
 
     def test_complete_metadata(self, temp_amf_file):
         messages = validate_semantic(temp_amf_file, validators=["metadata"])
