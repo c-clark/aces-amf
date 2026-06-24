@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Deep file reference validation: existence, hash verification, CCC cross-refs.
+Deep file reference validation: existence and CCC cross-refs.
+
+Hash verification is handled separately by the file_hashes validator.
 
 Requires base_path in ValidationContext to resolve relative file paths.
 Skips silently when base_path is None (e.g., when loading from bytes).
@@ -8,9 +10,6 @@ Skips silently when base_path is None (e.g., when loading from bytes).
 
 from __future__ import annotations
 
-import base64
-import hashlib
-import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -23,20 +22,13 @@ from aces.amf_lib.validation.core_validators._nested import collect_sub_transfor
 if TYPE_CHECKING:
     from aces.amf_lib.amf import AcesMetadataFile, PipelineType
 
-logger = logging.getLogger(__name__)
-
-HASH_ALGORITHM_MAP = {
-    "http://www.w3.org/2001/04/xmlenc#sha256": "sha256",
-    "http://www.w3.org/2000/09/xmldsig#sha1": "sha1",
-    "http://www.w3.org/2001/04/xmldsig-more#md5": "md5",
-}
-
 CDL_COLLECTION_EXTENSIONS = {".ccc", ".cdl"}
 
 
 class FileReferenceValidator(AMFValidator):
-    """Validates file references, hashes, and CCC cross-references.
+    """Validates file reference existence and CCC cross-references.
 
+    Hash verification is handled by the file_hashes validator.
     Only runs when context.base_path is set (file-system access required).
     """
 
@@ -81,12 +73,8 @@ class FileReferenceValidator(AMFValidator):
                 )
                 return  # Can't check hash or CCC if file doesn't exist
 
-            # 2. Hash verification
-            hash_obj = getattr(transform, "hash_value", None)
-            if hash_obj is not None:
-                _verify_hash(file_path, hash_obj, label, messages, context)
-
-            # 3. CCC cross-reference
+            # 2. CCC cross-reference
+            # (Hash verification is handled by the file_hashes validator.)
             ccc_ref = getattr(transform, "color_correction_ref", None)
             if ccc_ref is not None and getattr(ccc_ref, "ref", None):
                 if file_path.suffix.lower() in CDL_COLLECTION_EXTENSIONS:
@@ -108,49 +96,6 @@ class FileReferenceValidator(AMFValidator):
             _check_file_ref(pipeline.output_transform, f"{prefix}Output transform")
             for sub_label, sub in collect_sub_transforms(pipeline.output_transform, f"{prefix}Output"):
                 _check_file_ref(sub, sub_label)
-
-
-def _verify_hash(
-    file_path: Path, hash_obj, label: str, messages: list[ValidationMessage], context: ValidationContext
-) -> None:
-    """Verify the file hash matches the declared value."""
-    algo_uri = getattr(hash_obj, "algorithm", None)
-    if not algo_uri:
-        return
-
-    algo_name = HASH_ALGORITHM_MAP.get(algo_uri)
-    if algo_name is None:
-        logger.debug("Unknown hash algorithm: %s", algo_uri)
-        return
-
-    try:
-        hasher = hashlib.new(algo_name)
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(8192), b""):
-                hasher.update(chunk)
-        computed = hasher.digest()
-
-        # hash_obj.value is the declared hash — may be base64-encoded bytes or raw bytes
-        expected = hash_obj.value
-        if isinstance(expected, str):
-            expected = base64.b64decode(expected)
-
-        if computed != expected:
-            computed_b64 = base64.b64encode(computed).decode("ascii")
-            expected_b64 = base64.b64encode(expected).decode("ascii") if isinstance(expected, bytes) else str(expected)
-            messages.append(
-                ValidationMessage(
-                    level=ValidationLevel.ERROR,
-                    validation_type=ValidationType.HASH_MISMATCH,
-                    message=(
-                        f"{label} hash mismatch for {file_path.name}: "
-                        f"expected {expected_b64}, computed {computed_b64}"
-                    ),
-                    file_path=context.amf_path,
-                )
-            )
-    except OSError as e:
-        logger.debug("Could not read file for hash verification: %s", e)
 
 
 def _verify_ccc_ref(
