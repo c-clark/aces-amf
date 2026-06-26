@@ -71,7 +71,7 @@ class FileReferenceValidator(AMFValidator):
                         file_path=context.amf_path,
                     )
                 )
-                return  # Can't check hash or CCC if file doesn't exist
+                return  # Can't check CCC if file doesn't exist
 
             # 2. CCC cross-reference
             # (Hash verification is handled by the file_hashes validator.)
