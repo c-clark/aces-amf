@@ -76,7 +76,7 @@ def _validate_pipeline_working_space(look_transforms, prefix: str, amf_path) -> 
         if not lt.cdl_working_space:
             messages.append(
                 ValidationMessage(
-                    level=ValidationLevel.WARNING,
+                    level=ValidationLevel.ERROR,
                     validation_type=ValidationType.MISSING_CDL_WORKING_SPACE,
                     message=f"{desc} has CDL but no working space specified",
                     file_path=amf_path,

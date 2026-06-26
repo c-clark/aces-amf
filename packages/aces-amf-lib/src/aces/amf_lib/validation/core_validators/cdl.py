@@ -48,7 +48,7 @@ def _validate_pipeline_cdl(look_transforms, prefix: str, amf_path) -> list[Valid
         if lt.color_correction_ref is not None and lt.file is None:
             messages.append(
                 ValidationMessage(
-                    level=ValidationLevel.WARNING,
+                    level=ValidationLevel.ERROR,
                     validation_type=ValidationType.CDL_MISSING_CCR_FILE,
                     message=f"{desc} has ColorCorrectionRef without a file reference (required in AMF v2)",
                     file_path=amf_path,
