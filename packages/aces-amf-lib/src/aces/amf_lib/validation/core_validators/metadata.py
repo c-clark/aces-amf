@@ -23,7 +23,7 @@ class MetadataValidator(AMFValidator):
         if not desc or not desc.strip():
             messages.append(
                 ValidationMessage(
-                    level=ValidationLevel.WARNING,
+                    level=ValidationLevel.INFO,
                     validation_type=ValidationType.MISSING_DESCRIPTION,
                     message="AMF description is missing or empty",
                     file_path=context.amf_path,
@@ -35,7 +35,7 @@ class MetadataValidator(AMFValidator):
         if not authors:
             messages.append(
                 ValidationMessage(
-                    level=ValidationLevel.WARNING,
+                    level=ValidationLevel.INFO,
                     validation_type=ValidationType.MISSING_AUTHOR,
                     message="No authors specified",
                     file_path=context.amf_path,
@@ -61,7 +61,7 @@ def _validate_pipeline_metadata(pipeline, prefix: str, amf_path) -> list[Validat
     if not pipeline_desc or not pipeline_desc.strip():
         messages.append(
             ValidationMessage(
-                level=ValidationLevel.WARNING,
+                level=ValidationLevel.INFO,
                 validation_type=ValidationType.MISSING_DESCRIPTION,
                 message=f"{prefix}Pipeline description is missing or empty",
                 file_path=amf_path,
