@@ -43,6 +43,11 @@ class FileHashValidator(AMFValidator):
             if transform.hash is None:
                 continue
 
+            # An undecodable hash value (neither base64 nor hex) is reported by the
+            # hash_encoding validator; skip the mismatch check to avoid double-reporting.
+            if getattr(transform.hash, "_source_encoding", None) == "unknown":
+                continue
+
             file_ref = getattr(transform, "file", None)
             if not file_ref:
                 continue

@@ -1413,6 +1413,164 @@ class TestFileHashValidator:
         assert parse_failed or schema_errors, "invalid hash algorithm should be rejected at parse or schema layer"
 
 
+_HASH_ALGOS = [
+    ("md5", amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5),
+    ("sha1", amf.HashAlgoType.HTTP_WWW_W3_ORG_2000_09_XMLDSIG_SHA1),
+    ("sha256", amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLENC_SHA256),
+]
+
+
+def _save_amf_with_hash_text(tmp_path, *, algo_enum, digest_bytes, hash_text, location="look",
+                             file_name="ref.clf", content=b"<ProcessList/>"):
+    """Build+save an AMF referencing a real file with a hash, then rewrite the serialized
+    <hash> text to ``hash_text`` (e.g. the hex form). Returns the AMF path.
+
+    Because save_amf emits the hash as base64, we replace that base64 token with the
+    desired on-disk text to simulate a producer that wrote hex (or something invalid).
+    """
+    import base64
+
+    (tmp_path / file_name).write_bytes(content)
+    hash_obj = amf.HashType(value=digest_bytes, algorithm=algo_enum)
+    amf_obj = _amf_with_hashed_file(location, file_name, hash_obj)
+    path = tmp_path / "test.amf"
+    save_amf(amf_obj, path, validate=False)
+
+    b64 = base64.b64encode(digest_bytes).decode("ascii")
+    txt = path.read_text()
+    assert b64 in txt, "expected base64 hash token in serialized AMF"
+    path.write_text(txt.replace(b64, hash_text))
+    return path
+
+
+class TestHashEncoding:
+    """Hex hash support: normalize on load, warn (non-standard), error if neither encoding."""
+
+    @pytest.mark.parametrize("algo_name,algo_enum", _HASH_ALGOS)
+    def test_hex_hash_normalizes_verifies_and_warns(self, tmp_path, algo_name, algo_enum):
+        import hashlib
+        content = b"<ProcessList/>"
+        digest = hashlib.new(algo_name, content).digest()
+        path = _save_amf_with_hash_text(
+            tmp_path, algo_enum=algo_enum, digest_bytes=digest, hash_text=digest.hex()
+        )
+
+        # Normalized on load: value is the true digest bytes, tagged as hex.
+        obj = load_amf(path, validate=False)
+        h = obj.pipeline.look_transforms[0].hash
+        assert h.value == digest
+        assert h._source_encoding == "hex"
+
+        # Verifies against the file (no mismatch) and warns that hex is non-standard.
+        msgs = validate_semantic(path, base_path=tmp_path, validators=["file_hashes", "hash_encoding"])
+        assert not [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+        warns = [m for m in msgs if m.validation_type == ValidationType.HASH_ENCODING_NON_STANDARD]
+        assert len(warns) == 1
+        assert warns[0].level == ValidationLevel.WARNING
+
+    @pytest.mark.parametrize("algo_name,algo_enum", _HASH_ALGOS)
+    def test_wrong_hex_hash_is_mismatch(self, tmp_path, algo_name, algo_enum):
+        import hashlib
+        content = b"<ProcessList/>"
+        wrong = hashlib.new(algo_name, b"a different payload").digest()
+        path = _save_amf_with_hash_text(
+            tmp_path, algo_enum=algo_enum, digest_bytes=wrong, hash_text=wrong.hex()
+        )
+        msgs = validate_semantic(path, base_path=tmp_path, validators=["file_hashes"])
+        assert [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+
+    def test_hex_hash_on_nested_transform_warns(self, tmp_path):
+        import hashlib
+        content = b"<ProcessList/>"
+        digest = hashlib.md5(content).digest()
+        path = _save_amf_with_hash_text(
+            tmp_path,
+            algo_enum=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+            digest_bytes=digest,
+            hash_text=digest.hex(),
+            location="outputDeviceTransform",
+        )
+        msgs = validate_semantic(path, base_path=tmp_path, validators=["file_hashes", "hash_encoding"])
+        assert not [m for m in msgs if m.validation_type == ValidationType.HASH_MISMATCH]
+        warns = [m for m in msgs if m.validation_type == ValidationType.HASH_ENCODING_NON_STANDARD]
+        assert len(warns) == 1
+        assert "outputDeviceTransform" in warns[0].message
+
+    def test_neither_base64_nor_hex_is_error(self, tmp_path):
+        import base64
+        # MD5 digest size is 16; a 15-byte value is neither 16 (base64) nor 24 (hex-as-base64).
+        path = _save_amf_with_hash_text(
+            tmp_path,
+            algo_enum=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+            digest_bytes=b"\x01" * 16,
+            hash_text=base64.b64encode(b"\x02" * 15).decode("ascii"),
+        )
+        # No base_path needed — encoding validity is independent of the referenced file.
+        msgs = validate_semantic(path, validators=["hash_encoding"])
+        errs = [m for m in msgs if m.validation_type == ValidationType.HASH_ENCODING_INVALID]
+        assert len(errs) == 1
+        assert errs[0].level == ValidationLevel.ERROR
+
+    @pytest.mark.parametrize("algo_name,algo_enum", _HASH_ALGOS)
+    def test_base64_hash_no_warning(self, tmp_path, algo_name, algo_enum):
+        import hashlib
+        content = b"<ProcessList/>"
+        digest = hashlib.new(algo_name, content).digest()
+        (tmp_path / "ref.clf").write_bytes(content)
+        amf_obj = _amf_with_hashed_file("look", "ref.clf", amf.HashType(value=digest, algorithm=algo_enum))
+        path = tmp_path / "test.amf"
+        save_amf(amf_obj, path, validate=False)
+
+        obj = load_amf(path, validate=False)
+        assert obj.pipeline.look_transforms[0].hash._source_encoding == "base64"
+
+        msgs = validate_semantic(path, base_path=tmp_path, validators=["file_hashes", "hash_encoding"])
+        assert not [
+            m for m in msgs
+            if m.validation_type in (
+                ValidationType.HASH_ENCODING_NON_STANDARD,
+                ValidationType.HASH_ENCODING_INVALID,
+                ValidationType.HASH_MISMATCH,
+            )
+        ]
+
+    def test_schema_accepts_hex_hash(self, tmp_path):
+        import hashlib
+        digest = hashlib.md5(b"<ProcessList/>").digest()
+        path = _save_amf_with_hash_text(
+            tmp_path,
+            algo_enum=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+            digest_bytes=digest,
+            hash_text=digest.hex(),
+        )
+        schema_errors = [m for m in validate_schema(path) if m.validation_type == ValidationType.SCHEMA_VIOLATION]
+        assert not schema_errors
+
+    def test_hex_auto_migrates_to_base64_on_save(self, tmp_path):
+        import hashlib, base64
+        content = b"<ProcessList/>"
+        digest = hashlib.md5(content).digest()
+        path = _save_amf_with_hash_text(
+            tmp_path,
+            algo_enum=amf.HashAlgoType.HTTP_WWW_W3_ORG_2001_04_XMLDSIG_MORE_MD5,
+            digest_bytes=digest,
+            hash_text=digest.hex(),
+        )
+
+        obj = load_amf(path, validate=False)  # normalized to digest bytes
+        out = tmp_path / "out.amf"
+        save_amf(obj, out, validate=False)
+
+        txt = out.read_text()
+        assert base64.b64encode(digest).decode("ascii") in txt
+        assert digest.hex() not in txt
+
+        reloaded = load_amf(out, validate=False)
+        rh = reloaded.pipeline.look_transforms[0].hash
+        assert rh.value == digest
+        assert rh._source_encoding == "base64"
+
+
 class TestFileReferenceValidator:
     """Tests for file_references validator: existence, hashes, CCC cross-refs."""
 

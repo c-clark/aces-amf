@@ -77,6 +77,10 @@ class ValidationType(Enum):
     HASH_FILE_NOT_FOUND = auto()
     HASH_ALGORITHM_UNSUPPORTED = auto()
 
+    # Hash encoding (base64 vs hex)
+    HASH_ENCODING_NON_STANDARD = auto()
+    HASH_ENCODING_INVALID = auto()
+
 
 @dataclass
 class ValidationMessage:

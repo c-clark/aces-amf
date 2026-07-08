@@ -9,7 +9,7 @@ from __future__ import annotations
 from decimal import Decimal
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.fields import field
 
@@ -188,6 +188,10 @@ class HashType(BaseModel):
         name = "hashType"
 
     model_config = ConfigDict(defer_build=True)
+    # Non-serialized: records the on-disk encoding of `value` detected at load
+    # time ("base64", "hex", or "unknown"). None when constructed in-memory.
+    # See aces.amf_lib.validation.hash_encoding and amf_helpers._normalize_hashes.
+    _source_encoding: str | None = PrivateAttr(default=None)
     value: bytes = field(
         default=b"",
         metadata={

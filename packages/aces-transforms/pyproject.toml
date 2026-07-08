@@ -22,5 +22,10 @@ include = ["aces.transforms*"]
 [tool.uv.sources]
 aces-common = { workspace = true }
 
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

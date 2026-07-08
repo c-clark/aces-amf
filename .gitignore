@@ -7,3 +7,6 @@ dist/
 build/
 .claude/
 .idea/
+
+# Backup snapshots left by patch/codegen tooling
+*.orig
