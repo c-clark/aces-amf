@@ -2,11 +2,11 @@
 
 These patch files are applied to the xsdata-generated Python bindings immediately after generation. Each patch is a standard unified diff and is applied with `patch -p0 --fuzz=2`.
 
-Patches are applied in alphabetical order with `v2_*` prefix.
+Patches are applied in alphabetical order (see `_apply_patches` in `generate_bindings.sh`).
 
 ## Patches
 
-### `v2_compound_fields.patch`
+### `compound_fields.patch`
 **Target:** `amf/aces_metadata_file.py`
 
 Replaces the two separate `working_location` and `look_transform` fields on `PipelineType` with a single compound field:
@@ -19,16 +19,17 @@ Also appends the `look_transforms` convenience property and `WorkingLocationType
 
 **Why the compound field:** The AMF v2 XSD uses `xs:choice maxOccurs="unbounded"` to allow `workingLocation` and `lookTransform` elements to be freely interleaved. xsdata generates these as two separate lists, which destroys element ordering. The compound field (xsdata `"Elements"` type with `"choices"`) preserves the original interleaved document order, which is required for correct workingLocation positional semantics.
 
-### `v2_init_exports.patch`
+### `hash_value_encoding.patch`
+**Target:** `amf/aces_metadata_file.py`
+
+Adds a non-serialized `_source_encoding: str | None` `PrivateAttr` to `HashType`. At load time, `amf_helpers._normalize_hashes` records whether a `<hash>` value was read as `"base64"`, `"hex"`, or `"unknown"` (while normalizing `value` to the correct digest bytes). The `hash_encoding` validator reads this to warn on hex (non-standard per the AMF spec) and error on undecodable values. Being a `PrivateAttr`, it is never serialized back to XML.
+
+**Why a patch:** the encoding flag must live on the generated `HashType`, so it has to survive binding regeneration.
+
+### `init_exports.patch`
 **Target:** `amf/__init__.py`
 
 Adds `WorkingLocationType` to the module's imports and `__all__` so that consumers can import it from `aces.amf_lib.amf` directly.
-
-### `v2_transform_type_validators.patch`
-**Target:** `amf/aces_metadata_file.py`
-**Depends on:** `v2_compound_fields.patch` (must be applied first for correct line offsets)
-
-Adds `__init__` wrappers on `InputTransformType`, `OutputTransformType`, `LookTransformType`, and `WorkingSpaceTransformType` that validate transform ID URN prefixes match the container type. Uses `V2_*` prefix constants (accepts both v1.5 and v2.0 URNs).
 
 ---
 
