@@ -40,7 +40,11 @@ where = ["src"]
 include = ["aswf.aces.amf_lib*"]
 
 [tool.setuptools.package-data]
-"aswf.aces.amf_lib" = ["data/amf-schema/**/*.xsd", "fixtures/amf-examples/*.amf"]
+"aswf.aces.amf_lib" = [
+    "data/amf-schema/**/*.xsd",
+    "fixtures/amf-examples/*.amf",
+    "fixtures/amf-examples/*.clf",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
