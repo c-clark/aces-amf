@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from aces.amf_lib.validation import validate_schema, ValidationType
+from aswf.aces.amf_lib.validation import validate_schema, ValidationType
 
 
 @pytest.mark.parametrize(

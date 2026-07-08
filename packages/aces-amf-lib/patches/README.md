@@ -29,7 +29,7 @@ Adds a non-serialized `_source_encoding: str | None` `PrivateAttr` to `HashType`
 ### `init_exports.patch`
 **Target:** `amf/__init__.py`
 
-Adds `WorkingLocationType` to the module's imports and `__all__` so that consumers can import it from `aces.amf_lib.amf` directly.
+Adds `WorkingLocationType` to the module's imports and `__all__` so that consumers can import it from `aswf.aces.amf_lib.amf` directly.
 
 ---
 
@@ -38,11 +38,11 @@ Adds `WorkingLocationType` to the module's imports and `__all__` so that consume
 If xsdata, the XSD schemas, or the manually-applied changes evolve, regenerate the patches:
 
 ```bash
-# 1. Make your edits to the generated files under src/aces.amf_lib/amf/
+# 1. Make your edits to the generated files under src/aswf/aces/amf_lib/amf/
 # 2. Regenerate patch files from the current committed state
 ./generate_bindings.sh --gen-patches
 # 3. Verify: wipe generated files and regenerate from scratch
-rm -rf packages/aces-amf-lib/src/aces.amf_lib/amf
+rm -rf packages/aces-amf-lib/src/aswf/aces/amf_lib/amf
 ./generate_bindings.sh
 uv run pytest packages/ -q
 ```
