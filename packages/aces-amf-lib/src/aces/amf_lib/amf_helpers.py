@@ -117,12 +117,37 @@ def get_working_location_index(pipeline: amf.PipelineType) -> int | None:
     return None
 
 
+def _normalize_hashes(amf_obj: amf.AcesMetadataFile) -> None:
+    """Normalize each transform hash value to the correct digest bytes and record the
+    source encoding on ``HashType._source_encoding``.
+
+    xsdata base64-decodes the ``<hash>`` text; for a hex-encoded hash that yields
+    wrong-length bytes. Here we detect base64 vs hex (vs neither) from the algorithm's
+    digest size, rewrite ``value`` to the true digest bytes, and tag the encoding so the
+    ``hash_encoding`` validator can warn on hex and error on undecodable values.
+    """
+    from aces.amf_lib.validation.core_validators.file_hashes import collect_transforms_with_hashes
+    from aces.amf_lib.validation.hash_encoding import classify_and_normalize, digest_size_for
+
+    for _label, transform in collect_transforms_with_hashes(amf_obj):
+        hash_obj = transform.hash
+        if hash_obj is None:
+            continue
+        digest_size = digest_size_for(hash_obj.algorithm)
+        if digest_size is None:
+            continue  # unsupported algorithm — leave value, no encoding verdict
+        normalized, encoding = classify_and_normalize(hash_obj.value, digest_size)
+        hash_obj.value = normalized
+        hash_obj._source_encoding = encoding
+
+
 def from_amf_data(amf_data: bytes) -> tuple[amf.AcesMetadataFile, dict[str, str]]:
     """Parse AMF XML bytes into a v2 model and namespace map."""
     parser = XmlParser()
     ns_map: dict[str, str] = {}
     parsed = parser.from_bytes(amf_data, amf.AcesMetadataFile, ns_map)
     _decode_file_uris(parsed)
+    _normalize_hashes(parsed)
     return parsed, ns_map
 
 
@@ -132,6 +157,7 @@ def from_amf_file(amf_path: Path | str) -> tuple[amf.AcesMetadataFile, dict[str,
     ns_map: dict[str, str] = {}
     parsed = parser.from_path(Path(amf_path), amf.AcesMetadataFile, ns_map)
     _decode_file_uris(parsed)
+    _normalize_hashes(parsed)
     return parsed, ns_map
 
 

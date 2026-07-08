@@ -30,6 +30,11 @@ dev = [
 aces-common = { workspace = true }
 aces-transforms = { workspace = true }
 
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["aces.amf_lib*"]

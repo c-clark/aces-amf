@@ -10,6 +10,7 @@ from aces.amf_lib.validation.core_validators.applied_order import AppliedOrderVa
 from aces.amf_lib.validation.core_validators.cdl import CDLValidator
 from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
 from aces.amf_lib.validation.core_validators.file_paths import FilePathValidator
+from aces.amf_lib.validation.core_validators.hash_encoding import HashEncodingValidator
 from aces.amf_lib.validation.core_validators.file_references import FileReferenceValidator
 from aces.amf_lib.validation.core_validators.metadata import MetadataValidator
 from aces.amf_lib.validation.core_validators.temporal import TemporalValidator
@@ -30,6 +31,7 @@ def _register_core_validators():
         AppliedOrderValidator,
         FilePathValidator,
         FileReferenceValidator,
+        HashEncodingValidator,
         WorkingSpaceValidator,
         TransformIdFormatValidator,
         TransformTypePlacementValidator,
