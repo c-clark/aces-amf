@@ -35,32 +35,32 @@ This repository includes a suite of Python packages for working with AMF files p
 
 ```bash
 # Install the high-level CLI and utilities (pulls in all dependencies)
-pip install aces-aswf-amf-utils
+pip install aswf-aces-amf-utils
 
 # Or install individual packages
-pip install aces-aswf-amf-lib   # core library only
-pip install aces-aswf-transforms # transform registry only
+pip install aswf-aces-amf-lib   # core library only
+pip install aswf-aces-transforms # transform registry only
 ```
 
 ### Package Overview
 
 | Package | Description |
 |---------|-------------|
-| [**aces-aswf-amf-utils**](./packages/aces-amf-utils/) | CLI, builder, and utilities for creating, modifying, and analyzing AMF files |
-| [**aces-aswf-amf-lib**](./packages/aces-amf-lib/) | Reference library for reading, writing, and validating AMF files |
-| [**aces-aswf-transforms**](./packages/aces-transforms/) | ACES transform ID registry with offline lookup and version mapping |
-| [**aces-aswf-common**](./packages/aces-common/) | Shared protocols and types |
+| [**aswf-aces-amf-utils**](./packages/aces-amf-utils/) | CLI, builder, and utilities for creating, modifying, and analyzing AMF files |
+| [**aswf-aces-amf-lib**](./packages/aces-amf-lib/) | Reference library for reading, writing, and validating AMF files |
+| [**aswf-aces-transforms**](./packages/aces-transforms/) | ACES transform ID registry with offline lookup and version mapping |
+| [**aswf-aces-common**](./packages/aces-common/) | Shared protocols and types |
 
 ### Dependency Graph
 
 ```
-aces-aswf-common     (shared protocols, zero dependencies)
+aswf-aces-common     (shared protocols, zero dependencies)
   |
-  +-- aces-aswf-transforms (transform ID registry)
+  +-- aswf-aces-transforms (transform ID registry)
   |
-  +-- aces-aswf-amf-lib (AMF I/O, schema bindings, validation)
+  +-- aswf-aces-amf-lib (AMF I/O, schema bindings, validation)
         |
-        +-- aces-aswf-amf-utils (CLI, builder, high-level API)
+        +-- aswf-aces-amf-utils (CLI, builder, high-level API)
 ```
 
 ## Getting Started
@@ -297,7 +297,7 @@ amf transforms info "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v
 amf resolve-urns mixed.amf --auto -o fixed.amf
 ```
 
-> **Lower-level access:** For direct Pydantic model access, `AMFBuilder(...).build()` returns a raw `AcesMetadataFile`, and `load_amf()` / `save_amf()` from `aswf.aces.amf_lib` provide I/O without the wrapper. See the [aces-aswf-amf-lib README](./packages/aces-amf-lib/) for details.
+> **Lower-level access:** For direct Pydantic model access, `AMFBuilder(...).build()` returns a raw `AcesMetadataFile`, and `load_amf()` / `save_amf()` from `aswf.aces.amf_lib` provide I/O without the wrapper. See the [aswf-aces-amf-lib README](./packages/aces-amf-lib/) for details.
 
 ### Development Setup
 

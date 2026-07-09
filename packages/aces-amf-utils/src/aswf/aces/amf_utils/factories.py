@@ -3,7 +3,7 @@
 Authoring factories for constructing AMF objects.
 
 These functions create new AMF model instances and are intentionally
-located in aces-aswf-amf-utils (not aces-aswf-amf-lib) because they are authoring
+located in aswf-aces-amf-utils (not aswf-aces-amf-lib) because they are authoring
 helpers, not core I/O operations.
 """
 

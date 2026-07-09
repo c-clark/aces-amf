@@ -33,7 +33,7 @@ def _load_registry(dotted_path: str):
 
 
 @click.group()
-@click.version_option(package_name="aces-aswf-amf-utils")
+@click.version_option(package_name="aswf-aces-amf-utils")
 @click.option(
     "--registry",
     default="aswf.aces.transforms:ACESTransformRegistry",

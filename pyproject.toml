@@ -5,17 +5,17 @@ version = "0.1.0"
 description = "ACES Metadata File (AMF) monorepo"
 requires-python = ">=3.10"
 dependencies = [
-    "aces-aswf-amf-lib>=0.1.0",
-    "aces-aswf-amf-utils>=0.1.0",
-    "aces-aswf-common>=0.1.0",
-    "aces-aswf-transforms>=0.1.0",
+    "aswf-aces-amf-lib>=0.1.0",
+    "aswf-aces-amf-utils>=0.1.0",
+    "aswf-aces-common>=0.1.0",
+    "aswf-aces-transforms>=0.1.0",
 ]
 
 [tool.uv.sources]
-aces-aswf-amf-lib = { workspace = true }
-aces-aswf-amf-utils = { workspace = true }
-aces-aswf-common = { workspace = true }
-aces-aswf-transforms = { workspace = true }
+aswf-aces-amf-lib = { workspace = true }
+aswf-aces-amf-utils = { workspace = true }
+aswf-aces-common = { workspace = true }
+aswf-aces-transforms = { workspace = true }
 
 [[tool.uv.index]]
 name = "pypi"

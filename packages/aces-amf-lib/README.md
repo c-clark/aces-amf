@@ -1,13 +1,13 @@
-# aces-aswf-amf-lib
+# aswf-aces-amf-lib
 
 Reference Python library for reading, writing, and validating ACES Metadata Files (AMF).
 
-Provides type-safe Pydantic schema bindings, I/O helpers, and a pluggable validation system. For high-level builder and CLI tools, see [aces-aswf-amf-utils](../aces-amf-utils/).
+Provides type-safe Pydantic schema bindings, I/O helpers, and a pluggable validation system. For high-level builder and CLI tools, see [aswf-aces-amf-utils](../aces-amf-utils/).
 
 ## Installation
 
 ```bash
-pip install aces-aswf-amf-lib
+pip install aswf-aces-amf-lib
 ```
 
 ## Quick Start

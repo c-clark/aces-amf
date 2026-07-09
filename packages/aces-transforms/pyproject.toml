@@ -4,13 +4,13 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aces-aswf-transforms"
+name = "aswf-aces-transforms"
 version = "0.1.0"
 description = "ACES transform URN registry — lookup, validation, and version mapping"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["aces-aswf-common>=0.1.0"]
+dependencies = ["aswf-aces-common>=0.1.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -20,7 +20,7 @@ include = ["aswf.aces.transforms*"]
 "aswf.aces.transforms" = ["data/*.json"]
 
 [tool.uv.sources]
-aces-aswf-common = { workspace = true }
+aswf-aces-common = { workspace = true }
 
 [[tool.uv.index]]
 name = "pypi"

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-aces-aswf-amf-lib — Lightweight reference library for ACES Metadata Files (AMF).
+aswf-aces-amf-lib — Lightweight reference library for ACES Metadata Files (AMF).
 
 Example usage:
     from aswf.aces.amf_lib import load_amf, save_amf

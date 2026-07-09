@@ -3,7 +3,7 @@
 Protocol definitions for plugin interfaces.
 
 These protocols define the contracts that external packages can implement
-to extend aces-aswf-amf-lib functionality.
+to extend aswf-aces-amf-lib functionality.
 """
 
 from __future__ import annotations

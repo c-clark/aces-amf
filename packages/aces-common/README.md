@@ -1,20 +1,20 @@
-# aces-aswf-common
+# aswf-aces-common
 
 Shared protocols and types used across the ACES AMF Python packages.
 
-This is a foundation package. Most users should install [aces-aswf-amf-utils](../aces-amf-utils/) or [aces-aswf-amf-lib](../aces-amf-lib/) instead.
+This is a foundation package. Most users should install [aswf-aces-amf-utils](../aces-amf-utils/) or [aswf-aces-amf-lib](../aces-amf-lib/) instead.
 
 ## Installation
 
 ```bash
-pip install aces-aswf-common
+pip install aswf-aces-common
 ```
 
 ## Exports
 
 ### `TransformRegistry` (Protocol)
 
-Interface for transform ID registries. Implemented by `ACESTransformRegistry` in [aces-aswf-transforms](../aces-transforms/).
+Interface for transform ID registries. Implemented by `ACESTransformRegistry` in [aswf-aces-transforms](../aces-transforms/).
 
 ```python
 from aswf.aces.common import TransformRegistry

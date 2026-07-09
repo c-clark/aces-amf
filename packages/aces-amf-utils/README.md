@@ -1,11 +1,11 @@
-# aces-aswf-amf-utils
+# aswf-aces-amf-utils
 
 CLI, builder, and utilities for creating, modifying, validating, and analyzing ACES Metadata Files (AMF).
 
 ## Installation
 
 ```bash
-pip install aces-aswf-amf-utils
+pip install aswf-aces-amf-utils
 ```
 
 ## Quick Start
