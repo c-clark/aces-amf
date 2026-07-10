@@ -1,4 +1,4 @@
-# aces-transforms
+# aswf-aces-transforms
 
 Python package for querying the official [ACES](https://acescentral.com/) transform registry. Provides lookup, validation, and version mapping of ACES transform IDs across all ACES system versions.
 
@@ -7,13 +7,13 @@ This package bundles a snapshot of the official ACES `transforms.json` from the 
 ## Installation
 
 ```bash
-pip install aces-transforms
+pip install aswf-aces-transforms
 ```
 
 ## Quick start
 
 ```python
-from aces.transforms import ACESTransformRegistry
+from aswf.aces.transforms import ACESTransformRegistry
 
 registry = ACESTransformRegistry()
 
@@ -107,9 +107,9 @@ When a new version of ACES is released:
 
 1. **Get the updated `transforms.json`** from the [aces-aswf/aces](https://github.com/aces-aswf/aces) repository. The new version will appear as a new entry in `transformsData`.
 
-2. **Replace the bundled data file** at `src/aces/transforms/data/aces_transforms.json`.
+2. **Replace the bundled data file** at `src/aswf/aces/transforms/data/aces_transforms.json`.
 
-3. **Bump the package version** in `pyproject.toml` and `src/aces/transforms/__init__.py`.
+3. **Bump the package version** in `pyproject.toml` and `src/aswf/aces/transforms/__init__.py`.
 
 4. **Run tests** to verify:
    ```bash
@@ -118,7 +118,7 @@ When a new version of ACES is released:
 
 5. **Release** to PyPI. Downstream consumers update with:
    ```bash
-   pip install --upgrade aces-transforms
+   pip install --upgrade aswf-aces-transforms
    ```
 
 No code changes are needed — the registry reads the JSON data dynamically. Only the data file and version number change.
