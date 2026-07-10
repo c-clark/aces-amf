@@ -2,9 +2,9 @@
 """Tests for the AMF diff module."""
 
 import pytest
-from aces.amf_lib import load_amf, save_amf
-from aces.amf_lib.amf import InputTransformType, LookTransformType
-from aces.amf_utils import AMFBuilder, cdl_look_transform, diff_amf, DiffResult, FieldDiff
+from aswf.aces.amf_lib import load_amf, save_amf
+from aswf.aces.amf_lib.amf import InputTransformType, LookTransformType
+from aswf.aces.amf_utils import AMFBuilder, cdl_look_transform, diff_amf, DiffResult, FieldDiff
 
 
 class TestDiffAmf:

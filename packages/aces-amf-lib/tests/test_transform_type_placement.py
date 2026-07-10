@@ -9,10 +9,10 @@ Enforcement layers:
    when saving/loading XML.
 """
 
-from aces.amf_lib import amf
-from aces.amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationType
-from aces.amf_lib.validation.core_validators.transform_placement import TransformTypePlacementValidator
-from aces.amf_utils.factories import minimal_amf
+from aswf.aces.amf_lib import amf
+from aswf.aces.amf_lib.validation.types import ValidationContext, ValidationLevel, ValidationType
+from aswf.aces.amf_lib.validation.core_validators.transform_placement import TransformTypePlacementValidator
+from aswf.aces.amf_utils.factories import minimal_amf
 
 
 # -- Valid URNs for each container type --

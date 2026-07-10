@@ -4,9 +4,9 @@
 import pytest
 from pathlib import Path
 
-from aces.amf_lib import save_amf, load_amf, write_amf
-from aces.amf_utils.factories import minimal_amf, cdl_look_transform
-from aces.amf_lib.validation import (
+from aswf.aces.amf_lib import save_amf, load_amf, write_amf
+from aswf.aces.amf_utils.factories import minimal_amf, cdl_look_transform
+from aswf.aces.amf_lib.validation import (
     validate_semantic,
     validate_schema,
     get_default_registry,
@@ -15,7 +15,7 @@ from aces.amf_lib.validation import (
     ValidationMessage,
     ValidationType,
 )
-from aces.amf_lib import amf
+from aswf.aces.amf_lib import amf
 
 
 @pytest.fixture
@@ -54,13 +54,13 @@ class TestValidatorRegistry:
         assert len(errors) == 0
 
     def test_validate_with_registry(self, temp_amf_file):
-        from aces.transforms import ACESTransformRegistry
+        from aswf.aces.transforms import ACESTransformRegistry
         messages = validate_semantic(temp_amf_file, transform_registry=ACESTransformRegistry())
         errors = [m for m in messages if m.level == ValidationLevel.ERROR]
         assert len(errors) == 0
 
     def test_validate_no_registry_raises(self, temp_amf_file):
-        from aces.amf_lib.validation.types import RegistryNotConfiguredError
+        from aswf.aces.amf_lib.validation.types import RegistryNotConfiguredError
         with pytest.raises(RegistryNotConfiguredError):
             validate_semantic(temp_amf_file)
 
@@ -106,7 +106,7 @@ class TestDateLogicValidation:
     def test_future_modification_warning(self, tmp_path):
         """Modification date in the future produces a WARNING."""
         from xsdata.models.datatype import XmlDateTime
-        from aces.amf_lib.validation.core_validators.temporal import TemporalValidator
+        from aswf.aces.amf_lib.validation.core_validators.temporal import TemporalValidator
 
         amf_obj = minimal_amf()
         amf_obj.amf_info.date_time.creation_date_time = XmlDateTime(2026, 1, 1, 0, 0, 0, 0, 0)
@@ -713,7 +713,7 @@ class TestPrepareForWriteArchived:
     def test_archived_mod_timestamp_updated(self, tmp_path):
         """prepare_for_write should update archived pipeline modification timestamps."""
         import uuid as uuid_mod
-        from aces.amf_lib.amf_helpers import amf_date_time_now
+        from aswf.aces.amf_lib.amf_helpers import amf_date_time_now
 
         amf_obj = minimal_amf()
         archived_info = amf.PipelineInfoType(
@@ -824,7 +824,7 @@ class TestMultipleWorkingLocations:
 
     def test_archived_multiple_working_locations_error(self, tmp_path):
         """Archived pipelines with 2+ workingLocations also produce an ERROR."""
-        from aces.amf_lib.amf_helpers import amf_xml_date_time
+        from aswf.aces.amf_lib.amf_helpers import amf_xml_date_time
 
         amf_obj = minimal_amf()
         now = amf_xml_date_time()
@@ -1019,7 +1019,7 @@ class TestMultipleWorkingLocations:
 
     def test_missing_from_cdl_working_space_error(self, tmp_path):
         """CDL with toCdlWorkingSpace but no fromCdlWorkingSpace produces an ERROR."""
-        from aces.amf_lib.validation.core_validators.working_space import WorkingSpaceValidator
+        from aswf.aces.amf_lib.validation.core_validators.working_space import WorkingSpaceValidator
 
         amf_obj = minimal_amf()
         lt = amf.LookTransformType(
@@ -1089,7 +1089,7 @@ class TestVersionMismatchValidation:
             applied=False,
         )
         context = ValidationContext(transform_registry=transform_registry)
-        from aces.amf_lib.validation.registry import get_default_registry
+        from aswf.aces.amf_lib.validation.registry import get_default_registry
         registry = get_default_registry()
         msgs = registry.validate(amf_obj, context)
         errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
@@ -1107,7 +1107,7 @@ class TestTransformIDFormatValidation:
             transform_id=transform_id, applied=False,
         )
         context = ValidationContext(transform_registry=transform_registry)
-        from aces.amf_lib.validation.registry import get_default_registry
+        from aswf.aces.amf_lib.validation.registry import get_default_registry
         registry = get_default_registry()
         return registry.validate(amf_obj, context)
 
@@ -1281,7 +1281,7 @@ class TestFileHashValidator:
 
     def test_unsupported_hash_algorithm_warning(self, tmp_path):
         """Unknown hash algorithm produces a WARNING."""
-        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+        from aswf.aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
 
         clf_file = tmp_path / "test_look.clf"
         clf_file.write_bytes(b"<ProcessList/>")
@@ -1308,7 +1308,7 @@ class TestFileHashValidator:
     @pytest.mark.parametrize("location", _HASH_LOCATIONS)
     def test_hash_mismatch_detected_at_all_locations(self, tmp_path, location):
         """A wrong hash is detected as a HASH_MISMATCH ERROR at every file-bearing location."""
-        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+        from aswf.aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
 
         file_name = "ref.clf"
         (tmp_path / file_name).write_bytes(b"<ProcessList/>")
@@ -1331,7 +1331,7 @@ class TestFileHashValidator:
         """A correct hash produces no HASH_MISMATCH at every file-bearing location."""
         import hashlib
 
-        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+        from aswf.aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
 
         file_name = "ref.clf"
         content = b"<ProcessList/>"
@@ -1350,7 +1350,7 @@ class TestFileHashValidator:
     @pytest.mark.parametrize("location", _HASH_LOCATIONS)
     def test_unsupported_algorithm_detected_at_all_locations(self, tmp_path, location):
         """An unsupported hash algorithm is flagged at every file-bearing location."""
-        from aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
+        from aswf.aces.amf_lib.validation.core_validators.file_hashes import FileHashValidator
 
         file_name = "ref.clf"
         (tmp_path / file_name).write_bytes(b"<ProcessList/>")
@@ -1669,7 +1669,7 @@ class TestFileReferenceValidator:
 
         # Run validation without base_path
         context = ValidationContext(amf_path=amf_path)
-        from aces.amf_lib.validation.core_validators.file_references import FileReferenceValidator
+        from aswf.aces.amf_lib.validation.core_validators.file_references import FileReferenceValidator
         validator = FileReferenceValidator()
         amf_obj = load_amf(amf_path, validate=False)
         msgs = validator.validate(amf_obj, context)

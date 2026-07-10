@@ -4,7 +4,7 @@
 
 import pytest
 
-from aces.transforms import ACESTransformRegistry
+from aswf.aces.transforms import ACESTransformRegistry
 
 
 @pytest.fixture

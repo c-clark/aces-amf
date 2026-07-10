@@ -3,8 +3,8 @@
 
 import pytest
 
-from aces.amf_utils import AMFBuilder
-from aces.amf_lib.amf import (
+from aswf.aces.amf_utils import AMFBuilder
+from aswf.aces.amf_lib.amf import (
     CdlWorkingSpaceType,
     InputTransformType,
     InverseOutputDeviceTransformType,
