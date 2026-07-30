@@ -151,13 +151,13 @@ amf.write("output.amf", validate=False)
 from aswf.aces.amf_lib import amf
 from aswf.aces.amf_utils import ACESAMF
 
-amf = ACESAMF.from_file("shot_001.amf", validate=False)
-amf.output_transform = amf.OutputTransformType(
+shot = ACESAMF.from_file("shot_001.amf", validate=False)
+shot.output_transform = amf.OutputTransformType(
     transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_P3-D65_ST2084.a2.v1",
     description="P3 HDR 1000 nits",
     applied=False,
 )
-amf.write("shot_001_hdr.amf", validate=False)
+shot.write("shot_001_hdr.amf", validate=False)
 ```
 
 ### Manage Look Transforms
@@ -276,7 +276,7 @@ amf validate shot_001.amf shot_002.amf
 amf info shot_001.amf
 
 # Create a new AMF
-amf create output.amf -d "My Shot" \
+amf create output.amf -d "My Shot" --aces-version 2.0.0 \
   --idt "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1" \
   --odt "urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1"
 
@@ -285,9 +285,6 @@ amf add-cdl shot_001.amf --slope 1.1 1.0 0.9 --saturation 0.95 -o graded.amf
 
 # Compare two AMFs
 amf diff shot_001_v1.amf shot_001_v2.amf
-
-# Convert v1 to v2
-amf convert legacy.amf -o modern.amf
 
 # Query transforms
 amf transforms list -c CSC -n 10

@@ -15,20 +15,20 @@ from aswf.aces.amf_lib import amf
 from aswf.aces.amf_utils import ACESAMF, AMFBuilder, cdl_look_transform
 
 # Load and inspect an existing AMF
-amf = ACESAMF.from_file("input.amf")
-print(amf.description)
-print(amf.input_transform)
+doc = ACESAMF.from_file("input.amf")
+print(doc.description)
+print(doc.input_transform)
 
 # Build a new AMF from scratch
-amf = (AMFBuilder()
+built = (AMFBuilder()
     .with_description("My Show - Ep 1")
     .with_author(amf.AuthorType(name="Jane Doe", email_address="jane@example.com"))
     .with_input_transform(amf.InputTransformType(
-        transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+        transform_id="urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1",
         applied=False))
     .with_look_transform(cdl_look_transform(slope=(1.2, 1.0, 0.8), saturation=0.95))
     .with_output_transform(amf.OutputTransformType(
-        transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+        transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1",
         applied=False))
     .build())
 ```
@@ -42,14 +42,17 @@ The API follows a property-based pattern with chainable builder wrappers:
 - **Factory functions** for complex type construction (e.g., CDL look transforms)
 
 ```python
+from aswf.aces.amf_lib import amf
+from aswf.aces.amf_utils import ACESAMF
+
 # Property access — direct get and set
-amf = ACESAMF.from_file("shot.amf")
-it = amf.input_transform                                        # get
-amf.input_transform = amf.InputTransformType(                # set
+doc = ACESAMF.from_file("shot.amf")
+it = doc.input_transform                                        # get
+doc.input_transform = amf.InputTransformType(                # set
     transform_id="urn:...", applied=False)
 
 # Builder chaining — via with_X() wrappers
-amf = (ACESAMF.new()
+built = (ACESAMF.new()
     .with_input_transform(amf.InputTransformType(transform_id="urn:...", applied=False))
     .with_look_transform(amf.LookTransformType(file="grade.clf", applied=True))
     .with_output_transform(amf.OutputTransformType(transform_id="urn:...", applied=False)))
@@ -65,7 +68,7 @@ amf = (ACESAMF.new()
 # Create a new minimal AMF
 amf = ACESAMF.new(aces_version=(1, 3, 0))
 
-# Load from file (auto-upgrades v1 to v2)
+# Load from file
 amf = ACESAMF.from_file("input.amf", validate=True)
 
 # Load from raw bytes
@@ -134,7 +137,7 @@ amf = (AMFBuilder(aces_version=(2, 0, 0))
     .with_description("DI Grade")
     .with_author(amf.AuthorType(name="Colorist", email_address="color@studio.com"))
     .with_input_transform(amf.InputTransformType(
-        transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+        transform_id="urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1",
         applied=False))
     .with_look_transform(amf.LookTransformType(
         file="grade.clf", description="Primary grade", applied=True))
@@ -142,11 +145,11 @@ amf = (AMFBuilder(aces_version=(2, 0, 0))
     .with_look_transform(amf.LookTransformType(
         file="trim.clf", description="Trim pass", applied=False))
     .with_output_transform(amf.OutputTransformType(
-        transform_id="urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+        transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1",
         applied=False))
     .build())
 
-save_amf(amf, "output.amf")
+save_amf(amf, "output.amf", validate=False)
 ```
 
 ## Look Stack Management
@@ -225,12 +228,9 @@ amf info shot.amf
 amf info -v shot.amf              # verbose with transform details
 
 # Create a new AMF
-amf create output.amf -d "My Show" --author "Jane Doe" \
-    --idt "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1" \
-    --odt "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
-
-# Convert v1 AMF to v2
-amf convert v1_file.amf -o v2_file.amf
+amf create output.amf -d "My Show" --author "Jane Doe" --aces-version 2.0.0 \
+    --idt "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1" \
+    --odt "urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1"
 
 # Add a CDL look transform
 amf add-cdl shot.amf --slope 1.2 1.0 0.8 --saturation 0.95 -d "Primary grade"

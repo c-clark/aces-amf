@@ -2,8 +2,8 @@
 """Integration tests using generated AMF sample files.
 
 Validates that:
-- All files in valid_AMFs/ load without errors
-- All files in invalid_AMFs/ produce at least one ERROR-level validation message
+- All files in examples/valid/ load without errors
+- All files in examples/invalid/ produce at least one ERROR-level validation message
 """
 
 from pathlib import Path
@@ -17,9 +17,11 @@ from aswf.aces.amf_lib.validation import (
     ValidationLevel,
 )
 
-SAMPLES_DIR = Path(__file__).parent / "Generated_Samples_AMF"
-VALID_DIR = SAMPLES_DIR / "valid_AMFs"
-INVALID_DIR = SAMPLES_DIR / "invalid_AMFs"
+# Canonical sample AMFs live at the repo-root examples/ directory
+# (examples/valid + examples/invalid), shared by tests, CI, and humans.
+SAMPLES_DIR = Path(__file__).resolve().parents[3] / "examples"
+VALID_DIR = SAMPLES_DIR / "valid"
+INVALID_DIR = SAMPLES_DIR / "invalid"
 
 
 @pytest.fixture(scope="module")
@@ -74,8 +76,7 @@ class TestInvalidAMFs:
         msgs = registry.validate(amf, context)
 
         errors = [m for m in msgs if m.level == ValidationLevel.ERROR]
-        warnings = [m for m in msgs if m.level == ValidationLevel.WARNING]
 
-        assert len(errors) > 0 or len(warnings) > 0, (
-            f"{invalid_amf.name} produced no validation messages but was expected to be invalid"
+        assert len(errors) > 0, (
+            f"{invalid_amf.name} produced no ERROR-level validation messages but was expected to be invalid"
         )

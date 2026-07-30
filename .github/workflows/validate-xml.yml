@@ -22,6 +22,9 @@ jobs:
     - name: Validate XML Files
       run: |
         shopt -s globstar
-        for file in examples/**/*.amf; do
+        # Only schema-valid samples are checked. examples/invalid/ holds
+        # deliberately-broken AMFs (schema- and/or semantically-invalid) that
+        # exercise the validator's rejection paths, so it is excluded here.
+        for file in examples/valid/**/*.amf examples/generated/**/*.amf; do
           xmllint --noout --schema schema/acesMetadataFile.xsd "$file"
         done
