@@ -35,7 +35,7 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
-            <aces:description>Canon C500 Mark II to ACES</aces:description>
+            <aces:description>ARRI LogC4 to ACES</aces:description>
             <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="false">

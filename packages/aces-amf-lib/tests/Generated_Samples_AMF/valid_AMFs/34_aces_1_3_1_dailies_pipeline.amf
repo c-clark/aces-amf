@@ -14,7 +14,7 @@
     </aces:amfInfo>
     <aces:pipeline>
         <aces:pipelineInfo>
-            <aces:description>On-Set Dailies with CDL and Show LUT - ACES 1.3.1</aces:description>
+            <aces:description>On-Set Dailies with CDL and Show LMT - ACES 1.3.1</aces:description>
             <aces:dateTime>
                 <aces:creationDateTime>2026-03-26T19:19:49Z</aces:creationDateTime>
                 <aces:modificationDateTime>2026-03-26T19:19:49Z</aces:modificationDateTime>
@@ -50,7 +50,7 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:lookTransform applied="false">
-            <aces:description>Show LUT</aces:description>
+            <aces:description>Show LMT</aces:description>
             <aces:hash algorithm="http://www.w3.org/2001/04/xmldsig-more#md5">4GYskVNKvJ8K1ltFxVqpgw==</aces:hash>
             <aces:file>MasterLookBright_O-Rec709.clf</aces:file>
         </aces:lookTransform>

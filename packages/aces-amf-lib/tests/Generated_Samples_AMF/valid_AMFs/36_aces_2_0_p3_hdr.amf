@@ -27,8 +27,8 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
-            <aces:description>Sony Venice 2 S-Log3/S-Gamut3 to ACES2065-1</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Sony.Venice_SLog3_SGamut3_to_ACES.a2.v1</aces:transformId>
+            <aces:description>Sony S-Log3 S-Gamut3.Cine to ACES2065-1</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Sony.SLog3_SGamut3Cine_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>HDR Creative Grade in ACEScct</aces:description>
@@ -52,8 +52,8 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
-            <aces:description>ACES 2.0 P3 D65 ST.2084 108 nit Output</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_108nit_in_P3-D65_ST2084.a2.v1</aces:transformId>
+            <aces:description>Rec.2100 ST2084 (1000 nit P3-D65 Limited)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_Rec2100-D65_ST2084.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>
