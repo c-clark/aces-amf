@@ -1046,6 +1046,14 @@ class TestMultipleWorkingLocations:
 class TestVersionMismatchValidation:
     """Tests for URN version mismatch detection in TransformRegistryValidator."""
 
+    def test_mismatched_cdl_working_space_error(self, transform_registry):
+        """Registered CDL working-space transforms must form an inverse pair."""
+        path = Path(__file__).parent / "Generated_Samples_AMF/invalid_AMFs/invalid_12_mismatched_working_space.amf"
+        msgs = validate_semantic(path, validators=["transform_id_registry"], transform_registry=transform_registry)
+        errors = [m for m in msgs if m.validation_type == ValidationType.CDL_WORKING_SPACE_MISMATCH]
+        assert len(errors) == 1
+        assert errors[0].level == ValidationLevel.ERROR
+
     def test_version_mismatch_with_equivalents_csc(self, test_data_path, transform_registry):
         """v1.5 CSC URNs in v2.0 AMF → WARNINGs recommending canonical IDs."""
         path = test_data_path / "mixed_urns_with_equivalent_csc.amf"
