@@ -27,8 +27,8 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
-            <aces:description>Test IDT</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Sony.Venice2-SLog3-SGamut3_to_ACES.a2.v1</aces:transformId>
+            <aces:description>Sony S-Log3 S-Gamut3 to ACES2065-1</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.SLog3_SGamut3_to_ACES.a1.1.0</aces:transformId>
         </aces:inputTransform>
         <aces:outputTransform applied="true">
             <aces:description>Output with Empty Transform ID</aces:description>
