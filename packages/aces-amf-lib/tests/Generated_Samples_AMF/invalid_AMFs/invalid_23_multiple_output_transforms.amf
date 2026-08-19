@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aces:acesMetadataFile xmlns:aces="urn:ampas:aces:amf:v2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cdl="urn:ASC:CDL:v1.01" version="2.0">
     <aces:amfInfo>
-        <aces:description>ACES 2.0 Multi-Deliverable Pipeline</aces:description>
+        <aces:description>Invalid Pipeline with Multiple Output Transforms</aces:description>
         <aces:author>
             <aces:name>Finishing Colorist</aces:name>
             <aces:emailAddress>finishing@postfacility.com</aces:emailAddress>
@@ -14,7 +14,7 @@
     </aces:amfInfo>
     <aces:pipeline>
         <aces:pipelineInfo>
-            <aces:description>SDR Primary with HDR Alternative Documented</aces:description>
+            <aces:description>Two Output Transforms</aces:description>
             <aces:dateTime>
                 <aces:creationDateTime>2026-03-26T19:19:49Z</aces:creationDateTime>
                 <aces:modificationDateTime>2026-03-26T19:19:49Z</aces:modificationDateTime>
@@ -50,8 +50,12 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
-            <aces:description>SDR Rec.709 Primary Deliverable</aces:description>
+            <aces:description>Rec.709 SDR Output</aces:description>
             <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1</aces:transformId>
+        </aces:outputTransform>
+        <aces:outputTransform applied="false">
+            <aces:description>Rec.2100 ST2084 1000-nit P3-D65 Output</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_Rec2100-D65_ST2084.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>
