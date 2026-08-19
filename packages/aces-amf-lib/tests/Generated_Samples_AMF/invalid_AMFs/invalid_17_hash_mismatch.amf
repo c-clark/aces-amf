@@ -32,7 +32,7 @@
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>Look with wrong hash</aces:description>
-            <aces:hash algorithm="http://www.w3.org/2001/04/xmlenc#sha256">V1JPTkdfSEFTSF9WQUxVRV9USEFUX1dPTlRfTUFUQ0hfRklMRQ==</aces:hash>
+            <aces:hash algorithm="http://www.w3.org/2001/04/xmlenc#sha256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</aces:hash>
             <aces:file>MasterLookBright_O-Rec709.clf</aces:file>
         </aces:lookTransform>
         <aces:outputTransform applied="true">

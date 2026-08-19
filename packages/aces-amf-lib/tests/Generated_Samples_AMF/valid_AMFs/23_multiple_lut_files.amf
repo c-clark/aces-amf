@@ -36,9 +36,9 @@
             <aces:file>MasterLookBright_O-Rec709.clf</aces:file>
         </aces:lookTransform>
         <aces:lookTransform applied="false">
-            <aces:description>Creative Look LUT</aces:description>
-            <aces:hash algorithm="http://www.w3.org/2001/04/xmldsig-more#md5">4GYskVNKvJ8K1ltFxVqpgw==</aces:hash>
-            <aces:file>MasterLookBright_O-Rec709.clf</aces:file>
+            <aces:description>Additional Identity LUT</aces:description>
+            <aces:hash algorithm="http://www.w3.org/2001/04/xmldsig-more#md5">O9RixhX0N4Ecij352/HaDg==</aces:hash>
+            <aces:file>addl_lut.clf</aces:file>
         </aces:lookTransform>
         <aces:lookTransform applied="false">
             <aces:description>Final Polish LUT</aces:description>

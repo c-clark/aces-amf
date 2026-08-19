@@ -12,7 +12,6 @@ import pytest
 
 from aswf.aces.amf_lib import load_amf
 from aswf.aces.amf_lib.validation import (
-    validate_semantic,
     ValidationContext,
     ValidationLevel,
 )
@@ -58,7 +57,7 @@ class TestInvalidAMFs:
     def test_produces_validation_error(self, invalid_amf, transform_registry):
         """Invalid AMF produces at least one ERROR-level validation message."""
         try:
-            amf = load_amf(invalid_amf, validate=False)
+            amf = load_amf(invalid_amf, transform_registry=transform_registry)
         except Exception:
             # Parse failure is also a valid "rejection"
             return

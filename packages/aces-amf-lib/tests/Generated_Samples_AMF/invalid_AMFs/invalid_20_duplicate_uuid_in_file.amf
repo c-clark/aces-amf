@@ -32,11 +32,11 @@
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>Look 1</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:LMT.Academy.GamutCompress.a1.3.0</aces:transformId>
+            <aces:uuid>urn:uuid:06af2027-9c97-4b0f-94a3-e7db2d594649</aces:uuid>
         </aces:lookTransform>
         <aces:lookTransform applied="true">
             <aces:description>Look 2</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:LMT.Academy.GamutCompress.a1.3.0</aces:transformId>
+            <aces:uuid>urn:uuid:06af2027-9c97-4b0f-94a3-e7db2d594649</aces:uuid>
         </aces:lookTransform>
         <aces:outputTransform applied="true">
             <aces:description>Test ODT</aces:description>

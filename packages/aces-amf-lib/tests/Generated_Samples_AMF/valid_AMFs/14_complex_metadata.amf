@@ -14,7 +14,7 @@
     </aces:amfInfo>
     <aces:clipId>
         <aces:clipName>BIGMOVIE_A027C005_211130_R4FK</aces:clipName>
-        <aces:file>media%2FBIGMOVIE_A027C005_211130_R4FK.mxf</aces:file>
+        <aces:file>BIGMOVIE_A027C005_211130_R4FK.mxf</aces:file>
     </aces:clipId>
     <aces:pipeline>
         <aces:pipelineInfo>
@@ -78,8 +78,8 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
-            <aces:description>ACES to P3 D65 HDR (For Theater Review)</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_48nit_in_P3-D65_Gamma2pt6.a2.v1</aces:transformId>
+            <aces:description>Rec.2100 ST2084 (1000 nit P3-D65 Limited)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_Rec2100-D65_ST2084.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>

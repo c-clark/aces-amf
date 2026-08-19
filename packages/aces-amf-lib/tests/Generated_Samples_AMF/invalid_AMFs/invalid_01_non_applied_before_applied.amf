@@ -21,20 +21,23 @@
             </aces:dateTime>
             <aces:uuid>urn:uuid:a5fe22f4-a6ff-4a23-a26f-92d07c348d5c</aces:uuid>
             <aces:systemVersion>
-                <aces:majorVersion>1</aces:majorVersion>
-                <aces:minorVersion>3</aces:minorVersion>
+                <aces:majorVersion>2</aces:majorVersion>
+                <aces:minorVersion>0</aces:minorVersion>
                 <aces:patchVersion>0</aces:patchVersion>
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
-            <aces:description>Test IDT</aces:description>
+            <aces:description>ARRI LogC4 to ACES2065-1</aces:description>
             <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>Look 1 - Applied</aces:description>
             <aces:cdlWorkingSpace>
+                <aces:toCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
+                </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -49,8 +52,11 @@
         <aces:lookTransform applied="false">
             <aces:description>Look 2 - Non-Applied</aces:description>
             <aces:cdlWorkingSpace>
+                <aces:toCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
+                </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -65,8 +71,11 @@
         <aces:lookTransform applied="true">
             <aces:description>Look 3 - Applied (ILLEGAL)</aces:description>
             <aces:cdlWorkingSpace>
+                <aces:toCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
+                </aces:toCdlWorkingSpace>
                 <aces:fromCdlWorkingSpace>
-                    <aces:transformId>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3</aces:transformId>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
                 </aces:fromCdlWorkingSpace>
             </aces:cdlWorkingSpace>
             <cdl:ASC_SOP>
@@ -78,8 +87,8 @@
                 <cdl:Saturation>1.0</cdl:Saturation>
             </cdl:ASC_SAT>
         </aces:lookTransform>
-        <aces:outputTransform applied="true">
-            <aces:description>Test ODT</aces:description>
+        <aces:outputTransform applied="false">
+            <aces:description>Rec.709 BT.1886 Output</aces:description>
             <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
