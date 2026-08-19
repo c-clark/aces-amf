@@ -32,8 +32,8 @@
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>LUT with Special Characters in Path</aces:description>
-            <aces:hash algorithm="http://www.w3.org/2001/04/xmldsig-more#md5">4GYskVNKvJ8K1ltFxVqpgw==</aces:hash>
-            <aces:file>MasterLookBright_O-Rec709.clf</aces:file>
+            <aces:hash algorithm="http://www.w3.org/2001/04/xmldsig-more#md5">BM9DvfWY/sRBK75LMRgyQA==</aces:hash>
+            <aces:file>Master%20Look%20Bright%20O-Rec709.clf</aces:file>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
             <aces:description>ACES to Rec.709</aces:description>

@@ -32,6 +32,14 @@
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>Look with invalid CCC reference</aces:description>
+            <aces:cdlWorkingSpace>
+                <aces:toCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
+                </aces:toCdlWorkingSpace>
+                <aces:fromCdlWorkingSpace>
+                    <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1</aces:transformId>
+                </aces:fromCdlWorkingSpace>
+            </aces:cdlWorkingSpace>
             <cdl:ColorCorrectionRef ref="THIS_ID_DOES_NOT_EXIST_IN_CCC"/>
             <aces:file>A001_0317MM.ccc</aces:file>
         </aces:lookTransform>

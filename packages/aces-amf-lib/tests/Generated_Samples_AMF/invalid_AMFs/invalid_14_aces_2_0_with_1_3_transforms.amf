@@ -27,12 +27,12 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
-            <aces:description>ACES 1.3 transform in ACES 2.0 pipeline</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Input.ARRI.Alexa-v3-logC-EI800.a1.v2</aces:transformId>
+            <aces:description>ARRI V3 LogC EI800 (ACES 1.x ID in ACES 2.0 pipeline)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.ARRI.Alexa-v3-logC-EI800.a1.v2</aces:transformId>
         </aces:inputTransform>
         <aces:outputTransform applied="true">
-            <aces:description>ACES 1.3 output in ACES 2.0 system</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Rec709.Rec1886.a1.v1</aces:transformId>
+            <aces:description>P3-D65 ST2084 1000-nit Output (ACES 1.x ID in ACES 2.0 pipeline)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>

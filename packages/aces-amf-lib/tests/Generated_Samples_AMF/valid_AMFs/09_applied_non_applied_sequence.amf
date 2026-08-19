@@ -69,7 +69,7 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:lookTransform applied="false">
-            <aces:description>Alternative Look - Cool Tones (ARCHIVED)</aces:description>
+            <aces:description>Alternative Look - Cool Tones</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
                     <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>
@@ -88,7 +88,7 @@
             </cdl:ASC_SAT>
         </aces:lookTransform>
         <aces:lookTransform applied="false">
-            <aces:description>Experimental High Contrast Look (ARCHIVED)</aces:description>
+            <aces:description>Experimental High Contrast Look</aces:description>
             <aces:cdlWorkingSpace>
                 <aces:toCdlWorkingSpace>
                     <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1</aces:transformId>

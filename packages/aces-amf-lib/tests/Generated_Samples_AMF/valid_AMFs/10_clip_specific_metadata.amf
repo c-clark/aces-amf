@@ -14,7 +14,7 @@
     </aces:amfInfo>
     <aces:clipId>
         <aces:clipName>A025C003_201215_R2DE</aces:clipName>
-        <aces:sequence idx="####" min="0" max="9999"/>
+        <aces:file>A025C003_201215_R2DE.mxf</aces:file>
     </aces:clipId>
     <aces:pipeline>
         <aces:pipelineInfo>
@@ -31,8 +31,8 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="false">
-            <aces:description>RED Komodo to ACES</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
+            <aces:description>RED Log3G10 REDWideGamutRGB to ACES</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Red.Log3G10_RWG_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="false">
             <aces:description>Shot-Specific Grade</aces:description>

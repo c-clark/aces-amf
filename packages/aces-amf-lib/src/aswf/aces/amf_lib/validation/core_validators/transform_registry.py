@@ -148,10 +148,26 @@ class TransformRegistryValidator(AMFValidator):
 
             if lt.cdl_working_space:
                 ws = lt.cdl_working_space
-                if ws.from_cdl_working_space and ws.from_cdl_working_space.transform_id:
-                    _check_id(ws.from_cdl_working_space.transform_id, f"{prefix}Look #{idx+1} fromCdlWorkingSpace")
-                if ws.to_cdl_working_space and ws.to_cdl_working_space.transform_id:
-                    _check_id(ws.to_cdl_working_space.transform_id, f"{prefix}Look #{idx+1} toCdlWorkingSpace")
+                from_id = ws.from_cdl_working_space.transform_id if ws.from_cdl_working_space else None
+                to_id = ws.to_cdl_working_space.transform_id if ws.to_cdl_working_space else None
+                if from_id:
+                    _check_id(from_id, f"{prefix}Look #{idx+1} fromCdlWorkingSpace")
+                if to_id:
+                    _check_id(to_id, f"{prefix}Look #{idx+1} toCdlWorkingSpace")
+                from_info = registry.get_transform_info(from_id, version=version_str) if from_id else None
+                to_info = registry.get_transform_info(to_id, version=version_str) if to_id else None
+                if from_info and to_info and not (
+                    from_info.get("inverse_transform_id") == to_info["transform_id"]
+                    or to_info.get("inverse_transform_id") == from_info["transform_id"]
+                ):
+                    messages.append(
+                        ValidationMessage(
+                            level=ValidationLevel.ERROR,
+                            validation_type=ValidationType.CDL_WORKING_SPACE_MISMATCH,
+                            message=f"{prefix}Look #{idx+1} CDL working-space transforms are not inverses",
+                            file_path=context.amf_path,
+                        )
+                    )
 
         # Output transform + nested sub-transforms
         if pipeline.output_transform:

@@ -27,12 +27,12 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
-            <aces:description>ACES 2.0 transform in ACES 1.3 pipeline</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Input.ARRI.AlexaLF.LogC4-800.a1.v1</aces:transformId>
+            <aces:description>ARRI LogC4 to ACES2065-1 (ACES 2.0 ID in ACES 1.3 pipeline)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1</aces:transformId>
         </aces:inputTransform>
         <aces:outputTransform applied="true">
-            <aces:description>ACES 2.0 output in ACES 1.3 system</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Rec709.100nits.a1.v1</aces:transformId>
+            <aces:description>Rec.709 BT.1886 Output (ACES 2.0 ID in ACES 1.3 pipeline)</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v2.0:Output.Academy.Rec709-D65_100nit_in_Rec709-D65_BT1886.a2.v1</aces:transformId>
         </aces:outputTransform>
     </aces:pipeline>
 </aces:acesMetadataFile>

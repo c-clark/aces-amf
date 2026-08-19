@@ -27,8 +27,8 @@
             </aces:systemVersion>
         </aces:pipelineInfo>
         <aces:inputTransform applied="true">
-            <aces:description>Sony Venice SGamut3.Cine to ACES</aces:description>
-            <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3.a1.v1</aces:transformId>
+            <aces:description>Sony VENICE S-Log3 S-Gamut3.Cine to ACES2065-1</aces:description>
+            <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3Cine.a1.v1</aces:transformId>
         </aces:inputTransform>
         <aces:lookTransform applied="true">
             <aces:description>On-Set Base Grade</aces:description>
@@ -88,7 +88,7 @@
             </cdl:SatNode>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
-            <aces:description>P3-D65 Limited Output</aces:description>
+            <aces:description>P3-D65 48-nit Output</aces:description>
             <aces:referenceRenderingTransform>
                 <aces:transformId>urn:ampas:aces:transformId:v1.5:RRT.a1.0.3</aces:transformId>
             </aces:referenceRenderingTransform>
