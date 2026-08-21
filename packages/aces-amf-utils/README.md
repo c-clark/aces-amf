@@ -2,6 +2,8 @@
 
 CLI, builder, and utilities for creating, modifying, validating, and analyzing ACES Metadata Files (AMF).
 
+This package currently supports AMF v2 schema only. ACES v1.x transform IDs embedded in AMF v2 documents remain supported, e.g. ACES 1.x pipelines in AMF v2.
+
 ## Installation
 
 ```bash
@@ -15,12 +17,12 @@ from aswf.aces.amf_lib import amf
 from aswf.aces.amf_utils import ACESAMF, AMFBuilder, cdl_look_transform
 
 # Load and inspect an existing AMF
-amf = ACESAMF.from_file("input.amf")
-print(amf.description)
-print(amf.input_transform)
+aces_amf = ACESAMF.from_file("input.amf")
+print(aces_amf.description)
+print(aces_amf.input_transform)
 
 # Build a new AMF from scratch
-amf = (AMFBuilder()
+amf_doc = (AMFBuilder()
     .with_description("My Show - Ep 1")
     .with_author(amf.AuthorType(name="Jane Doe", email_address="jane@example.com"))
     .with_input_transform(amf.InputTransformType(
@@ -43,13 +45,13 @@ The API follows a property-based pattern with chainable builder wrappers:
 
 ```python
 # Property access — direct get and set
-amf = ACESAMF.from_file("shot.amf")
-it = amf.input_transform                                        # get
-amf.input_transform = amf.InputTransformType(                # set
+aces_amf = ACESAMF.from_file("shot.amf")
+it = aces_amf.input_transform                                  # get
+aces_amf.input_transform = amf.InputTransformType(             # set
     transform_id="urn:...", applied=False)
 
 # Builder chaining — via with_X() wrappers
-amf = (ACESAMF.new()
+aces_amf = (ACESAMF.new()
     .with_input_transform(amf.InputTransformType(transform_id="urn:...", applied=False))
     .with_look_transform(amf.LookTransformType(file="grade.clf", applied=True))
     .with_output_transform(amf.OutputTransformType(transform_id="urn:...", applied=False)))
@@ -65,7 +67,7 @@ amf = (ACESAMF.new()
 # Create a new minimal AMF
 amf = ACESAMF.new(aces_version=(1, 3, 0))
 
-# Load from file (auto-upgrades v1 to v2)
+# Load an AMF v2 file
 amf = ACESAMF.from_file("input.amf", validate=True)
 
 # Load from raw bytes
@@ -229,9 +231,6 @@ amf create output.amf -d "My Show" --author "Jane Doe" \
     --idt "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1" \
     --odt "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3"
 
-# Convert v1 AMF to v2
-amf convert v1_file.amf -o v2_file.amf
-
 # Add a CDL look transform
 amf add-cdl shot.amf --slope 1.2 1.0 0.8 --saturation 0.95 -d "Primary grade"
 
@@ -261,7 +260,7 @@ from aswf.aces.amf_lib.amf import (
     InputTransformType,      # input_transform property type
     OutputTransformType,     # output_transform property type
     LookTransformType,       # look transforms and CDL
-    AuthorType,              # author entries (name + email_address required)
+    AuthorType,              # author entries
     ClipIdType,              # clip identification
     VersionType,             # ACES system version
     WorkingLocationType,     # working location marker

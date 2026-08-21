@@ -4,6 +4,8 @@ Reference Python library for reading, writing, and validating ACES Metadata File
 
 Provides type-safe Pydantic schema bindings, I/O helpers, and a pluggable validation system. For high-level builder and CLI tools, see [aswf-aces-amf-utils](../aces-amf-utils/).
 
+This package currently supports AMF v2 schema only. ACES v1.x transform IDs embedded in AMF v2 documents remain supported, e.g. ACES 1.x pipelines in AMF v2.
+
 ## Installation
 
 ```bash
@@ -15,33 +17,35 @@ pip install aswf-aces-amf-lib
 ```python
 from aswf.aces.amf_lib import load_amf, save_amf, amf, validate_all
 
-# Load an AMF file (automatically upgrades v1 to v2)
-amf = load_amf("example.amf")
-print(f"Description: {amf.amf_info.description}")
-print(f"Input: {amf.pipeline.input_transform}")
+# Load an AMF v2 file without registry-backed validation
+amf_doc = load_amf("example.amf", validate=False)
+print(f"Description: {amf_doc.amf_info.description}")
+print(f"Input: {amf_doc.pipeline.input_transform}")
 
 # Modify directly via Pydantic models
-amf.amf_info.description = "Updated Show"
-amf.pipeline.input_transform = amf.InputTransformType(
+amf_doc.amf_info.description = "Updated Show"
+amf_doc.pipeline.input_transform = amf.InputTransformType(
     transform_id="urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
     applied=False,
 )
-save_amf(amf, "output.amf")
+save_amf(amf_doc, "output.amf", validate=False)
 
 # Validate (schema + semantic checks)
-messages = validate_all("output.amf")
+from aswf.aces.transforms import ACESTransformRegistry
+
+registry = ACESTransformRegistry()
+messages = validate_all("output.amf", transform_registry=registry)
 for msg in messages:
     print(f"[{msg.level.name}] {msg.message}")
 ```
 
 ## Features
 
-- **Read/Write AMF files** -- Load v1 or v2, always work with v2 internally
-- **Automatic v1-to-v2 upgrade** -- v1 files are transparently upgraded on load
-- **XSD schema validation** -- Validate against bundled v1/v2 XML schemas
+- **Read/Write AMF files** -- Load, modify, and serialize AMF v2 documents
+- **XSD schema validation** -- Validate against the bundled AMF v2 XML schema
 - **Semantic validation** -- Date logic, UUID uniqueness, CDL value ranges, applied order, metadata completeness, file path security, transform ID verification
 - **Pluggable validators** -- Register custom validators via the `aces_amf.validators` entry point
-- **Type-safe Pydantic models** -- xsdata-generated Pydantic `BaseModel` bindings for both schema versions
+- **Type-safe Pydantic models** -- xsdata-generated Pydantic `BaseModel` bindings for AMF v2
 - **Zero network calls** -- Everything works offline with bundled schemas
 
 ## I/O Functions
@@ -49,16 +53,18 @@ for msg in messages:
 ```python
 from aswf.aces.amf_lib import load_amf, load_amf_data, save_amf, render_amf
 
-# Load from file or bytes
-amf = load_amf("file.amf", validate=True)
-amf = load_amf_data(xml_bytes, validate=True)
+# Load from file or bytes without registry-backed validation
+amf_doc = load_amf("file.amf", validate=False)
+amf_doc = load_amf_data(xml_bytes, validate=False)
 
 # Save to file or serialize to string
-save_amf(amf, "output.amf", validate=True)
-xml_string = render_amf(amf, validate=True)
+save_amf(amf_doc, "output.amf", validate=False)
+xml_string = render_amf(amf_doc, validate=False)
 ```
 
-All I/O functions accept `validate=True` (default) to run semantic validation automatically. Pass `validate=False` to skip.
+These I/O functions default to `validate=True`. When validation is enabled,
+pass a registry implementation with `transform_registry=registry`. Pass
+`validate=False` to skip semantic validation.
 
 ## Schema Bindings
 
@@ -68,7 +74,7 @@ The `amf` module provides Pydantic models generated from the ACES AMF v2 XSD sch
 from aswf.aces.amf_lib import AcesMetadataFile, amf
 
 # Root document
-amf = AcesMetadataFile(...)
+amf_doc = AcesMetadataFile(...)
 
 # Key types
 amf.InputTransformType       # input transform (transform_id, file, applied, ...)
@@ -105,7 +111,7 @@ idx = get_working_location_index(pipeline)  # int | None
 
 ### Schema Validation
 
-Validates AMF XML against the bundled XSD schemas (v1 or v2 auto-detected):
+Validates AMF v2 XML against the bundled XSD schema:
 
 ```python
 from aswf.aces.amf_lib import validate_schema
@@ -118,6 +124,9 @@ Runs pluggable validators that check logical correctness:
 
 ```python
 from aswf.aces.amf_lib import validate_semantic
+from aswf.aces.transforms import ACESTransformRegistry
+
+registry = ACESTransformRegistry()
 messages = validate_semantic("file.amf", transform_registry=registry)
 ```
 
@@ -131,8 +140,11 @@ Built-in semantic validators:
 | `metadata` | Description, authors, transform descriptions present |
 | `applied_order` | Applied transforms follow correct logical order |
 | `file_paths` | No path traversal, portable characters |
+| `file_references` | Referenced transform and CDL files exist and are valid |
+| `hash_encoding` | Hash values use valid, standard encoding |
 | `working_space` | At most one working location, CDL transforms have working space |
 | `transform_ids` | Transform ID URN format validation |
+| `transform_placement` | Transform types appear in permitted pipeline positions |
 | `file_hashes` | File hash integrity (SHA256, SHA1, MD5) |
 | `transform_id_registry` | Transform IDs exist in provided registry |
 
@@ -140,6 +152,9 @@ Built-in semantic validators:
 
 ```python
 from aswf.aces.amf_lib import validate_all
+from aswf.aces.transforms import ACESTransformRegistry
+
+registry = ACESTransformRegistry()
 messages = validate_all("file.amf", transform_registry=registry)
 ```
 

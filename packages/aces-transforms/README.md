@@ -2,7 +2,7 @@
 
 Python package for querying the official [ACES](https://acescentral.com/) transform registry. Provides lookup, validation, and version mapping of ACES transform IDs across all ACES system versions.
 
-This package bundles a snapshot of the official ACES `transforms.json` from the [aces-aswf/aces](https://github.com/aces-aswf/aces) repository. It has **zero dependencies** and works offline out of the box.
+This package bundles a snapshot of the official ACES `transforms.json` from the [aces-aswf/aces](https://github.com/aces-aswf/aces) repository.
 
 ## Installation
 
