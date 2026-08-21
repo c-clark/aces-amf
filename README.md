@@ -5,10 +5,10 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![AMF Schema and Example
-Validation](https://github.com/ampas/aces-amf/actions/workflows/validate-xml.yml/badge.svg)
+Validation](https://github.com/aces-aswf/aces-amf/actions/workflows/validate-xml.yml/badge.svg)
 ![GitHub release (with
-filter)](https://img.shields.io/github/v/release/ampas/aces-amf) [![CLA
-assistant](https://cla-assistant.io/readme/badge/ampas/aces-amf)](https://cla-assistant.io/ampas/aces-amf)
+filter)](https://img.shields.io/github/v/release/aces-aswf/aces-amf) [![CLA
+assistant](https://cla-assistant.io/readme/badge/aces-aswf/aces-amf)](https://cla-assistant.io/aces-aswf/aces-amf)
 
 The ACES Metadata File (AMF) is an XML sidecar format for exchanging the
 metadata required to reconstruct ACES viewing pipelines. It specifies the
@@ -151,13 +151,13 @@ amf.write("output.amf", validate=False)
 from aswf.aces.amf_lib import amf
 from aswf.aces.amf_utils import ACESAMF
 
-amf = ACESAMF.from_file("shot_001.amf", validate=False)
-amf.output_transform = amf.OutputTransformType(
+aces_amf = ACESAMF.from_file("shot_001.amf", validate=False)
+aces_amf.output_transform = amf.OutputTransformType(
     transform_id="urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D65_1000nit_in_P3-D65_ST2084.a2.v1",
     description="P3 HDR 1000 nits",
     applied=False,
 )
-amf.write("shot_001_hdr.amf", validate=False)
+aces_amf.write("shot_001_hdr.amf", validate=False)
 ```
 
 ### Manage Look Transforms
@@ -286,9 +286,6 @@ amf add-cdl shot_001.amf --slope 1.1 1.0 0.9 --saturation 0.95 -o graded.amf
 # Compare two AMFs
 amf diff shot_001_v1.amf shot_001_v2.amf
 
-# Convert v1 to v2
-amf convert legacy.amf -o modern.amf
-
 # Query transforms
 amf transforms list -c CSC -n 10
 amf transforms info "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1"
@@ -303,7 +300,7 @@ amf resolve-urns mixed.amf --auto -o fixed.amf
 
 ```bash
 # Clone and set up the workspace
-git clone https://github.com/ampas/aces-amf.git
+git clone https://github.com/aces-aswf/aces-amf.git
 cd aces-amf
 uv sync
 
@@ -330,15 +327,15 @@ This repository is a submodule of the ACES project, which is governed by the
 Academy Software Foundation.
 
 For details about how the project operates, refer to the
-[GOVERNANCE.md](https://github.com/ampas/aces/blob/main/GOVERNANCE.md) file
-found in in the top-level ACES repository.
+[GOVERNANCE.md](https://github.com/aces-aswf/aces/blob/main/GOVERNANCE.md) file
+found in the top-level ACES repository.
 
 ## Reporting Issues
 
 To report a problem with AMF, please open an
-[issue](https://github.com/ampas/aces-amf/issues).
+[issue](https://github.com/aces-aswf/aces-amf/issues).
 
-If the issue is senstive in nature or a security related issue, please do not
+If the issue is sensitive in nature or a security related issue, please do not
 report in the issue tracker. Instead refer to [SECURITY.md](SECURITY.md) for
 more information about the project security policy.
 
