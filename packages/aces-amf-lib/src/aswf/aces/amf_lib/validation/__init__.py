@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from aswf.aces.amf_lib.validation.types import (
+    AMFSchemaError,
     AMFValidationError,
     RegistryNotConfiguredError,
     ValidationContext,
@@ -153,6 +154,7 @@ __all__ = [
     "validate_schema",
     "validate_semantic",
     "validate_all",
+    "AMFSchemaError",
     "AMFValidationError",
     "RegistryNotConfiguredError",
     "ValidatorRegistry",
