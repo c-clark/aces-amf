@@ -11,7 +11,7 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 dependencies = [
-    "aswf-aces-amf-lib[registry]>=0.1.0",
+    "aswf-aces-amf-lib>=0.1.0",
     "aswf-aces-transforms>=0.1.0",
     "click>=8.0.0",
 ]
