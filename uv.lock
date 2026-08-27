@@ -144,7 +144,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aswf-aces-amf-lib", extras = ["registry"], editable = "packages/aces-amf-lib" },
+    { name = "aswf-aces-amf-lib", editable = "packages/aces-amf-lib" },
     { name = "aswf-aces-transforms", editable = "packages/aces-transforms" },
     { name = "click", specifier = ">=8.0.0" },
 ]
