@@ -64,7 +64,9 @@ xml_string = render_amf(amf_doc, validate=False)
 
 These I/O functions default to `validate=True`. When validation is enabled,
 pass a registry implementation with `transform_registry=registry`. Pass
-`validate=False` to skip semantic validation.
+`validate=False` to skip explicit XSD and semantic validation. Parsing still
+constructs the schema-derived AMF model, so input that cannot be represented by
+that model raises `AMFSchemaError` regardless of the `validate` setting.
 
 ## Schema Bindings
 
