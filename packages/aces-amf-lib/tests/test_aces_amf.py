@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for the public AMF API (load, save, render, minimal_amf)."""
 
+from pathlib import Path
 import time
 
 import pytest
+from pydantic import ValidationError
 
 from aswf.aces.amf_lib import (
+    AMFSchemaError,
     load_amf,
     load_amf_data,
     save_amf,
@@ -15,6 +18,14 @@ from aswf.aces.amf_utils.factories import cdl_look_transform, minimal_amf, prepa
 from aswf.aces.amf_lib import amf
 from aswf.aces.amf_lib.amf import AcesMetadataFile, VersionType
 from aswf.aces.amf_lib.validation import validate_schema
+
+
+SCHEMA_INVALID_AMF_PATH = (
+    Path(__file__).parent
+    / "Generated_Samples_AMF"
+    / "invalid_AMFs"
+    / "invalid_15_missing_system_version.amf"
+)
 
 
 def test_load_amf(aces_amf_examples_path):
@@ -176,6 +187,23 @@ def test_load_skip_validation(aces_amf_examples_path):
     """validate=False skips validation entirely."""
     amf_obj = load_amf(aces_amf_examples_path / "example6.amf", validate=False)
     assert amf_obj is not None
+
+
+def test_load_schema_error_when_validation_disabled():
+    """validate=False does not leak Pydantic errors from schema-derived models."""
+    with pytest.raises(AMFSchemaError) as exc_info:
+        load_amf(SCHEMA_INVALID_AMF_PATH, validate=False)
+
+    assert isinstance(exc_info.value.__cause__, ValidationError)
+    assert str(SCHEMA_INVALID_AMF_PATH) in str(exc_info.value)
+
+
+def test_load_data_schema_error_when_validation_disabled():
+    """Byte loading translates Pydantic model errors to the public AMF exception."""
+    with pytest.raises(AMFSchemaError) as exc_info:
+        load_amf_data(SCHEMA_INVALID_AMF_PATH.read_bytes(), validate=False)
+
+    assert isinstance(exc_info.value.__cause__, ValidationError)
 
 
 def test_save_validates_by_default(tmp_path, transform_registry):
@@ -405,5 +433,4 @@ def test_look_transforms_property_filters(test_data_path):
     assert len(amf_obj.pipeline.look_transforms) == 2
     assert amf_obj.pipeline.look_transforms[0].description == "Pre-working-location look"
     assert amf_obj.pipeline.look_transforms[1].description == "Post-working-location look"
-
 

@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 from typing import Callable, TextIO
 from urllib.parse import quote, unquote
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from xsdata.models.datatype import XmlDateTime
 from xsdata_pydantic.bindings import XmlParser, XmlSerializer
 
@@ -142,20 +142,39 @@ def _normalize_hashes(amf_obj: amf.AcesMetadataFile) -> None:
 
 
 def from_amf_data(amf_data: bytes) -> tuple[amf.AcesMetadataFile, dict[str, str]]:
-    """Parse AMF XML bytes into a v2 model and namespace map."""
+    """Parse AMF XML bytes into a v2 model and namespace map.
+
+    Raises:
+        AMFSchemaError: If the data cannot be represented by the schema-derived model.
+    """
     parser = XmlParser()
     ns_map: dict[str, str] = {}
-    parsed = parser.from_bytes(amf_data, amf.AcesMetadataFile, ns_map)
+    try:
+        parsed = parser.from_bytes(amf_data, amf.AcesMetadataFile, ns_map)
+    except ValidationError as exc:
+        from aswf.aces.amf_lib.validation.types import AMFSchemaError
+
+        raise AMFSchemaError(f"AMF data does not conform to the schema-derived model: {exc}") from exc
     _decode_file_uris(parsed)
     _normalize_hashes(parsed)
     return parsed, ns_map
 
 
 def from_amf_file(amf_path: Path | str) -> tuple[amf.AcesMetadataFile, dict[str, str]]:
-    """Parse an AMF file into a v2 model and namespace map."""
+    """Parse an AMF file into a v2 model and namespace map.
+
+    Raises:
+        AMFSchemaError: If the file cannot be represented by the schema-derived model.
+    """
+    amf_path = Path(amf_path)
     parser = XmlParser()
     ns_map: dict[str, str] = {}
-    parsed = parser.from_path(Path(amf_path), amf.AcesMetadataFile, ns_map)
+    try:
+        parsed = parser.from_path(amf_path, amf.AcesMetadataFile, ns_map)
+    except ValidationError as exc:
+        from aswf.aces.amf_lib.validation.types import AMFSchemaError
+
+        raise AMFSchemaError(f"AMF file {amf_path} does not conform to the schema-derived model: {exc}") from exc
     _decode_file_uris(parsed)
     _normalize_hashes(parsed)
     return parsed, ns_map
@@ -234,7 +253,7 @@ def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None
 
     Args:
         path: Path to the AMF file.
-        validate: Run semantic validation on the loaded model. Defaults to True.
+        validate: Run XSD and semantic validation on the loaded model. Defaults to True.
         transform_registry: TransformRegistry for transform ID validation.
             Required if validate=True and the 'transform_id_registry' validator is active.
 
@@ -242,6 +261,8 @@ def load_amf(path: Path | str, *, validate: bool = True, transform_registry=None
         Parsed AcesMetadataFile (v2).
 
     Raises:
+        AMFSchemaError: If the file cannot be represented by the schema-derived model,
+            regardless of the validate setting.
         RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
@@ -265,6 +286,8 @@ def load_amf_data(data: bytes, *, validate: bool = True, transform_registry=None
         Parsed AcesMetadataFile (v2).
 
     Raises:
+        AMFSchemaError: If the data cannot be represented by the schema-derived model,
+            regardless of the validate setting.
         RegistryNotConfiguredError: If validate=True and no transform_registry provided.
         AMFValidationError: If validation is enabled and errors are found.
     """
@@ -349,5 +372,4 @@ def render_amf(
     if validate:
         _run_validation(amf_obj, amf_path=None, transform_registry=transform_registry)
     return xml_str
-
 

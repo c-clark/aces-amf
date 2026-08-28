@@ -109,6 +109,10 @@ class AMFValidationError(Exception):
         super().__init__(f"AMF validation failed: {'; '.join(error_msgs)}")
 
 
+class AMFSchemaError(Exception):
+    """Raised when AMF data cannot be represented by the schema-derived model."""
+
+
 class RegistryNotConfiguredError(Exception):
     """Raised when transform validation runs but no transform registry has been provided.
 

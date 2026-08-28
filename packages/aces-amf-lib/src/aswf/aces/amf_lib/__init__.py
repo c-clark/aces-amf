@@ -27,6 +27,7 @@ from aswf.aces.amf_lib.amf_helpers import (
 )
 from aswf.aces.amf_lib.amf import AcesMetadataFile
 from aswf.aces.amf_lib.validation import (
+    AMFSchemaError,
     AMFValidationError,
     RegistryNotConfiguredError,
     ValidationContext,
@@ -59,6 +60,7 @@ __all__ = [
     "validate_schema",
     "validate_semantic",
     "validate_all",
+    "AMFSchemaError",
     "AMFValidationError",
     "RegistryNotConfiguredError",
     "ValidatorRegistry",
