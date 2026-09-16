@@ -62,17 +62,16 @@
         </aces:lookTransform>
         <aces:lookTransform applied="false">
             <aces:description>Show Look</aces:description>
+            <aces:hash algorithm="http://www.w3.org/2001/04/xmlenc#sha256">eV9yiHxccs/IGFR1B1a0t1EBVgSN8A/mF9fboz0Pn00=</aces:hash>
             <aces:file>showLook.clf</aces:file>
         </aces:lookTransform>
         <aces:outputTransform applied="false">
             <aces:referenceRenderingTransform>
                 <aces:description>ACES v1.0.3 RRT</aces:description>
-                <aces:hash algorithm="http://www.w3.org/2001/04/xmlenc#sha256">urNi6rTl4dfDm1f3Z3A2Xp6Z9VO5DuBwF8IIhW56BJA=</aces:hash>
                 <aces:transformId>urn:ampas:aces:transformId:v1.5:RRT.a1.0.3</aces:transformId>
             </aces:referenceRenderingTransform>
             <aces:outputDeviceTransform>
                 <aces:description>P3D60 ODT</aces:description>
-                <aces:hash algorithm="http://www.w3.org/2000/09/xmldsig#sha1">IqtNQDezcvUbZtMoX3OqPEFV7Wg=</aces:hash>
                 <aces:transformId>urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3</aces:transformId>
             </aces:outputDeviceTransform>
         </aces:outputTransform>
