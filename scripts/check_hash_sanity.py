@@ -67,25 +67,11 @@ SKIP_DIR_NAMES = {".git", "build", "__pycache__", ".venv", "sync"}
 # attached to <aces:file> elements that don't physically exist in tests/data/. This
 # fixture exists to test ASC SOP/SAT parsing, not hash verification or the hex/base64
 # path; both the encoding and the missing backing file are intentional.
-#
-# packages/aces-amf-lib/src/.../fixtures/amf-examples/example{2,3,4,5,6}.amf: these are
-# a deliberately separate tree from repo-root examples/ (see fixtures/__init__.py) that
-# ships inside the wheel via package-data. It carries the exact same spurious-hash bug
-# just fixed in examples/ (hashes on transformId-only transforms, no <aces:file> to
-# verify against). Fixing it is a follow-up — this repo-root fix is intentionally kept
-# minimal so it lands as a single, clean cherry-pick. TODO: remove this entry once the
-# fixtures tree gets the same fix.
-_FIXTURES_DIR = "packages/aces-amf-lib/src/aswf/aces/amf_lib/fixtures/amf-examples"
 ALLOWLIST: dict[str, set[str]] = {
     "packages/aces-amf-lib/tests/data/test_ASC_SOP_no_cdlworkingSpace.amf": {
         "encoding",
         "missing_file",
     },
-    f"{_FIXTURES_DIR}/example2.amf": {"unattached"},
-    f"{_FIXTURES_DIR}/example3.amf": {"unattached"},
-    f"{_FIXTURES_DIR}/example4.amf": {"unattached"},
-    f"{_FIXTURES_DIR}/example5.amf": {"unattached"},
-    f"{_FIXTURES_DIR}/example6.amf": {"unattached"},
 }
 
 # Directories where an otherwise-correctly-formed hash may deliberately fail to match
