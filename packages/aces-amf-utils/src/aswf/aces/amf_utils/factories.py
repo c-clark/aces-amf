@@ -71,7 +71,11 @@ def cdl_working_space(
         raise ValueError(f"Not a CSC transform, cannot be used as a CDL working space: {seed}")
 
     inverse = info.get("inverse_transform_id")
-    if not inverse or not registry.are_transforms_inverses(seed, inverse, version=version):
+    inverse_info = registry.get_transform_info(inverse, version=version) if inverse else None
+    if not inverse_info or not (
+        inverse == inverse_info["transform_id"]
+        or inverse_info.get("inverse_transform_id") == seed
+    ):
         raise ValueError(f"Transform has no inverse for ACES {version}, cannot be used as a CDL working space: {seed}")
 
     if parsed.name.endswith("_to_ACES"):
