@@ -250,14 +250,14 @@ if result.has_differences:
 from aswf.aces.common import TransformURN
 
 urn = TransformURN.parse(
-    "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3"
+    "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1"
 )
-print(urn.spec_version)    # v1.5
-print(urn.transform_type)  # ACEScsc
+print(urn.spec_version)    # v2.0
+print(urn.transform_type)  # CSC
 print(urn.namespace)       # Academy
 print(urn.name)            # ACES_to_ACEScct
-print(urn.version_suffix)  # a1.0.3
-print(urn.is_v1)           # True
+print(urn.version_suffix)  # a2.v1
+print(urn.is_v2)           # True
 ```
 
 ### CLI Quick Reference
