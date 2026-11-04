@@ -22,7 +22,7 @@ def sample_amf(tmp_path):
 
     path = tmp_path / "sample.amf"
     amf = (
-        AMFBuilder()
+        AMFBuilder(aces_version=(1, 3, 0))
         .with_description("CLI Test")
         .with_author(AuthorType(name="Tester", email_address="test@example.com"))
         .with_input_transform(InputTransformType(
@@ -109,11 +109,25 @@ class TestCreateCommand:
         out = tmp_path / "with_transforms.amf"
         result = runner.invoke(main, [
             "create", str(out),
+            "--aces-version", "1.3.0",
             "--idt", "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
             "--odt", "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
         ])
         assert result.exit_code == 0
         assert out.exists()
+        assert load_amf(out, validate=False).pipeline.pipeline_info.system_version.major_version == 1
+
+    def test_create_defaults_to_aces_2(self, runner, tmp_path):
+        out = tmp_path / "default_version.amf"
+        result = runner.invoke(main, [
+            "create", str(out),
+            "--idt", _PIPELINE_IDS[(2, 0, 0)][0],
+            "--odt", _PIPELINE_IDS[(2, 0, 0)][1],
+        ])
+        assert result.exit_code == 0, result.output
+        sv = load_amf(out, validate=False).pipeline.pipeline_info.system_version
+        assert (sv.major_version, sv.minor_version, sv.patch_version) == (2, 0, 0)
+        assert runner.invoke(main, ["validate", str(out)]).exit_code == 0
 
     def test_create_no_overwrite(self, runner, tmp_path):
         out = tmp_path / "existing.amf"

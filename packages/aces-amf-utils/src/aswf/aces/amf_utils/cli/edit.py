@@ -30,7 +30,7 @@ def add_cdl(ctx, file, slope, offset, power, saturation, working_space, descript
     path = Path(file)
     amf = ACESAMF.from_file(path, registry=registry)
 
-    aces_version = amf.aces_version or (1, 3, 0)
+    aces_version = amf.aces_version or (2, 0, 0)
     try:
         lt = cdl_look_transform(
             slope=list(slope),

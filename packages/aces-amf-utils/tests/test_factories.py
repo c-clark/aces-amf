@@ -39,9 +39,9 @@ class TestDefaultWorkingSpace:
         assert (from_id, to_id) == ACESCCT[version]
         assert registry.are_transforms_inverses(from_id, to_id, version=f"v{version[0]}.{version[1]}")
 
-    def test_no_version_defaults_to_1_3(self, registry):
-        assert _ids(cdl_working_space(registry=registry)) == ACESCCT[(1, 3, 0)]
-        assert _ids(cdl_look_transform(registry=registry).cdl_working_space) == ACESCCT[(1, 3, 0)]
+    def test_no_version_defaults_to_2_0(self, registry):
+        assert _ids(cdl_working_space(registry=registry)) == ACESCCT[(2, 0, 0)]
+        assert _ids(cdl_look_transform(registry=registry).cdl_working_space) == ACESCCT[(2, 0, 0)]
 
     def test_unsupported_version(self, registry):
         with pytest.raises(ValueError, match="No ACEScct"):

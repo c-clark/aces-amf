@@ -75,7 +75,7 @@ class ACESAMF(_AMFMutatorMixin):
     # ------------------------------------------------------------------
 
     @classmethod
-    def new(cls, aces_version: tuple[int, int, int] = (1, 3, 0), *, registry=None) -> ACESAMF:
+    def new(cls, aces_version: tuple[int, int, int] = (2, 0, 0), *, registry=None) -> ACESAMF:
         """Create a new minimal AMF.
 
         Args:

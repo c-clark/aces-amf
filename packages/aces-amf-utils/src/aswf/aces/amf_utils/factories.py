@@ -16,7 +16,7 @@ from aswf.aces.common.types import TransformURN
 FloatVector = tuple[float, float, float]
 
 
-def minimal_amf(aces_version: tuple[int, int, int] = (1, 3, 0)) -> amf.AcesMetadataFile:
+def minimal_amf(aces_version: tuple[int, int, int] = (2, 0, 0)) -> amf.AcesMetadataFile:
     """Create a minimal AMF with required fields populated."""
     version_type = amf.VersionType(
         major_version=aces_version[0], minor_version=aces_version[1], patch_version=aces_version[2]
@@ -35,7 +35,7 @@ _DEFAULT_WORKING_SPACE_NAME = "ACEScct_to_ACES"
 
 
 def cdl_working_space(
-    aces_version: tuple[int, int, int] = (1, 3, 0), working_space: str | None = None, registry=None
+    aces_version: tuple[int, int, int] = (2, 0, 0), working_space: str | None = None, registry=None
 ) -> amf.CdlWorkingSpaceType:
     """Build a CDL working space (from/to pair) valid for the given ACES version.
 
@@ -106,14 +106,14 @@ def cdl_look_transform(
     offset: FloatVector = None,
     power: FloatVector = None,
     saturation: float = None,
-    aces_version: tuple[int, int, int] = (1, 3, 0),
+    aces_version: tuple[int, int, int] = (2, 0, 0),
     working_space: str | None = None,
     registry=None,
 ) -> amf.LookTransformType:
     """Create a CDL look transform from the provided parameters.
 
     The CDL working space defaults to ACEScct, using the transform IDs for ``aces_version``
-    (default ACES 1.3). Pass ``working_space`` (a CSC URN, either direction) to use another
+    (default ACES 2.0). Pass ``working_space`` (a CSC URN, either direction) to use another
     CSC; see :func:`cdl_working_space`.
     """
     if slope is None:
