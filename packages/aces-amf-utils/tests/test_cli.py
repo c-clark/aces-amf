@@ -287,3 +287,83 @@ class TestResolveUrnsCommand:
         result = runner.invoke(main, ["resolve-urns", "--help"])
         assert result.exit_code == 0
         assert "resolve-urns" in result.output.lower() or "Resolve" in result.output
+
+
+ACESCCT_URNS = {
+    (1, 3, 0): (
+        "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3",
+        "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3",
+    ),
+    (2, 0, 0): (
+        "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACEScct_to_ACES.a2.v1",
+        "urn:ampas:aces:transformId:v2.0:CSC.Academy.ACES_to_ACEScct.a2.v1",
+    ),
+}
+
+_PIPELINE_IDS = {
+    (1, 3, 0): (
+        "urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1",
+        "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+    ),
+    (2, 0, 0): (
+        "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1",
+        "urn:ampas:aces:transformId:v2.0:Output.Academy.P3-D60_1000nit_in_P3-D65_ST2084.a2.v1",
+    ),
+}
+
+
+def _amf_for_version(tmp_path, version):
+    """Write a minimal, valid AMF for the given ACES version."""
+    from aswf.aces.amf_utils import AMFBuilder
+
+    idt, odt = _PIPELINE_IDS[version]
+    path = tmp_path / f"base_{'_'.join(map(str, version))}.amf"
+    amf = (
+        AMFBuilder(aces_version=version)
+        .with_description("CDL working space test")
+        .with_author(AuthorType(name="Tester", email_address="test@example.com"))
+        .with_input_transform(InputTransformType(transform_id=idt, applied=False))
+        .with_output_transform(OutputTransformType(transform_id=odt, applied=False))
+        .build()
+    )
+    save_amf(amf, path, validate=False)
+    return path
+
+
+@pytest.mark.parametrize("version", list(ACESCCT_URNS))
+class TestAddCdlWorkingSpaceVersion:
+    """add-cdl must emit an ACEScct working space valid for the AMF's ACES version (issue #29)."""
+
+    def _add_cdl(self, runner, tmp_path, version):
+        src = _amf_for_version(tmp_path, version)
+        out = tmp_path / "out.amf"
+        result = runner.invoke(main, ["add-cdl", str(src), "--slope", "1.1", "1.0", "0.9", "-o", str(out)])
+        assert result.exit_code == 0, result.output
+        return out
+
+    def test_default_working_space_validates_cleanly(self, runner, tmp_path, version):
+        from aswf.aces.amf_lib import ValidationLevel, ValidationType, validate_semantic
+        from aswf.aces.transforms import ACESTransformRegistry
+
+        out = self._add_cdl(runner, tmp_path, version)
+        msgs = validate_semantic(out, transform_registry=ACESTransformRegistry())
+        errors = [m.message for m in msgs if m.level == ValidationLevel.ERROR]
+        mismatches = [m.message for m in msgs if m.validation_type == ValidationType.VERSION_MISMATCH_TRANSFORM_ID]
+        assert not errors, errors
+        assert not mismatches, mismatches
+
+    def test_from_is_canonical_acescct_for_version(self, runner, tmp_path, version):
+        out = self._add_cdl(runner, tmp_path, version)
+        ws = load_amf(out, validate=False).pipeline.look_transforms[0].cdl_working_space
+        assert ws.from_cdl_working_space.transform_id == ACESCCT_URNS[version][0]
+
+    def test_to_is_inverse_of_from(self, runner, tmp_path, version):
+        out = self._add_cdl(runner, tmp_path, version)
+        ws = load_amf(out, validate=False).pipeline.look_transforms[0].cdl_working_space
+        assert ws.to_cdl_working_space is not None
+        assert ws.to_cdl_working_space.transform_id == ACESCCT_URNS[version][1]
+
+    def test_validate_command_has_no_working_space_warning(self, runner, tmp_path, version):
+        out = self._add_cdl(runner, tmp_path, version)
+        result = runner.invoke(main, ["validate", str(out)])
+        assert "CdlWorkingSpace" not in result.output, result.output
