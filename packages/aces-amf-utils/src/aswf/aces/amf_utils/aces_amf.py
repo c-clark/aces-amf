@@ -196,6 +196,13 @@ class ACESAMF(_AMFMutatorMixin):
     # ------------------------------------------------------------------
 
     @property
+    def registry(self):
+        """Transform registry in use (the default registry if none was supplied)."""
+        if self._registry is None:
+            self._registry = _default_registry()
+        return self._registry
+
+    @property
     def aces_version(self) -> tuple[int, int, int] | None:
         """ACES system version as a (major, minor, patch) tuple."""
         sv = self._amf.pipeline.pipeline_info.system_version

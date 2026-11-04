@@ -367,3 +367,44 @@ class TestAddCdlWorkingSpaceVersion:
         out = self._add_cdl(runner, tmp_path, version)
         result = runner.invoke(main, ["validate", str(out)])
         assert "CdlWorkingSpace" not in result.output, result.output
+
+
+class TestAddCdlWorkingSpaceOption:
+    LOGC4_IN = "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC4_to_ACES.a2.v1"
+    LOGC4_OUT = "urn:ampas:aces:transformId:v2.0:CSC.Arri.ACES_to_LogC4.a2.v1"
+    LOGC3_NO_INVERSE = "urn:ampas:aces:transformId:v2.0:CSC.Arri.LogC3_to_ACES.a2.v1"
+    OUTPUT_TRANSFORM = _PIPELINE_IDS[(2, 0, 0)][1]
+
+    def _run(self, runner, tmp_path, working_space, version=(2, 0, 0)):
+        src = _amf_for_version(tmp_path, version)
+        out = tmp_path / "out.amf"
+        result = runner.invoke(main, ["add-cdl", str(src), "--working-space", working_space, "-o", str(out)])
+        return result, out
+
+    def test_non_default_pair(self, runner, tmp_path):
+        result, out = self._run(runner, tmp_path, self.LOGC4_IN)
+        assert result.exit_code == 0, result.output
+        ws = load_amf(out, validate=False).pipeline.look_transforms[0].cdl_working_space
+        assert ws.from_cdl_working_space.transform_id == self.LOGC4_IN
+        assert ws.to_cdl_working_space.transform_id == self.LOGC4_OUT
+        assert runner.invoke(main, ["validate", str(out)]).exit_code == 0
+
+    def test_inverse_direction_accepted(self, runner, tmp_path):
+        result, out = self._run(runner, tmp_path, self.LOGC4_OUT)
+        assert result.exit_code == 0, result.output
+        ws = load_amf(out, validate=False).pipeline.look_transforms[0].cdl_working_space
+        assert ws.from_cdl_working_space.transform_id == self.LOGC4_IN
+
+    @pytest.mark.parametrize("bad", [LOGC3_NO_INVERSE, OUTPUT_TRANSFORM])
+    def test_invalid_working_space_rejected(self, runner, tmp_path, bad):
+        result, out = self._run(runner, tmp_path, bad)
+        assert result.exit_code != 0
+        assert "working space" in result.output.lower()
+        assert not out.exists()
+
+    def test_previous_equivalent_resolved(self, runner, tmp_path):
+        result, out = self._run(runner, tmp_path, ACESCCT_URNS[(1, 3, 0)][0])
+        assert result.exit_code == 0, result.output
+        assert "Resolved working space" in result.output
+        ws = load_amf(out, validate=False).pipeline.look_transforms[0].cdl_working_space
+        assert (ws.from_cdl_working_space.transform_id, ws.to_cdl_working_space.transform_id) == ACESCCT_URNS[(2, 0, 0)]
